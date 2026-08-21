@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BoardRow } from "@/components/BoardRow";
+import { BoardGrid } from "@/components/BoardGrid";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
@@ -37,7 +37,7 @@ export default async function Home() {
   const entry = cut ? (tierToBeat(cut)?.cents ?? null) : FLOOR_CENTS;
 
   return (
-    <main className="mx-auto w-full max-w-3xl px-4 pt-14 pb-24">
+    <main className="mx-auto w-full max-w-[1500px] px-4 pt-12 pb-24">
       <header className="mb-10 text-center">
         <h1 className="text-4xl font-semibold tracking-tight">
           front<span className="text-muted">row</span>
@@ -61,22 +61,9 @@ export default async function Home() {
         </p>
       </header>
 
-      {rows.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-edge p-10 text-center">
-          <p className="font-medium">The board is empty.</p>
-          <p className="mt-1 text-sm text-muted">
-            First {SITE.noun} on takes #1 for {formatPrice(FLOOR_CENTS)}/mo.
-          </p>
-        </div>
-      ) : (
-        <ol className="space-y-1.5">
-          {rows.map((row) => (
-            <BoardRow key={row.id} row={row} />
-          ))}
-        </ol>
-      )}
+      <BoardGrid rows={rows} floorCents={entry ?? FLOOR_CENTS} />
 
-      <section className="mt-14 grid gap-6 border-t border-edge pt-10 text-sm text-muted sm:grid-cols-3">
+      <section className="mx-auto mt-14 grid max-w-4xl gap-6 border-t border-edge pt-10 text-sm text-muted sm:grid-cols-3">
         <div>
           <h2 className="mb-1.5 font-medium text-fg">Your price is your rank</h2>
           <p>
