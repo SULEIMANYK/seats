@@ -33,8 +33,8 @@ export function CopyManageLink({ token }: { token: string }) {
         onClick={copy}
         className={`shrink-0 rounded-lg px-3 py-2 text-xs font-semibold transition ${
           copied
-            ? "border border-gold/40 bg-gold-soft text-gold"
-            : "bg-fg text-bg hover:opacity-90"
+            ? "border border-gold-line bg-gold-soft text-gold"
+            : "bg-fg text-bg-lift hover:opacity-90"
         }`}
       >
         {copied ? "Copied ✓" : "Copy link"}

@@ -60,7 +60,7 @@ export default async function Home() {
 
         <Link
           href={entry ? `/submit?cents=${entry}` : "/submit"}
-          className="mt-7 rounded-xl bg-fg px-5 py-2.5 text-sm font-semibold text-bg shadow-[0_10px_30px_-12px_rgba(255,255,255,0.5)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-12px_rgba(255,255,255,0.6)]"
+          className="mt-7 rounded-xl bg-fg px-5 py-2.5 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift"
         >
           {open > 0
             ? `Claim a slot — from ${formatPrice(entry ?? FLOOR_CENTS)}/mo`

@@ -48,7 +48,7 @@ export function ClimbPanel({
 
   if (tierRanks.length === 0) {
     return (
-      <div className="rounded-2xl border border-gold/25 bg-gold-soft px-4 py-3.5 text-[13px] text-gold">
+      <div className="rounded-2xl border border-gold-line bg-gold-soft px-4 py-3.5 text-[13px] text-gold">
         You&apos;re at the top price. Nobody can outpay you — they can only match and wait.
       </div>
     );
@@ -76,14 +76,14 @@ export function ClimbPanel({
               title={pointless ? "This price would not move you up" : undefined}
               className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 ${
                 top
-                  ? "border-gold/25 bg-gold-soft hover:border-gold/50"
+                  ? "border-gold-line bg-gold-soft hover:border-gold"
                   : "border-edge bg-panel hover:border-edge-strong hover:bg-panel-hover"
               }`}
             >
               <span className={`tnum text-sm font-semibold ${top ? "text-gold" : "text-fg"}`}>
                 {busy === tier.cents ? "…" : `${tier.label}/mo`}
               </span>
-              <span className={`tnum text-[11px] ${top ? "text-gold/70" : "text-muted"}`}>
+              <span className={`tnum text-[11px] ${top ? "text-gold" : "text-muted"}`}>
                 → {pointless ? "no change" : `#${tier.rank}`}
               </span>
             </button>
@@ -92,7 +92,7 @@ export function ClimbPanel({
       </div>
 
       {result !== null && (
-        <p className="tnum rounded-xl border border-gold/25 bg-gold-soft px-3 py-2.5 text-[13px] text-gold">
+        <p className="tnum rounded-xl border border-gold-line bg-gold-soft px-3 py-2.5 text-[13px] text-gold">
           You&apos;re on the move — now #{result}.
         </p>
       )}

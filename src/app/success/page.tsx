@@ -108,7 +108,7 @@ export default async function SuccessPage({
       ) : (
         <div className="relative z-10">
           <p className="text-sm text-muted">You&apos;re on the board at</p>
-          <p className="tnum mt-1 text-8xl leading-none font-bold text-gold drop-shadow-[0_0_40px_rgba(240,180,41,0.35)]">
+          <p className="tnum mt-1 text-8xl leading-none font-bold text-gold">
             #{rank ?? "—"}
           </p>
           <p className="mt-3 text-sm text-muted">
@@ -122,7 +122,7 @@ export default async function SuccessPage({
             rel="noopener nofollow"
             className={`group relative mt-8 isolate flex flex-col overflow-hidden rounded-2xl border p-4 text-left transition-all duration-200 hover:-translate-y-0.5 ${
               featured
-                ? "border-gold/25 bg-gold-soft shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)] hover:border-gold/50"
+                ? "border-gold-line bg-gold-soft card-shadow hover:border-gold"
                 : "border-edge bg-panel hover:border-edge-strong hover:bg-panel-hover"
             }`}
           >
@@ -136,7 +136,7 @@ export default async function SuccessPage({
               </span>
               <span
                 className={`tnum rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
-                  featured ? "bg-gold/15 text-gold" : "bg-white/6 text-muted"
+                  featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
                 }`}
               >
                 {formatPrice(listing!.price_cents)}
@@ -148,7 +148,7 @@ export default async function SuccessPage({
               <img
                 src={listing!.logo_url ?? faviconFor(listing!.url)}
                 alt=""
-                className={`mb-2.5 rounded-xl bg-white object-contain p-1 ring-1 ring-white/10 ${
+                className={`mb-2.5 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge ${
                   featured ? "size-12 p-1.5" : "size-8"
                 }`}
               />
@@ -174,12 +174,12 @@ export default async function SuccessPage({
               )}
             </div>
 
-            <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg transition-transform duration-200 group-hover:translate-y-0">
+            <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
               view live listing
             </span>
           </a>
 
-          <div className="mt-8 rounded-xl border border-gold/25 bg-gold-soft p-4 text-left">
+          <div className="mt-8 rounded-xl border border-gold-line bg-gold-soft p-4 text-left">
             <p className="text-sm font-medium text-fg">Save this link now</p>
             <p className="mt-1 text-xs leading-relaxed text-muted">
               This is the only way you can ever climb, edit, or cancel this listing — we don&apos;t
@@ -192,7 +192,7 @@ export default async function SuccessPage({
           <div className="mt-6 flex justify-center gap-2 text-sm">
             <Link
               href={`/manage/${listing!.manage_token}`}
-              className="rounded-lg bg-fg px-4 py-2 font-medium text-bg shadow-[0_10px_30px_-12px_rgba(255,255,255,0.5)] transition hover:-translate-y-0.5 hover:opacity-90"
+              className="rounded-lg bg-fg px-4 py-2 font-medium text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:opacity-90"
             >
               Open manage page
             </Link>

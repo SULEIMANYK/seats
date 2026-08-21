@@ -1,20 +1,23 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm near-black rather than pure black — pure #000 makes borders look
-     harsh and flattens everything on top of it. */
-  --bg: #0b0b0e;
-  --bg-lift: #101015;
-  --panel: rgba(255, 255, 255, 0.028);
-  --panel-hover: rgba(255, 255, 255, 0.055);
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --fg: #f7f7f8;
-  --muted: #83838f;
-  --faint: rgba(255, 255, 255, 0.05);
-  --gold: #f0b429;
-  --gold-soft: rgba(240, 180, 41, 0.14);
-  --accent: #7c8cff;
+  /* Light, editorial. Paper-white rather than pure #fff so the white cards
+     sitting on it still read as objects. */
+  --bg: #f7f7f5;
+  --bg-lift: #ffffff;
+  --panel: #ffffff;
+  --panel-hover: #ffffff;
+  --border: #e6e6e1;
+  --border-strong: #d2d2cb;
+  --fg: #14141a;
+  --muted: #6f6f7a;
+  --faint: #ececE6;
+  /* Deep amber reads as premium on white; the bright gold used on the dark
+     theme turns to highlighter here and fails contrast on text. */
+  --gold: #9a6b05;
+  --gold-soft: #fdf6e3;
+  --gold-line: #e8c877;
+  --accent: #3d3dd6;
 }
 
 @theme inline {
@@ -29,6 +32,7 @@
   --color-faint: var(--faint);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
+  --color-gold-line: var(--gold-line);
   --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -36,7 +40,7 @@
 
 html {
   background: var(--bg);
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
@@ -45,18 +49,19 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* A single warm light source behind the top of the board, so the front row
-   sits in the brightest part of the page and the tail falls away into dark. */
+/* Warm wash behind the top of the page so the front row sits in light and
+   the tail settles onto plain paper. Far subtler than the dark version —
+   on white, a gradient this size reads as a stain if pushed. */
 .stage::before {
   content: "";
   position: fixed;
-  inset: -20% 0 auto 0;
-  height: 70vh;
+  inset: -10% 0 auto 0;
+  height: 60vh;
   background: radial-gradient(
-    58% 50% at 50% 0%,
-    rgba(240, 180, 41, 0.10) 0%,
-    rgba(124, 140, 255, 0.05) 38%,
-    transparent 72%
+    55% 50% at 50% 0%,
+    rgba(232, 200, 119, 0.22) 0%,
+    rgba(61, 61, 214, 0.05) 45%,
+    transparent 75%
   );
   pointer-events: none;
   z-index: 0;
@@ -64,4 +69,18 @@ body {
 
 .tnum {
   font-variant-numeric: tabular-nums;
+}
+
+/* One shared card shadow, so every surface in the app sits at the same
+   height. Two stops: a hairline for definition, a soft drop for lift. */
+.card-shadow {
+  box-shadow:
+    0 1px 2px rgba(20, 20, 26, 0.04),
+    0 8px 24px -12px rgba(20, 20, 26, 0.12);
+}
+
+.card-shadow-lift {
+  box-shadow:
+    0 1px 2px rgba(20, 20, 26, 0.05),
+    0 18px 40px -16px rgba(20, 20, 26, 0.18);
 }

@@ -71,9 +71,9 @@ function CpcBar({
       <span className={`w-[76px] shrink-0 text-[11px] ${tone === "gold" ? "text-gold" : "text-muted"}`}>
         {label}
       </span>
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-white/6">
+      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-faint">
         <div
-          className={`h-full rounded-full ${tone === "gold" ? "bg-gold" : "bg-white/25"}`}
+          className={`h-full rounded-full ${tone === "gold" ? "bg-gold" : "bg-edge-strong"}`}
           style={{ width: `${pct}%` }}
         />
       </div>
@@ -158,7 +158,7 @@ export default async function ManagePage({
           <img
             src={listing.logo_url ?? faviconFor(listing.url)}
             alt=""
-            className="size-11 shrink-0 rounded-xl bg-white object-contain p-1 ring-1 ring-white/10"
+            className="size-11 shrink-0 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge"
           />
           <div className="min-w-0">
             <h1 className="truncate text-2xl font-semibold tracking-tight">{listing.name}</h1>
@@ -168,7 +168,7 @@ export default async function ManagePage({
 
         <span
           className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] ${
-            listing.status === "active" ? "border-edge text-muted" : "border-gold/40 text-gold"
+            listing.status === "active" ? "border-edge text-muted" : "border-gold-line text-gold"
           }`}
         >
           <span className="relative flex size-1.5">
@@ -186,8 +186,8 @@ export default async function ManagePage({
       </header>
 
       {listing.status === "grace" && (
-        <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold/25 bg-gold-soft p-4 shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)]">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-2 py-0.5 text-[9px] leading-none font-semibold tracking-wide text-gold uppercase">
+        <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold-line bg-gold-soft p-4 card-shadow">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-line px-2 py-0.5 text-[9px] leading-none font-semibold tracking-wide text-gold uppercase">
             Grace period
           </span>
           <p className="mt-2.5 text-[13px] leading-relaxed text-fg/90">
@@ -201,8 +201,8 @@ export default async function ManagePage({
       )}
 
       {listing.status === "past_due" && (
-        <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold/25 bg-gold-soft p-4 shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)]">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold/40 px-2 py-0.5 text-[9px] leading-none font-semibold tracking-wide text-gold uppercase">
+        <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold-line bg-gold-soft p-4 card-shadow">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-line px-2 py-0.5 text-[9px] leading-none font-semibold tracking-wide text-gold uppercase">
             Billing
           </span>
           <p className="mt-2.5 text-[13px] leading-relaxed text-fg/90">
@@ -226,8 +226,8 @@ export default async function ManagePage({
         </div>
       </section>
 
-      <section className="relative z-10 mb-8 rounded-2xl border border-gold/25 bg-gold-soft p-5 shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)]">
-        <p className="text-[11px] text-gold/80">Cost per click · 30d</p>
+      <section className="relative z-10 mb-8 rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
+        <p className="text-[11px] text-gold">Cost per click · 30d</p>
         {costPerClick ? (
           <>
             <p className="tnum mt-1 text-4xl leading-none font-semibold text-gold">
@@ -264,7 +264,7 @@ export default async function ManagePage({
             rel="noopener nofollow"
             className={`group relative isolate flex flex-col overflow-hidden rounded-2xl border p-4 transition-all duration-200 hover:-translate-y-0.5 ${
               featured
-                ? "border-gold/25 bg-gold-soft shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)] hover:border-gold/50"
+                ? "border-gold-line bg-gold-soft card-shadow hover:border-gold"
                 : "border-edge bg-panel hover:border-edge-strong hover:bg-panel-hover"
             }`}
           >
@@ -278,13 +278,13 @@ export default async function ManagePage({
               </span>
               <span className="flex items-center gap-1">
                 {listing.status === "past_due" && (
-                  <span className="rounded-full border border-gold/40 px-1.5 py-0.5 text-[9px] leading-none text-gold">
+                  <span className="rounded-full border border-gold-line px-1.5 py-0.5 text-[9px] leading-none text-gold">
                     billing
                   </span>
                 )}
                 <span
                   className={`tnum rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
-                    featured ? "bg-gold/15 text-gold" : "bg-white/6 text-muted"
+                    featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
                   }`}
                 >
                   {formatPrice(listing.price_cents)}
@@ -297,7 +297,7 @@ export default async function ManagePage({
               <img
                 src={listing.logo_url ?? faviconFor(listing.url)}
                 alt=""
-                className={`mb-2.5 rounded-xl bg-white object-contain p-1 ring-1 ring-white/10 ${
+                className={`mb-2.5 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge ${
                   featured ? "size-12 p-1.5" : "size-9"
                 }`}
               />
@@ -313,7 +313,7 @@ export default async function ManagePage({
             </div>
 
             {next && (
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg transition-transform duration-200 group-hover:translate-y-0">
+              <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
                 take #{rank} · {next.label}/mo
               </span>
             )}

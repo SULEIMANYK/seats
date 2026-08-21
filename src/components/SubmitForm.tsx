@@ -46,7 +46,7 @@ function PreviewCard({
     <div
       className={`relative flex flex-col overflow-hidden rounded-2xl border p-4 transition-colors duration-200 ${
         featured
-          ? "border-gold/25 bg-gold-soft shadow-[0_0_0_1px_rgba(240,180,41,0.06),0_18px_40px_-24px_rgba(240,180,41,0.5)]"
+          ? "border-gold-line bg-gold-soft card-shadow"
           : "border-edge bg-panel"
       }`}
     >
@@ -61,7 +61,7 @@ function PreviewCard({
         {cents !== undefined && (
           <span
             className={`tnum rounded-full px-2 py-1 text-[11px] leading-none ${
-              featured ? "bg-gold/15 text-gold" : "bg-white/6 text-muted"
+              featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
             }`}
           >
             {formatPrice(cents)}/mo
@@ -74,7 +74,7 @@ function PreviewCard({
         <img
           src={faviconFor(domain)}
           alt=""
-          className="size-10 shrink-0 rounded-xl bg-white object-contain p-1 ring-1 ring-white/10"
+          className="size-10 shrink-0 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge"
         />
         <div className="min-w-0">
           <p className="truncate text-base font-semibold tracking-tight">{name || "Your product"}</p>
@@ -87,7 +87,7 @@ function PreviewCard({
       </p>
 
       {featured && (
-        <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-gold/15 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-gold uppercase">
+        <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-gold-soft px-2 py-0.5 text-[10px] font-semibold tracking-wide text-gold uppercase">
           front row
         </span>
       )}
@@ -283,7 +283,7 @@ export function SubmitForm({
                   <span className="flex items-center gap-3">
                     <span
                       className={`tnum flex size-7 shrink-0 items-center justify-center rounded-full text-[12px] font-semibold ${
-                        featured ? "bg-gold/15 text-gold" : isSelected ? "bg-accent/20 text-accent" : "bg-white/6 text-muted"
+                        featured ? "bg-gold-soft text-gold" : isSelected ? "bg-accent/20 text-accent" : "bg-faint text-muted"
                       }`}
                     >
                       {tier.rank}
@@ -304,13 +304,13 @@ export function SubmitForm({
         </fieldset>
 
         {error && (
-          <p className="rounded-xl border border-gold/40 bg-gold/5 px-3.5 py-2.5 text-sm text-gold">{error}</p>
+          <p className="rounded-xl border border-gold-line bg-gold/5 px-3.5 py-2.5 text-sm text-gold">{error}</p>
         )}
 
         <button
           type="submit"
           disabled={busy || !cents}
-          className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg shadow-[0_10px_30px_-12px_rgba(255,255,255,0.5)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_34px_-12px_rgba(255,255,255,0.6)] disabled:pointer-events-none disabled:opacity-50"
+          className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
           {busy ? "Starting checkout…" : `Continue — ${cents ? formatPrice(cents) : ""}/mo`}
         </button>
