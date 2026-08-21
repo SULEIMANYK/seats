@@ -1,7 +1,7 @@
 /** Everything niche-specific lives here — swap these to retarget the board. */
 export const SITE = {
-  name: "frontrow",
-  domain: "frontrow.lol",
+  name: "seats",
+  domain: "seats.lol",
   /** What the board lists. Appears throughout the copy. */
   noun: "product",
   nounPlural: "products",

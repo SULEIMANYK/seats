@@ -13,7 +13,7 @@ export const metadata = { robots: { index: false, follow: false } };
 type Supabase = ReturnType<typeof db>;
 
 // What a click actually costs elsewhere — the number a $0.14 click on
-// frontrow should be measured against, not against zero.
+// seats.lol should be measured against, not against zero.
 const GOOGLE_CPC_LOW = 3;
 const GOOGLE_CPC_HIGH = 8;
 
@@ -239,7 +239,7 @@ export default async function ManagePage({
               {cheaperBy && cheaperBy >= 1.5 ? ` — you're paying ${Math.round(cheaperBy)}× less.` : "."}
             </p>
             <div className="mt-4 space-y-2">
-              <CpcBar label="frontrow" value={costPerClick} max={GOOGLE_CPC_HIGH} tone="gold" />
+              <CpcBar label="seats.lol" value={costPerClick} max={GOOGLE_CPC_HIGH} tone="gold" />
               <CpcBar
                 label="Google Ads"
                 value={(GOOGLE_CPC_LOW + GOOGLE_CPC_HIGH) / 2}

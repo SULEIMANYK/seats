@@ -6,7 +6,7 @@ import { formatPrice, tierToBeat } from "@/lib/tiers";
 /**
  * The board as a theatre.
  *
- * The site is called frontrow, so the seating chart *is* the interface: a stage
+ * The site is called seats.lol, so the seating chart *is* the interface: a stage
  * at the top, the royal box alone above the front row, two boxes flanking it,
  * and seven rows curving back behind them. Paying more moves you forward.
  *
@@ -37,6 +37,33 @@ function rowsOfRanks(): number[][] {
     rows.push(Array.from({ length: size }, () => rank++));
   }
   return rows;
+}
+
+/** Row letters, front to back. Seating charts label rows; grids don't. */
+const ROW_LETTERS = ["A", "B", "C", "D", "E", "F", "G"];
+
+/** Width of an aisle, in px. */
+const AISLE = 22;
+
+/**
+ * Split a row into three blocks with aisles between them. This is the single
+ * detail that makes the chart read as a room rather than a grid of dots — and
+ * the centre block is the widest, as it is in a real house.
+ */
+function intoBlocks(items: number[]): number[][] {
+  const base = Math.floor(items.length / 3);
+  const sizes = [base, base, base];
+  // Remainder goes to the middle block first, then the left.
+  const order = [1, 0, 2];
+  for (let i = 0; i < items.length % 3; i++) sizes[order[i]]++;
+
+  const out: number[][] = [];
+  let cursor = 0;
+  for (const size of sizes) {
+    out.push(items.slice(cursor, cursor + size));
+    cursor += size;
+  }
+  return out;
 }
 
 /** Position along the arc: 0 at the centre of the row, 1 at either end. */
@@ -158,9 +185,9 @@ function EmptySeat({ rank, size, cents }: { rank: number; size: number; cents: n
     <Link
       href={`/submit?cents=${cents}`}
       style={{ width: size, height: size }}
-      className="group relative grid place-items-center rounded-xl border border-dashed border-edge-strong/45 transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:border-accent hover:bg-panel"
+      className="group relative grid place-items-center rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
     >
-      <span className="tnum text-[10px] text-muted/35 transition-colors group-hover:text-accent">
+      <span className="tnum text-[10px] text-muted/30 transition-colors group-hover:text-accent">
         {rank}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
@@ -177,7 +204,7 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
   const [apex, flanks, ...backRows] = rowsOfRanks();
 
   return (
-    <div className="relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 pt-2">
+    <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[2.5rem] pt-2">
       {/* The royal box: one seat, alone, centred and lifted above the rest. */}
       <div className="flex w-full items-stretch justify-center">
         {apex.map((rank) => {
@@ -202,33 +229,51 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
         })}
       </div>
 
-      <p className="mt-0.5 text-[10px] tracking-[0.18em] text-muted/50 uppercase">the house</p>
+      <p className="mt-1 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">the house</p>
 
       {backRows.map((ranks, i) => {
         const rowIndex = i + 2;
         const size = SEAT_PX[rowIndex];
         const curve = ROW_CURVE[rowIndex];
+        const letter = ROW_LETTERS[i] ?? "";
+        let seatIndex = -1;
 
         return (
           <div
             key={rowIndex}
-            className="flex w-full justify-center gap-1.5"
+            className="flex w-full items-center justify-center"
             style={{ paddingBottom: curve }}
           >
-            {ranks.map((rank, seatIndex) => {
-              const listing = byRank.get(rank);
-              const lift = arcOffset(seatIndex, ranks.length, curve);
+            <span className="tnum w-5 pr-1.5 text-right text-[9px] text-muted/35">{letter}</span>
 
-              return (
-                <span key={rank} style={{ transform: `translateY(${lift}px)` }} className="shrink-0">
-                  {listing ? (
-                    <Seat row={listing} size={size} />
-                  ) : (
-                    <EmptySeat rank={rank} size={size} cents={floorCents} />
-                  )}
+            {intoBlocks(ranks).map((block, blockIndex) => (
+              <span key={blockIndex} className="flex items-center">
+                {blockIndex > 0 && <span aria-hidden style={{ width: AISLE }} />}
+                <span className="flex gap-1.5">
+                  {block.map((rank) => {
+                    seatIndex += 1;
+                    const listing = byRank.get(rank);
+                    const lift = arcOffset(seatIndex, ranks.length, curve);
+
+                    return (
+                      <span
+                        key={rank}
+                        style={{ transform: `translateY(${lift}px)` }}
+                        className="shrink-0"
+                      >
+                        {listing ? (
+                          <Seat row={listing} size={size} />
+                        ) : (
+                          <EmptySeat rank={rank} size={size} cents={floorCents} />
+                        )}
+                      </span>
+                    );
+                  })}
                 </span>
-              );
-            })}
+              </span>
+            ))}
+
+            <span className="tnum w-5 pl-1.5 text-[9px] text-muted/35">{letter}</span>
           </div>
         );
       })}

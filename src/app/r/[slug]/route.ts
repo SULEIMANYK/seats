@@ -31,7 +31,7 @@ export async function GET(
 
   // Hashed with a server-side salt so the raw IP is never stored.
   const ipHash = createHash("sha256")
-    .update(ip + (process.env.CLICK_SALT ?? "frontrow"))
+    .update(ip + (process.env.CLICK_SALT ?? "seats.lol"))
     .digest("hex")
     .slice(0, 32);
 
