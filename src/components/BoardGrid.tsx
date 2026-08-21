@@ -4,12 +4,20 @@ import { displayDomain } from "@/lib/slug";
 import { BOARD_SIZE, formatPrice, tierToBeat } from "@/lib/tiers";
 
 /**
- * Size is the reward. What you pay buys you area and position, not just a
- * number in a list — #1 is the widest card and sits dead centre of the top
- * row, flanked by #2 and #3, and every tier below gets visibly less room.
+ * The whole board on one screen, no scrolling.
  *
- * Twelve columns on desktop makes that split clean: 3 | 6 | -3.
+ * That constraint drives everything here: the grid is 12 columns by exactly
+ * ROWS rows, each row a 1fr slice of whatever height is left after the header,
+ * so 100 slots always land inside the viewport no matter how tall it is.
+ * Size is still the reward — #1 is the widest card and sits dead centre — but
+ * every tier is budgeted in rows rather than pixels.
+ *
+ *   rows 1-3    #1 (6 cols) flanked by #2 and #3 (3 cols each)
+ *   rows 4-5    #4-#9      six medium cards, 2 cols x 2 rows
+ *   rows 6-7    #10-#21    twelve compact cards, 2 cols x 1 row
+ *   rows 8-14   #22-#100   seventy-nine tiles, 1 col x 1 row
  */
+export const ROWS = 14;
 
 type Size = "hero" | "podium" | "medium" | "compact" | "tiny";
 
@@ -17,14 +25,14 @@ function sizeFor(rank: number): Size {
   if (rank === 1) return "hero";
   if (rank <= 3) return "podium";
   if (rank <= 9) return "medium";
-  if (rank <= 30) return "compact";
+  if (rank <= 21) return "compact";
   return "tiny";
 }
 
 /**
  * The top three are placed explicitly so #1 lands in the middle. Everything
- * below flows. Mobile keeps DOM order (1, 2, 3 down the page) because the
- * explicit placement only kicks in at md.
+ * else flows. Below md the placement is dropped and the page scrolls normally —
+ * 100 slots in a phone viewport would be unreadable.
  */
 function spanFor(rank: number, size: Size) {
   if (rank === 1) {
@@ -54,7 +62,7 @@ function Logo({ row, className }: { row: BoardRow; className: string }) {
       src={row.logo_url ?? faviconFor(row.url)}
       alt=""
       loading="lazy"
-      className={`shrink-0 rounded-lg bg-bg object-contain p-1 ring-1 ring-edge ${className}`}
+      className={`shrink-0 rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge ${className}`}
     />
   );
 }
@@ -63,91 +71,87 @@ function FilledBox({ row }: { row: BoardRow }) {
   const next = tierToBeat(row.price_cents);
   const size = sizeFor(row.rank);
   const featured = row.rank <= 3;
+  const big = size === "hero" || size === "podium";
 
   return (
     <a
       href={`/r/${row.slug}`}
       target="_blank"
       rel="noopener nofollow"
-      className={`group relative isolate flex flex-col overflow-hidden rounded-2xl border bg-panel transition-all duration-200 hover:-translate-y-0.5 hover:card-shadow-lift ${
-        featured ? "border-gold-line card-shadow" : "border-edge card-shadow"
-      } ${size === "tiny" ? "p-2" : "p-4"} ${spanFor(row.rank, size)}`}
+      className={`group relative isolate flex min-h-0 flex-col overflow-hidden rounded-xl border bg-panel card-shadow transition-all duration-200 hover:-translate-y-0.5 hover:card-shadow-lift ${
+        featured ? "border-gold-line" : "border-edge"
+      } ${size === "tiny" ? "p-1" : size === "compact" ? "px-2 py-1.5" : "p-3"} ${spanFor(
+        row.rank,
+        size,
+      )}`}
     >
-      <div className="flex items-start justify-between gap-2">
+      <div className="flex items-start justify-between gap-1">
         <span
           className={`tnum leading-none font-semibold ${
             size === "hero"
-              ? "text-4xl text-gold"
+              ? "text-3xl text-gold"
               : size === "podium"
-                ? "text-2xl text-gold"
-                : "text-[11px] text-muted"
+                ? "text-xl text-gold"
+                : "text-[10px] text-muted"
           }`}
         >
           {row.rank}
         </span>
 
-        {size !== "tiny" && (
-          <span className="flex items-center gap-1">
-            {row.status === "past_due" && (
-              <span className="rounded-full border border-gold-line px-1.5 py-0.5 text-[9px] leading-none text-gold">
-                billing
-              </span>
-            )}
-            <span
-              className={`tnum rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
-                featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
-              }`}
-            >
-              {formatPrice(row.price_cents)}
-            </span>
+        {size !== "tiny" && size !== "compact" && (
+          <span
+            className={`tnum rounded-full px-1.5 py-0.5 text-[10px] leading-none ${
+              featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
+            }`}
+          >
+            {formatPrice(row.price_cents)}
           </span>
         )}
       </div>
 
-      {/* Tiny and compact tiers put the logo beside the name; the bigger tiers
-          stack it above, where there is room for it to be an image. */}
       {size === "tiny" ? (
-        <div className="mt-auto flex items-center justify-center">
-          <Logo row={row} className="size-7" />
+        <div className="flex min-h-0 flex-1 items-center justify-center">
+          <Logo row={row} className="size-5" />
         </div>
       ) : size === "compact" ? (
-        <div className="mt-auto flex items-center gap-2">
-          <Logo row={row} className="size-7" />
-          <span className="truncate text-[13px] font-medium">{row.name}</span>
+        <div className="mt-auto flex min-w-0 items-center gap-1.5">
+          <Logo row={row} className="size-5" />
+          <span className="truncate text-[11px] font-medium">{row.name}</span>
         </div>
       ) : (
-        <div className="mt-auto min-w-0">
-          <Logo
-            row={row}
-            className={`mb-3 ${size === "hero" ? "size-14" : size === "podium" ? "size-11" : "size-9"}`}
-          />
+        <div className={`min-w-0 ${big ? "mt-2" : "mt-auto"}`}>
+          <Logo row={row} className={`mb-1.5 ${size === "hero" ? "size-10" : size === "podium" ? "size-8" : "size-6"}`} />
           <p
             className={`truncate font-semibold tracking-tight ${
-              size === "hero" ? "text-2xl" : size === "podium" ? "text-lg" : "text-sm"
+              size === "hero" ? "text-xl" : size === "podium" ? "text-[15px]" : "text-[13px]"
             }`}
           >
             {row.name}
           </p>
 
-          {size !== "medium" && (
-            <p
-              className={`mt-1 text-muted ${size === "hero" ? "line-clamp-2 text-[15px]" : "line-clamp-2 text-[13px]"}`}
-            >
+          {big && (
+            <p className={`mt-0.5 line-clamp-2 text-muted ${size === "hero" ? "text-[13px]" : "text-xs"}`}>
               {row.tagline}
             </p>
           )}
 
-          <p className="tnum mt-2 truncate text-[11px] text-muted/80">
-            {size === "medium"
-              ? `${row.clicks_30d.toLocaleString()} clicks`
-              : `${displayDomain(row.url)} · ${row.clicks_30d.toLocaleString()} clicks`}
-          </p>
+          {!big && (
+            <p className="tnum mt-1 truncate text-[10px] text-muted/80">
+              {row.clicks_30d.toLocaleString()} clicks
+            </p>
+          )}
         </div>
       )}
 
+      {big && (
+        <p className="tnum mt-auto truncate pt-2 text-[10px] text-muted/80">
+          {displayDomain(row.url)} · {row.clicks_30d.toLocaleString()} clicks
+        </p>
+      )}
+
       {next && size !== "tiny" && (
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
-          take #{row.rank} · {next.label}/mo
+        <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-1 py-1.5 text-center text-[10px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
+          take #{row.rank} · {next.label}
         </span>
       )}
     </a>
@@ -160,16 +164,16 @@ function EmptyBox({ rank, cents }: { rank: number; cents: number }) {
   return (
     <Link
       href={`/submit?cents=${cents}`}
-      className={`group flex flex-col items-center justify-center rounded-2xl border border-dashed border-edge-strong/60 bg-bg-lift/40 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-panel hover:card-shadow ${
-        size === "tiny" ? "p-2" : "p-4"
+      className={`group flex min-h-0 flex-col items-center justify-center rounded-xl border border-dashed border-edge-strong/50 bg-bg-lift/40 transition-all duration-200 hover:-translate-y-0.5 hover:border-accent hover:bg-panel hover:card-shadow ${
+        size === "tiny" ? "p-1" : "p-2"
       } ${spanFor(rank, size)}`}
     >
-      <span className="tnum text-[11px] text-muted/45 transition-colors group-hover:text-accent">
+      <span className="tnum text-[10px] text-muted/40 transition-colors group-hover:text-accent">
         {rank}
       </span>
       {size !== "tiny" && (
-        <span className="mt-1 text-[11px] text-muted/0 transition-colors group-hover:text-accent">
-          claim · {formatPrice(cents)}
+        <span className="mt-0.5 text-[10px] text-muted/0 transition-colors group-hover:text-accent">
+          claim {formatPrice(cents)}
         </span>
       )}
     </Link>
@@ -183,7 +187,9 @@ export function BoardGrid({ rows, floorCents }: { rows: BoardRow[]; floorCents: 
   );
 
   return (
-    <div className="relative z-10 grid auto-rows-[minmax(0,4.25rem)] grid-cols-4 gap-3 [grid-auto-flow:dense] md:grid-cols-12">
+    <div
+      className="relative z-10 grid min-h-0 flex-1 auto-rows-[minmax(0,3.5rem)] grid-cols-4 gap-1.5 [grid-auto-flow:dense] md:auto-rows-auto md:grid-cols-12 md:grid-rows-[repeat(14,minmax(0,1fr))] md:gap-2"
+    >
       {rows.map((row) => (
         <FilledBox key={row.id} row={row} />
       ))}

@@ -80,6 +80,21 @@ Put the printed values in `.env.local` (`NEXT_PUBLIC_SUPABASE_URL=http://127.0.0
 Everything works locally except checkout and climbing, which need real Polar
 credentials. Studio is at `http://127.0.0.1:54323`.
 
+### Previewing the design
+
+Use a production build, not `next dev`:
+
+```bash
+npm run build && npx next start -p 3000
+```
+
+Turbopack reuses the same chunk filenames across rebuilds (`[root-of-the-server]__xxxx.css`),
+so a browser that cached that URL early in a session keeps serving it after the
+file's contents have completely changed — a whole theme rewrite can render as
+the previous theme, and hard reloads do not shift it. Production filenames are
+content-hashed, so every change gets a URL the browser has never seen. Dev is
+set to `Cache-Control: no-store` to reduce this, but it does not fully cure it.
+
 For local webhook testing, tunnel with `ngrok http 3000` and point the Polar
 webhook at the tunnel — the board only ever goes live off a verified event.
 
