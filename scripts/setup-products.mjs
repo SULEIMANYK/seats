@@ -10,8 +10,8 @@ import { Polar } from "@polar-sh/sdk";
 
 // Keep in step with TIERS in src/lib/tiers.ts.
 const TIERS = [
-  2900, 3900, 4900, 5900, 7900, 9900, 12900, 16900,
-  21900, 29900, 39900, 54900, 74900, 99900, 149900, 249900,
+  700, 1200, 1900, 2900, 3900, 4900, 5900, 7900, 9900, 12900,
+  16900, 21900, 29900, 39900, 54900, 74900, 99900, 149900, 249900,
 ];
 
 const accessToken = process.env.POLAR_ACCESS_TOKEN;
@@ -25,7 +25,7 @@ const polar = new Polar({
   server: process.env.POLAR_SERVER === "sandbox" ? "sandbox" : "production",
 });
 
-const nameFor = (cents) => `Front Row — $${cents / 100}/mo`;
+const nameFor = (cents) => `Seat on seats.lol — $${(cents / 100).toLocaleString("en-US")}/mo`;
 
 // Pull the existing catalogue first so re-runs are idempotent.
 const existing = new Map();
@@ -45,7 +45,7 @@ for (const cents of TIERS) {
 
   const product = await polar.products.create({
     name,
-    description: `A slot on frontrow.lol at $${cents / 100}/month. Your price sets your rank.`,
+    description: `One of 100 seats on seats.lol at $${(cents / 100).toLocaleString("en-US")}/month. What you pay decides your rank — raise it any time to move forward.`,
     recurringInterval: "month",
     prices: [{ amountType: "fixed", priceAmount: cents, priceCurrency: "usd" }],
   });

@@ -21,6 +21,9 @@ export type Tier = {
  * far enough apart that each rung buys a real move up the board.
  */
 export const TIERS: Tier[] = [
+  { cents: 700, label: "$7" },
+  { cents: 1200, label: "$12" },
+  { cents: 1900, label: "$19" },
   { cents: 2900, label: "$29" },
   { cents: 3900, label: "$39" },
   { cents: 4900, label: "$49" },

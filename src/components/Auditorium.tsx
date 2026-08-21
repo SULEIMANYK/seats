@@ -54,7 +54,7 @@ const AISLE = 20;
  * Paying a row's price puts you in that row. Paying less still gets you on the
  * board, just further back, which is what the submit page shows.
  */
-const ROW_ASKING_CENTS = [249900, 149900, 74900, 39900, 21900, 12900, 5900, 2900];
+const ROW_ASKING_CENTS = [249900, 149900, 74900, 39900, 21900, 9900, 2900, 700];
 
 /**
  * Split a row into three blocks with aisles between them. This is the single
