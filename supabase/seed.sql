@@ -1,4 +1,6 @@
--- Local demo data. Applied by `supabase db reset` — never runs in production.
+-- Local demo data ONLY. Applied by `supabase db reset` against the local
+-- stack; never run this against the hosted project. The real board launches
+-- empty — an empty house is the pitch.
 -- Prices follow the power law a real board settles into: a few big payers up
 -- top, a long tail sitting at the floor.
 

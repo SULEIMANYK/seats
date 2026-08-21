@@ -46,6 +46,17 @@ const ROW_LETTERS = ["A", "B", "C", "D", "E", "F"];
 const AISLE = 20;
 
 /**
+ * Asking price per row, front to back — the theatre part of the metaphor made
+ * literal. A real box office charges more for a seat near the stage, and an
+ * empty house should say so on its face rather than showing one flat floor
+ * price on all hundred seats.
+ *
+ * Paying a row's price puts you in that row. Paying less still gets you on the
+ * board, just further back, which is what the submit page shows.
+ */
+const ROW_ASKING_CENTS = [249900, 149900, 74900, 39900, 21900, 12900, 5900, 2900];
+
+/**
  * Split a row into three blocks with aisles between them. This is the single
  * detail that makes the chart read as a room rather than a grid of dots — and
  * the centre block is the widest, as it is in a real house.
@@ -218,7 +229,7 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
           return listing ? (
             <Box key={rank} row={listing} apex />
           ) : (
-            <EmptyBox key={rank} rank={rank} cents={floorCents} apex />
+            <EmptyBox key={rank} rank={rank} cents={ROW_ASKING_CENTS[0]} apex />
           );
         })}
       </div>
@@ -230,7 +241,7 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
           return listing ? (
             <Box key={rank} row={listing} />
           ) : (
-            <EmptyBox key={rank} rank={rank} cents={floorCents} />
+            <EmptyBox key={rank} rank={rank} cents={ROW_ASKING_CENTS[1]} />
           );
         })}
       </div>
@@ -242,6 +253,7 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
         const size = SEAT_PX[rowIndex];
         const curve = ROW_CURVE[rowIndex];
         const letter = ROW_LETTERS[i] ?? "";
+        const asking = ROW_ASKING_CENTS[rowIndex] ?? floorCents;
         let seatIndex = -1;
 
         return (
@@ -270,7 +282,7 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
                         {listing ? (
                           <Seat row={listing} size={size} />
                         ) : (
-                          <EmptySeat rank={rank} size={size} cents={floorCents} />
+                          <EmptySeat rank={rank} size={size} cents={asking} />
                         )}
                       </span>
                     );
