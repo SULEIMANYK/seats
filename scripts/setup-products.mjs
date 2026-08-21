@@ -8,7 +8,11 @@
  */
 import { Polar } from "@polar-sh/sdk";
 
-const TIERS = [2900, 3900, 4900, 6900, 9900, 14900, 19900, 29900, 49900, 99900];
+// Keep in step with TIERS in src/lib/tiers.ts.
+const TIERS = [
+  2900, 3900, 4900, 5900, 7900, 9900, 12900, 16900,
+  21900, 29900, 39900, 54900, 74900, 99900, 149900, 249900,
+];
 
 const accessToken = process.env.POLAR_ACCESS_TOKEN;
 if (!accessToken) {

@@ -14,17 +14,29 @@ export type Tier = {
   label: string;
 };
 
+/**
+ * Sixteen rungs rather than ten, so the price falls away visibly from the
+ * stage to the back wall instead of stepping in big jumps. Roughly 1.3x
+ * between neighbours: close enough that climbing one rung feels affordable,
+ * far enough apart that each rung buys a real move up the board.
+ */
 export const TIERS: Tier[] = [
   { cents: 2900, label: "$29" },
   { cents: 3900, label: "$39" },
   { cents: 4900, label: "$49" },
-  { cents: 6900, label: "$69" },
+  { cents: 5900, label: "$59" },
+  { cents: 7900, label: "$79" },
   { cents: 9900, label: "$99" },
-  { cents: 14900, label: "$149" },
-  { cents: 19900, label: "$199" },
+  { cents: 12900, label: "$129" },
+  { cents: 16900, label: "$169" },
+  { cents: 21900, label: "$219" },
   { cents: 29900, label: "$299" },
-  { cents: 49900, label: "$499" },
+  { cents: 39900, label: "$399" },
+  { cents: 54900, label: "$549" },
+  { cents: 74900, label: "$749" },
   { cents: 99900, label: "$999" },
+  { cents: 149900, label: "$1,499" },
+  { cents: 249900, label: "$2,499" },
 ];
 
 export const FLOOR_CENTS = TIERS[0].cents;

@@ -22,13 +22,13 @@ import { formatPrice, tierToBeat } from "@/lib/tiers";
  * Counts rise and seat sizes fall together, so each row is physically wider
  * than the one in front of it and the room fans out the way a real house does.
  */
-const ROW_SIZES = [1, 2, 6, 9, 12, 15, 16, 18, 21];
+const ROW_SIZES = [1, 2, 13, 15, 16, 17, 18, 18];
 
 /** Seat edge length per row, in px. Seats shrink as they retreat. */
-const SEAT_PX = [0, 0, 70, 64, 59, 55, 51, 48, 45];
+const SEAT_PX = [0, 0, 82, 78, 74, 70, 67, 64];
 
 /** How far the centre of each row bows away from the stage, in px. */
-const ROW_CURVE = [0, 0, 8, 10, 12, 14, 16, 17, 19];
+const ROW_CURVE = [0, 0, 7, 9, 11, 12, 14, 15];
 
 function rowsOfRanks(): number[][] {
   const rows: number[][] = [];
@@ -40,10 +40,10 @@ function rowsOfRanks(): number[][] {
 }
 
 /** Row letters, front to back. Seating charts label rows; grids don't. */
-const ROW_LETTERS = ["A", "B", "C", "D", "E", "F", "G"];
+const ROW_LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 /** Width of an aisle, in px. */
-const AISLE = 22;
+const AISLE = 20;
 
 /**
  * Split a row into three blocks with aisles between them. This is the single
@@ -154,17 +154,20 @@ function Seat({ row, size }: { row: BoardRow; size: number }) {
       target="_blank"
       rel="noopener nofollow"
       style={{ width: size, height: size }}
-      className="group relative grid place-items-center rounded-xl border border-edge bg-panel card-shadow transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift"
+      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift"
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={row.logo_url ?? iconFor(row.url)}
         alt=""
         fetchPriority="high"
-        style={{ width: size * 0.5, height: size * 0.5 }}
+        style={{ width: size * 0.42, height: size * 0.42 }}
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
-      <span className="tnum absolute top-0.5 left-1 text-[9px] leading-none text-muted/50">
+      <span className="tnum text-[10px] leading-none font-medium text-muted">
+        {formatPrice(row.price_cents)}
+      </span>
+      <span className="tnum absolute top-1 left-1.5 text-[9px] leading-none text-muted/45">
         {row.rank}
       </span>
 
@@ -185,9 +188,12 @@ function EmptySeat({ rank, size, cents }: { rank: number; size: number; cents: n
     <Link
       href={`/submit?cents=${cents}`}
       style={{ width: size, height: size }}
-      className="group relative grid place-items-center rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
+      className="group relative flex flex-col items-center justify-center gap-0.5 rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
     >
-      <span className="tnum text-[10px] text-muted/30 transition-colors group-hover:text-accent">
+      <span className="tnum text-[11px] leading-none text-muted/45 transition-colors group-hover:text-accent">
+        {formatPrice(cents)}
+      </span>
+      <span className="tnum absolute top-1 left-1.5 text-[9px] leading-none text-muted/25">
         {rank}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
