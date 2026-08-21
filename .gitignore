@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The template carries placeholders only, and the README points at it — a repo
+# without it leaves anyone cloning with no list of required variables.
+!.env.example
 
 # vercel
 .vercel
