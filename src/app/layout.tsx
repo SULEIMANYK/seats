@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SITE } from "@/lib/config";
-import "./globals.css";
+import "./theme.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  // Also emitted as <meta name="color-scheme">, so the page still declares
+  // itself light even if the stylesheet hasn't arrived yet.
+  other: { "color-scheme": "light" },
   title: `${SITE.domain} — ${SITE.tagline}`,
   description: SITE.description,
   openGraph: {
