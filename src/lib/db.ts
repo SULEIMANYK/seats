@@ -41,6 +41,7 @@ export type Listing = {
   slug: string;
   name: string;
   url: string;
+  domain: string;
   tagline: string;
   logo_url: string | null;
   email: string;

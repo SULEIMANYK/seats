@@ -11,6 +11,9 @@ create table if not exists listings (
   slug            text not null unique,
   name            text not null,
   url             text not null,
+  -- Canonical hostname (no www, lowercased). Dedupe happens here rather than
+  -- on `url`: acme.com/a and acme.com/b are the same company buying two slots.
+  domain          text not null,
   tagline         text not null,
   logo_url        text,
   email           text not null,
@@ -45,6 +48,10 @@ create table if not exists listings (
 create index if not exists listings_rank_idx
   on listings (price_cents desc, tier_since asc, id asc)
   where status in ('active','past_due');
+
+create unique index if not exists listings_domain_live_idx
+  on listings (domain)
+  where status in ('active','past_due','grace','pending');
 
 create index if not exists listings_manage_token_idx on listings (manage_token);
 create index if not exists listings_subscription_idx on listings (polar_subscription_id);
@@ -163,3 +170,20 @@ $$;
 alter table listings   enable row level security;
 alter table clicks     enable row level security;
 alter table rank_events enable row level security;
+
+-- ---------------------------------------------------------------------------
+-- Grants. The app talks to Postgres only as service_role, which bypasses RLS.
+-- Being explicit here rather than leaning on default privileges — those differ
+-- between a local stack and a hosted project, and the difference shows up as
+-- "permission denied for view board" at runtime.
+--
+-- anon and authenticated are deliberately given nothing: the anon key should
+-- be inert even if it leaks into a browser bundle.
+-- ---------------------------------------------------------------------------
+grant usage on schema public to service_role;
+grant select, insert, update, delete on all tables in schema public to service_role;
+grant usage, select on all sequences in schema public to service_role;
+grant execute on all functions in schema public to service_role;
+
+revoke all on all tables in schema public from anon, authenticated;
+revoke all on all functions in schema public from anon, authenticated;

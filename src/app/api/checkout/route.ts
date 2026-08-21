@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { polar, siteUrl } from "@/lib/polar";
-import { makeSlug, normalizeUrl } from "@/lib/slug";
+import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
 import { BOARD_SIZE, isValidTier, productIdForCents } from "@/lib/tiers";
 
 export const runtime = "nodejs";
@@ -46,17 +46,23 @@ export async function POST(request: Request) {
 
   const supabase = db();
 
-  // The same URL can't hold two slots — that would just be buying extra space.
+  const domain = canonicalDomain(url);
+  if (!domain) {
+    return NextResponse.json({ error: "A valid http(s) URL is required" }, { status: 400 });
+  }
+
+  // One slot per company. Matching on domain rather than the full URL, so
+  // acme.com/a and acme.com/b can't quietly occupy two ranks.
   const { data: existing } = await supabase
     .from("listings")
     .select("id")
-    .eq("url", url)
+    .eq("domain", domain)
     .in("status", ["active", "past_due", "grace"])
     .maybeSingle();
 
   if (existing) {
     return NextResponse.json(
-      { error: "That URL is already on the board. Use your manage link to change price." },
+      { error: "That domain is already on the board. Use your manage link to change price." },
       { status: 409 },
     );
   }
@@ -85,6 +91,7 @@ export async function POST(request: Request) {
       slug: makeSlug(name),
       name,
       url,
+      domain,
       tagline,
       email,
       price_cents: cents,

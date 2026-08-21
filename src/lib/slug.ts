@@ -20,7 +20,19 @@ export function normalizeUrl(input: string): string | null {
     const parsed = new URL(withScheme);
     if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return null;
     if (!parsed.hostname.includes(".")) return null;
-    return parsed.toString();
+
+    // URL.toString() appends "/" to a bare host; strip it so the same site
+    // typed two different ways stores identically.
+    return parsed.toString().replace(/\/$/, "");
+  } catch {
+    return null;
+  }
+}
+
+/** Canonical hostname used for one-slot-per-company dedupe. */
+export function canonicalDomain(url: string): string | null {
+  try {
+    return new URL(url).hostname.toLowerCase().replace(/^www\./, "");
   } catch {
     return null;
   }

@@ -33,8 +33,8 @@ field: "take #12 for $99" is one click and no arithmetic.
 
 ## Setup
 
-**1. Supabase** — create a project, then run `supabase/schema.sql` in the SQL
-editor. It creates the tables, the `board` view (where rank is computed), and
+**1. Supabase** — create a project, then run
+`supabase/migrations/20260821000000_init.sql` in the SQL editor. It creates the tables, the `board` view (where rank is computed), and
 `activate_listing()` (which enforces the 100-slot cap under an advisory lock,
 so two simultaneous payments can't both claim the same rank).
 
@@ -64,6 +64,21 @@ Put the signing secret in `POLAR_WEBHOOK_SECRET`.
 ```bash
 npm run dev
 ```
+
+### Running it entirely locally
+
+No hosted accounts needed to see the board work — the Supabase CLI runs the
+whole stack in Docker:
+
+```bash
+supabase start          # prints the local API URL + service role key
+supabase db reset       # applies migrations, then seeds 18 demo listings
+npm run dev
+```
+
+Put the printed values in `.env.local` (`NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`).
+Everything works locally except checkout and climbing, which need real Polar
+credentials. Studio is at `http://127.0.0.1:54323`.
 
 For local webhook testing, tunnel with `ngrok http 3000` and point the Polar
 webhook at the tunnel — the board only ever goes live off a verified event.
@@ -120,6 +135,13 @@ traffic, and one on the front page ends the run), and OG image generation.
 
 ## Tested
 
+- Runs end-to-end against a local Supabase stack: board renders real data,
+  the click tracker redirects and records, the manage page shows rank, clicks
+  and cost-per-click.
+- Input validation, one-slot-per-domain dedupe (exact, `www.`, trailing slash
+  and sub-path spellings all collapse to the same domain), cron auth (401 without
+  the bearer token) and webhook signature rejection (403) all verified live.
+- Failed checkouts clean up their pending row — no orphans left behind.
 - Schema runs clean on Postgres 16.
 - Ranking, the tie-break, and the 100-slot cap were exercised with 102 listings:
   a floor-price latecomer is correctly refused a slot, and a higher payer takes
