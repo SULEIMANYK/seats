@@ -12,20 +12,27 @@ import { BOARD_SIZE, formatPrice, tierToBeat } from "@/lib/tiers";
  * Size is still the reward — #1 is the widest card and sits dead centre — but
  * every tier is budgeted in rows rather than pixels.
  *
- *   rows 1-3    #1 (6 cols) flanked by #2 and #3 (3 cols each)
- *   rows 4-5    #4-#9      six medium cards, 2 cols x 2 rows
- *   rows 6-7    #10-#21    twelve compact cards, 2 cols x 1 row
- *   rows 8-14   #22-#100   seventy-nine tiles, 1 col x 1 row
+ * Six size tiers, so paying more visibly buys more of the page rather than
+ * just a lower number. The budget is exact: 12 cols x 16 rows = 192 cells,
+ * and the tiers below consume all 192.
+ *
+ *   #1        6 x 4 = 24    centre of the top row
+ *   #2-#3     3 x 4 = 24    flanking it
+ *   #4-#6     4 x 2 = 24
+ *   #7-#12    2 x 2 = 24
+ *   #13-#20   2 x 1 = 16
+ *   #21-#100  1 x 1 = 80
  */
-export const ROWS = 14;
+export const ROWS = 16;
 
-type Size = "hero" | "podium" | "medium" | "compact" | "tiny";
+type Size = "hero" | "podium" | "large" | "medium" | "compact" | "tiny";
 
 function sizeFor(rank: number): Size {
   if (rank === 1) return "hero";
   if (rank <= 3) return "podium";
-  if (rank <= 9) return "medium";
-  if (rank <= 21) return "compact";
+  if (rank <= 6) return "large";
+  if (rank <= 12) return "medium";
+  if (rank <= 20) return "compact";
   return "tiny";
 }
 
@@ -36,23 +43,23 @@ function sizeFor(rank: number): Size {
  */
 function spanFor(rank: number, size: Size) {
   if (rank === 1) {
-    return "col-span-4 row-span-3 md:col-start-4 md:col-span-6 md:row-start-1 md:row-span-3";
+    return "col-span-4 row-span-3 md:col-start-4 md:col-span-6 md:row-start-1 md:row-span-4";
   }
   if (rank === 2) {
-    return "col-span-2 row-span-2 md:col-start-1 md:col-span-3 md:row-start-1 md:row-span-3";
+    return "col-span-2 row-span-2 md:col-start-1 md:col-span-3 md:row-start-1 md:row-span-4";
   }
   if (rank === 3) {
-    return "col-span-2 row-span-2 md:col-start-10 md:col-span-3 md:row-start-1 md:row-span-3";
+    return "col-span-2 row-span-2 md:col-start-10 md:col-span-3 md:row-start-1 md:row-span-4";
   }
+  if (size === "large") return "col-span-4 row-span-2";
   if (size === "medium") return "col-span-2 row-span-2";
   if (size === "compact") return "col-span-2";
   return "col-span-1";
 }
 
+/** Served from our own origin, with a generated letter tile as the fallback. */
 function faviconFor(url: string) {
-  return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(
-    displayDomain(url),
-  )}&sz=128`;
+  return `/api/icon?domain=${encodeURIComponent(displayDomain(url))}`;
 }
 
 function Logo({ row, className }: { row: BoardRow; className: string }) {
@@ -61,7 +68,9 @@ function Logo({ row, className }: { row: BoardRow; className: string }) {
     <img
       src={row.logo_url ?? faviconFor(row.url)}
       alt=""
-      loading="lazy"
+      // Not lazy: the board never scrolls, so every icon is above the fold.
+      // Deferring them only delays the whole page.
+      fetchPriority="high"
       className={`shrink-0 rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge ${className}`}
     />
   );
@@ -71,7 +80,8 @@ function FilledBox({ row }: { row: BoardRow }) {
   const next = tierToBeat(row.price_cents);
   const size = sizeFor(row.rank);
   const featured = row.rank <= 3;
-  const big = size === "hero" || size === "podium";
+  const withTagline = size === "hero" || size === "podium" || size === "large";
+  const withFooter = size === "hero" || size === "podium";
 
   return (
     <a
@@ -119,23 +129,42 @@ function FilledBox({ row }: { row: BoardRow }) {
           <span className="truncate text-[11px] font-medium">{row.name}</span>
         </div>
       ) : (
-        <div className={`min-w-0 ${big ? "mt-2" : "mt-auto"}`}>
-          <Logo row={row} className={`mb-1.5 ${size === "hero" ? "size-10" : size === "podium" ? "size-8" : "size-6"}`} />
+        <div className={`min-w-0 ${withFooter ? "mt-2" : "mt-auto"}`}>
+          <Logo
+            row={row}
+            className={`mb-1.5 ${
+              size === "hero"
+                ? "size-10"
+                : size === "podium"
+                  ? "size-8"
+                  : size === "large"
+                    ? "size-7"
+                    : "size-6"
+            }`}
+          />
           <p
             className={`truncate font-semibold tracking-tight ${
-              size === "hero" ? "text-xl" : size === "podium" ? "text-[15px]" : "text-[13px]"
+              size === "hero"
+                ? "text-xl"
+                : size === "podium"
+                  ? "text-[15px]"
+                  : size === "large"
+                    ? "text-sm"
+                    : "text-[13px]"
             }`}
           >
             {row.name}
           </p>
 
-          {big && (
-            <p className={`mt-0.5 line-clamp-2 text-muted ${size === "hero" ? "text-[13px]" : "text-xs"}`}>
+          {withTagline && (
+            <p
+              className={`mt-0.5 text-muted ${size === "hero" ? "line-clamp-2 text-[13px]" : size === "podium" ? "line-clamp-2 text-xs" : "line-clamp-1 text-xs"}`}
+            >
               {row.tagline}
             </p>
           )}
 
-          {!big && (
+          {!withFooter && (
             <p className="tnum mt-1 truncate text-[10px] text-muted/80">
               {row.clicks_30d.toLocaleString()} clicks
             </p>
@@ -143,7 +172,7 @@ function FilledBox({ row }: { row: BoardRow }) {
         </div>
       )}
 
-      {big && (
+      {withFooter && (
         <p className="tnum mt-auto truncate pt-2 text-[10px] text-muted/80">
           {displayDomain(row.url)} · {row.clicks_30d.toLocaleString()} clicks
         </p>
@@ -188,7 +217,7 @@ export function BoardGrid({ rows, floorCents }: { rows: BoardRow[]; floorCents: 
 
   return (
     <div
-      className="relative z-10 grid min-h-0 flex-1 auto-rows-[minmax(0,3.5rem)] grid-cols-4 gap-1.5 [grid-auto-flow:dense] md:auto-rows-auto md:grid-cols-12 md:grid-rows-[repeat(14,minmax(0,1fr))] md:gap-2"
+      className="relative z-10 grid min-h-0 flex-1 auto-rows-[minmax(0,3.5rem)] grid-cols-4 gap-1.5 [grid-auto-flow:dense] md:auto-rows-auto md:grid-cols-12 md:grid-rows-[repeat(16,minmax(0,1fr))] md:gap-2"
     >
       {rows.map((row) => (
         <FilledBox key={row.id} row={row} />
