@@ -1,24 +1,34 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #08080a;
-  --panel: #101014;
-  --panel-hover: #16161c;
-  --border: #22222b;
-  --fg: #f4f4f6;
-  --muted: #8b8b98;
-  --gold: #f5b544;
-  --accent: #6d8bff;
+  /* Warm near-black rather than pure black — pure #000 makes borders look
+     harsh and flattens everything on top of it. */
+  --bg: #0b0b0e;
+  --bg-lift: #101015;
+  --panel: rgba(255, 255, 255, 0.028);
+  --panel-hover: rgba(255, 255, 255, 0.055);
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --fg: #f7f7f8;
+  --muted: #83838f;
+  --faint: rgba(255, 255, 255, 0.05);
+  --gold: #f0b429;
+  --gold-soft: rgba(240, 180, 41, 0.14);
+  --accent: #7c8cff;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-bg-lift: var(--bg-lift);
   --color-panel: var(--panel);
   --color-panel-hover: var(--panel-hover);
   --color-edge: var(--border);
+  --color-edge-strong: var(--border-strong);
   --color-fg: var(--fg);
   --color-muted: var(--muted);
+  --color-faint: var(--faint);
   --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
   --color-accent: var(--accent);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
@@ -35,7 +45,23 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Numbers in the board should line up column-wise. */
+/* A single warm light source behind the top of the board, so the front row
+   sits in the brightest part of the page and the tail falls away into dark. */
+.stage::before {
+  content: "";
+  position: fixed;
+  inset: -20% 0 auto 0;
+  height: 70vh;
+  background: radial-gradient(
+    58% 50% at 50% 0%,
+    rgba(240, 180, 41, 0.10) 0%,
+    rgba(124, 140, 255, 0.05) 38%,
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
 .tnum {
   font-variant-numeric: tabular-nums;
 }
