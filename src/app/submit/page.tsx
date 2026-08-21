@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SubmitForm } from "@/components/SubmitForm";
+import { SubmitForm, type PreviewRow } from "@/components/SubmitForm";
 import { SITE } from "@/lib/config";
 import { db } from "@/lib/db";
 import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
@@ -13,37 +13,42 @@ export default async function SubmitPage({
 }) {
   const { cents } = await searchParams;
 
-  // On a full board the floor is whatever clears #100.
-  let cut: { price_cents: number } | null = null;
+  // The current board, so the price picker can show what rank each tier
+  // would actually buy and who it would pass — not just a list of numbers.
+  let rows: PreviewRow[] = [];
   try {
     const { data } = await db()
       .from("board")
-      .select("price_cents")
-      .eq("rank", BOARD_SIZE)
-      .maybeSingle();
-    cut = data;
+      .select("rank, name, price_cents")
+      .order("rank", { ascending: true })
+      .limit(BOARD_SIZE)
+      .returns<PreviewRow[]>();
+    rows = data ?? [];
   } catch (err) {
-    console.error("cut lookup failed", err);
+    console.error("board lookup failed", err);
   }
 
+  const cut = rows.find((r) => r.rank === BOARD_SIZE) ?? null;
   const minCents = cut ? (tierToBeat(cut.price_cents)?.cents ?? FLOOR_CENTS) : FLOOR_CENTS;
   const requested = Number(cents);
   const defaultCents = Number.isFinite(requested) && requested >= minCents ? requested : minCents;
 
   return (
-    <main className="mx-auto w-full max-w-md px-4 pt-14 pb-24">
-      <Link href="/" className="text-sm text-muted hover:text-fg">
+    <main className="stage relative mx-auto w-full max-w-5xl px-4 pt-14 pb-24 sm:px-6">
+      <Link href="/" className="relative z-10 text-sm text-muted transition hover:text-fg">
         ← back to the board
       </Link>
 
-      <h1 className="mt-6 text-2xl font-semibold tracking-tight">Claim a slot</h1>
-      <p className="mt-2 mb-8 text-sm text-muted">
-        {cut
-          ? `The board is full — ${formatPrice(minCents)}/mo or more gets you on, and pushes #${BOARD_SIZE} off.`
-          : `Pick your price. Your ${SITE.noun} goes live the moment payment clears.`}
-      </p>
+      <header className="relative z-10 mt-6 mb-10">
+        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Claim a slot</h1>
+        <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
+          {cut
+            ? `The board is full — ${formatPrice(minCents)}/mo or more gets you on, and pushes #${BOARD_SIZE} off.`
+            : `Pick your price, see your rank. Your ${SITE.noun} goes live the moment payment clears.`}
+        </p>
+      </header>
 
-      <SubmitForm minCents={minCents} defaultCents={defaultCents} />
+      <SubmitForm rows={rows} minCents={minCents} defaultCents={defaultCents} />
     </main>
   );
 }

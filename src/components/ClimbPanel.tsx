@@ -2,21 +2,27 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { TIERS } from "@/lib/tiers";
+
+type TierRank = {
+  cents: number;
+  label: string;
+  rank: number;
+};
 
 export function ClimbPanel({
   token,
-  currentCents,
+  tierRanks,
+  currentRank,
 }: {
   token: string;
-  currentCents: number;
+  tierRanks: TierRank[];
+  /** Where the listing sits right now, so we can spot climbs that buy nothing. */
+  currentRank: number | null;
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<number | null>(null);
-
-  const higher = TIERS.filter((t) => t.cents > currentCents);
 
   async function climb(cents: number) {
     setBusy(cents);
@@ -40,41 +46,58 @@ export function ClimbPanel({
     router.refresh();
   }
 
-  if (higher.length === 0) {
+  if (tierRanks.length === 0) {
     return (
-      <p className="text-sm text-muted">
+      <div className="rounded-2xl border border-gold/25 bg-gold-soft px-4 py-3.5 text-[13px] text-gold">
         You&apos;re at the top price. Nobody can outpay you — they can only match and wait.
-      </p>
+      </div>
     );
   }
 
   return (
     <div className="space-y-3">
-      <p className="text-xs text-muted">
+      <p className="text-[11px] text-muted">
         You&apos;re charged the difference for the rest of this month, and your new rank is
         live immediately.
       </p>
 
-      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-        {higher.map((tier) => (
-          <button
-            key={tier.cents}
-            onClick={() => climb(tier.cents)}
-            disabled={busy !== null}
-            className="tnum rounded-lg border border-edge bg-panel px-2 py-2.5 text-sm transition hover:border-accent disabled:opacity-40"
-          >
-            {busy === tier.cents ? "…" : tier.label}
-          </button>
-        ))}
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+        {tierRanks.map((tier) => {
+          const top = tier.rank <= 3;
+          // Prices are a ladder, ranks are not: paying more can tie with someone
+          // who has held that price longer, leaving you exactly where you were.
+          // Charging for that without saying so would be a con.
+          const pointless = currentRank !== null && tier.rank >= currentRank;
+          return (
+            <button
+              key={tier.cents}
+              onClick={() => climb(tier.cents)}
+              disabled={busy !== null || pointless}
+              title={pointless ? "This price would not move you up" : undefined}
+              className={`flex flex-col items-start gap-0.5 rounded-xl border px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0 ${
+                top
+                  ? "border-gold/25 bg-gold-soft hover:border-gold/50"
+                  : "border-edge bg-panel hover:border-edge-strong hover:bg-panel-hover"
+              }`}
+            >
+              <span className={`tnum text-sm font-semibold ${top ? "text-gold" : "text-fg"}`}>
+                {busy === tier.cents ? "…" : `${tier.label}/mo`}
+              </span>
+              <span className={`tnum text-[11px] ${top ? "text-gold/70" : "text-muted"}`}>
+                → {pointless ? "no change" : `#${tier.rank}`}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {result !== null && (
-        <p className="rounded-lg border border-gold/40 bg-gold/5 px-3 py-2 text-sm text-gold">
-          Done — you&apos;re now #{result}.
+        <p className="tnum rounded-xl border border-gold/25 bg-gold-soft px-3 py-2.5 text-[13px] text-gold">
+          You&apos;re on the move — now #{result}.
         </p>
       )}
       {error && (
-        <p className="rounded-lg border border-gold/40 bg-gold/5 px-3 py-2 text-sm text-gold">
+        <p className="rounded-xl border border-edge-strong bg-panel px-3 py-2.5 text-[13px] text-fg">
           {error}
         </p>
       )}
