@@ -149,7 +149,7 @@ export default async function ManagePage({
   return (
     <main className="stage relative mx-auto w-full max-w-lg px-4 pt-14 pb-24 sm:px-6">
       <Link href="/" className="relative z-10 text-sm text-muted transition hover:text-fg">
-        ← back to the board
+        ← back to the house
       </Link>
 
       <header className="relative z-10 mt-6 mb-8 flex items-center justify-between gap-3">

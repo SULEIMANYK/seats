@@ -5,7 +5,7 @@ export const SITE = {
   /** What the board lists. Appears throughout the copy. */
   noun: "product",
   nounPlural: "products",
-  tagline: "100 slots. What you pay decides your rank.",
+  tagline: "100 seats. What you pay decides your rank.",
   description:
-    "The front row is 100 slots wide. Pick your monthly price, take your rank, and climb whenever you want. No ads, no algorithm — just the board.",
+    "A house of 100 seats. Pick your monthly price, take your seat, and move forward whenever you want. No ads, no algorithm — just the room.",
 } as const;

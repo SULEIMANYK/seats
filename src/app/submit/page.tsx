@@ -36,11 +36,11 @@ export default async function SubmitPage({
   return (
     <main className="stage relative mx-auto w-full max-w-5xl px-4 pt-14 pb-24 sm:px-6">
       <Link href="/" className="relative z-10 text-sm text-muted transition hover:text-fg">
-        ← back to the board
+        ← back to the house
       </Link>
 
       <header className="relative z-10 mt-6 mb-10">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Claim a slot</h1>
+        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Take a seat</h1>
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
           {cut
             ? `The board is full — ${formatPrice(minCents)}/mo or more gets you on, and pushes #${BOARD_SIZE} off.`

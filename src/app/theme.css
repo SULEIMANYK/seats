@@ -49,22 +49,32 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Warm wash behind the top of the page so the front row sits in light and
-   the tail settles onto plain paper. Far subtler than the dark version —
-   on white, a gradient this size reads as a stain if pushed. */
+/* Light thrown from the stage onto the house: a soft cone that lands on the
+   front row and falls away toward the back, so the room reads as lit from one
+   source rather than evenly flooded. */
 .stage::before {
   content: "";
   position: fixed;
-  inset: -10% 0 auto 0;
-  height: 60vh;
+  inset: 0 0 auto 0;
+  height: 72vh;
   background: radial-gradient(
-    55% 50% at 50% 0%,
-    rgba(232, 200, 119, 0.22) 0%,
-    rgba(61, 61, 214, 0.05) 45%,
-    transparent 75%
+    46% 62% at 50% -4%,
+    rgba(232, 200, 119, 0.30) 0%,
+    rgba(232, 200, 119, 0.13) 34%,
+    rgba(61, 61, 214, 0.04) 58%,
+    transparent 80%
   );
   pointer-events: none;
   z-index: 0;
+}
+
+/* The stage itself: dark boards, with the footlights spilling off the front
+   edge. Everything above the house is this one object. */
+.boards {
+  background: linear-gradient(180deg, #16161c 0%, #0e0e13 100%);
+  box-shadow:
+    0 1px 0 rgba(232, 200, 119, 0.55),
+    0 14px 40px -18px rgba(20, 20, 26, 0.55);
 }
 
 .tnum {
