@@ -1,69 +1,108 @@
-import Image from "next/image";
+import Link from "next/link";
+import { BoardRow } from "@/components/BoardRow";
+import { SITE } from "@/lib/config";
+import { db, type BoardRow as Row } from "@/lib/db";
+import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
 
-export default function Home() {
+// The board changes whenever someone pays, so never serve it stale.
+export const dynamic = "force-dynamic";
+
+async function getBoard(): Promise<Row[]> {
+  try {
+    const { data, error } = await db()
+      .from("board")
+      .select("*")
+      .limit(BOARD_SIZE)
+      .returns<Row[]>();
+
+    if (error) {
+      console.error("board query failed", error);
+      return [];
+    }
+    return data ?? [];
+  } catch (err) {
+    // Missing config shouldn't 500 the homepage — show the empty board instead.
+    console.error("board unavailable", err);
+    return [];
+  }
+}
+
+export default async function Home() {
+  const rows = await getBoard();
+  const taken = rows.length;
+  const open = BOARD_SIZE - taken;
+
+  // On a full board the entry price is whatever clears #100.
+  const cut = rows[BOARD_SIZE - 1]?.price_cents;
+  const entry = cut ? (tierToBeat(cut)?.cents ?? null) : FLOOR_CENTS;
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="mx-auto w-full max-w-3xl px-4 pt-14 pb-24">
+      <header className="mb-10 text-center">
+        <h1 className="text-4xl font-semibold tracking-tight">
+          front<span className="text-muted">row</span>
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-balance text-muted">{SITE.description}</p>
+
+        <div className="mt-6 flex items-center justify-center gap-2 text-sm">
+          <Link
+            href={entry ? `/submit?cents=${entry}` : "/submit"}
+            className="rounded-lg bg-fg px-4 py-2 font-medium text-bg transition hover:opacity-90"
+          >
+            {open > 0
+              ? `Claim a slot — from ${formatPrice(entry ?? FLOOR_CENTS)}/mo`
+              : `Board is full — beat #${BOARD_SIZE}`}
+          </Link>
+        </div>
+
+        <p className="tnum mt-3 text-xs text-muted">
+          {taken} of {BOARD_SIZE} slots taken
+          {open > 0 ? ` · ${open} open` : " · full"}
+        </p>
+      </header>
+
+      {rows.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-edge p-10 text-center">
+          <p className="font-medium">The board is empty.</p>
+          <p className="mt-1 text-sm text-muted">
+            First {SITE.noun} on takes #1 for {formatPrice(FLOOR_CENTS)}/mo.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      ) : (
+        <ol className="space-y-1.5">
+          {rows.map((row) => (
+            <BoardRow key={row.id} row={row} />
+          ))}
+        </ol>
+      )}
+
+      <section className="mt-14 grid gap-6 border-t border-edge pt-10 text-sm text-muted sm:grid-cols-3">
+        <div>
+          <h2 className="mb-1.5 font-medium text-fg">Your price is your rank</h2>
+          <p>
+            Pick a monthly price. Pay more than the {SITE.noun} above you and you take its
+            spot. Same price? Whoever got there first stays ahead.
+          </p>
         </div>
-      </main>
-    </div>
+        <div>
+          <h2 className="mb-1.5 font-medium text-fg">Climb any time</h2>
+          <p>
+            Raise your price from your manage link and you move within seconds. You&apos;re only
+            charged the difference for the rest of the month.
+          </p>
+        </div>
+        <div>
+          <h2 className="mb-1.5 font-medium text-fg">Only 100 slots</h2>
+          <p>
+            When the board is full, getting on means clearing #{BOARD_SIZE}. Whoever it
+            displaces gets 7 days to come back before the slot is gone.
+          </p>
+        </div>
+      </section>
+
+      <footer className="mt-12 text-center text-xs text-muted">
+        <span>{SITE.domain}</span>
+      </footer>
+    </main>
   );
 }
