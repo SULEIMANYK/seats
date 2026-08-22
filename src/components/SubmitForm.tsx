@@ -3,14 +3,14 @@
 import { useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
-import { PLANS, type PlanId } from "@/lib/plans";
+import { ROWS } from "@/lib/seating";
 import { formatPrice } from "@/lib/tiers";
 
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
-export function SubmitForm({ full }: { full: boolean }) {
-  const [plan, setPlan] = useState<PlanId>("listed");
+export function SubmitForm({ full, defaultCents }: { full: boolean; defaultCents: number }) {
+  const [cents, setCents] = useState(defaultCents);
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
 
@@ -39,7 +39,7 @@ export function SubmitForm({ full }: { full: boolean }) {
         tagline: form.get("tagline"),
         email: form.get("email"),
         category: form.get("category") || null,
-        plan,
+        cents,
       }),
     });
 
@@ -59,47 +59,39 @@ export function SubmitForm({ full }: { full: boolean }) {
 
   return (
     <div className="relative z-10 grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
-      <aside className="space-y-2.5 lg:order-2 lg:sticky lg:top-6 lg:self-start">
-        <p className="px-1 text-[11px] tracking-wide text-muted uppercase">Choose a plan</p>
+      <aside className="space-y-2 lg:order-2 lg:sticky lg:top-6 lg:self-start">
+        <p className="px-1 text-[11px] tracking-wide text-muted uppercase">Choose a row</p>
 
-        {PLANS.map((p) => {
-          const active = plan === p.id;
+        {ROWS.map((r) => {
+          const active = cents === r.askingCents;
+          const label = r.label.length <= 2 ? `Row ${r.label}` : r.label;
           return (
             <button
-              key={p.id}
+              key={r.label}
               type="button"
-              onClick={() => setPlan(p.id)}
-              className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
+              onClick={() => setCents(r.askingCents)}
+              className={`flex w-full items-center justify-between gap-3 rounded-xl border px-3.5 py-2.5 text-left transition ${
                 active
                   ? "border-gold-line bg-gold-soft card-shadow"
                   : "border-edge bg-panel hover:border-edge-strong"
               }`}
             >
-              <span className="flex items-baseline justify-between gap-2">
-                <span className="text-[14px] font-semibold">{p.name}</span>
-                <span className="tnum text-[14px] font-semibold">
-                  {formatPrice(p.cents)}
-                  <span className="text-[11px] font-normal text-muted">/mo</span>
+              <span className="text-[13px] font-medium">{label}</span>
+              <span className="flex items-center gap-2">
+                <span className="rounded-full bg-faint px-1.5 py-0.5 text-[10px] text-muted">
+                  {r.plan}
+                </span>
+                <span className="tnum text-[13px] font-semibold">
+                  {formatPrice(r.askingCents)}
                 </span>
               </span>
-              <span className="mt-0.5 block text-[12px] text-muted">{p.tagline}</span>
-              {active && (
-                <ul className="mt-3 space-y-1 border-t border-gold-line/40 pt-3">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex gap-1.5 text-[12px] leading-snug text-muted">
-                      <span className="text-gold">·</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              )}
             </button>
           );
         })}
 
         <p className="px-1 pt-1 text-[11px] leading-relaxed text-muted/80">
-          Every plan is ranked the same way — by clicks earned. Plans buy tools, never
-          position.
+          The row you pay for is the row you sit in, and it decides which tools come with
+          the seat. Move forward any time from your manage link.
         </p>
       </aside>
 
@@ -190,7 +182,7 @@ export function SubmitForm({ full }: { full: boolean }) {
           disabled={busy || full}
           className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
-          {full ? "House full" : busy ? "Starting checkout…" : `Continue — ${formatPrice(PLANS.find((p) => p.id === plan)!.cents)}/mo`}
+          {full ? "House full" : busy ? "Starting checkout…" : `Continue — ${formatPrice(cents)}/mo`}
         </button>
 
         <p className="text-center text-[11px] text-muted">

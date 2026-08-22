@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { polar, siteUrl } from "@/lib/polar";
 import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
-import { BOARD_SIZE, productIdForCents } from "@/lib/tiers";
+import { BOARD_SIZE, isValidTier, productIdForCents } from "@/lib/tiers";
+import { ROWS, rowForCents } from "@/lib/seating";
 import { isValidCategory } from "@/lib/categories";
-import { PLAN_BY_ID, isValidPlan } from "@/lib/plans";
+
 
 export const runtime = "nodejs";
 
@@ -15,7 +16,6 @@ type Body = {
   email?: string;
   cents?: number;
   category?: string;
-  plan?: string;
 };
 
 export async function POST(request: Request) {
@@ -29,9 +29,10 @@ export async function POST(request: Request) {
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
   const email = body.email?.trim().toLowerCase();
-  // Price comes from the chosen plan, never from the request body.
-  const plan = isValidPlan(body.plan) ? body.plan : "listed";
-  const cents = PLAN_BY_ID[plan].cents;
+  // Price is the row's asking price; the row also decides which tools come
+  // with it, so plan is derived rather than trusted from the request.
+  const cents = Number(body.cents);
+  const plan = ROWS[rowForCents(cents)].plan;
   // Optional — an uncategorised listing still belongs on the board.
   const category = isValidCategory(body.category) ? body.category : null;
   const url = body.url ? normalizeUrl(body.url) : null;
@@ -49,6 +50,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
   }
   const supabase = db();
+
+  if (!isValidTier(cents)) {
+    return NextResponse.json({ error: "Pick one of the listed prices" }, { status: 400 });
+  }
 
   const domain = canonicalDomain(url);
   if (!domain) {
