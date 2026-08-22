@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ClimbPanel } from "@/components/ClimbPanel";
 import { db, type Listing } from "@/lib/db";
+import { placeListings, seatIfPaying, type Placeable } from "@/lib/seating";
 import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
 import { formatPrice, TIERS, tierToBeat } from "@/lib/tiers";
@@ -21,16 +22,15 @@ const GOOGLE_CPC_HIGH = 8;
 async function loadStats(supabase: Supabase, listingId: string, graceUntil: string | null) {
   const since = new Date(Date.now() - 30 * 864e5).toISOString();
 
-  const [{ data: row }, { count: clicks30d }, { count: clicksTotal }, { data: prices }] =
+  const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }] =
     await Promise.all([
-      supabase.from("board").select("rank").eq("id", listingId).maybeSingle(),
+      supabase.from("board").select("id, price_cents, tier_since").returns<Placeable[]>(),
       supabase
         .from("clicks")
         .select("*", { count: "exact", head: true })
         .eq("listing_id", listingId)
         .gte("created_at", since),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("listing_id", listingId),
-      supabase.from("board").select("price_cents").returns<{ price_cents: number }[]>(),
     ]);
 
   const graceDaysLeft = graceUntil
@@ -38,11 +38,13 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
     : null;
 
   return {
-    rank: row?.rank as number | undefined,
+    // The seat the chart actually shows, not a price ordering — those two
+    // disagree, and the dashboard must not contradict the board.
+    seat: placeListings(seated ?? []).get(listingId),
+    seated: seated ?? [],
     clicks30d,
     clicksTotal,
     graceDaysLeft,
-    boardPrices: (prices ?? []).map((p) => p.price_cents),
   };
 }
 
@@ -110,7 +112,7 @@ export default async function ManagePage({
 
   if (!listing) notFound();
 
-  const { rank, clicks30d, clicksTotal, graceDaysLeft, boardPrices } = await loadStats(
+  const { seat, seated, clicks30d, clicksTotal, graceDaysLeft } = await loadStats(
     supabase,
     listing.id,
     listing.grace_until,
@@ -140,10 +142,10 @@ export default async function ManagePage({
   const tierRanks = TIERS.filter((t) => t.cents > listing.price_cents).map((t) => ({
     cents: t.cents,
     label: t.label,
-    rank: boardPrices.filter((p) => p >= t.cents).length + 1,
+    rank: seatIfPaying(t.cents, seated, listing.id),
   }));
 
-  const featured = !!rank && rank <= 3;
+  const featured = !!seat && seat <= 3;
   const next = tierToBeat(listing.price_cents);
 
   return (
@@ -215,8 +217,8 @@ export default async function ManagePage({
       {/* The retention story: where you stand and what it's buying you. */}
       <section className="relative z-10 mb-3 grid grid-cols-2 gap-3">
         <div className="rounded-2xl border border-edge bg-panel px-4 py-4">
-          <p className="text-[11px] text-muted">Rank</p>
-          <p className="tnum mt-1 text-3xl leading-none font-semibold">{rank ? `#${rank}` : "—"}</p>
+          <p className="text-[11px] text-muted">Seat</p>
+          <p className="tnum mt-1 text-3xl leading-none font-semibold">{seat ? `#${seat}` : "—"}</p>
         </div>
         <div className="rounded-2xl border border-edge bg-panel px-4 py-4">
           <p className="text-[11px] text-muted">Clicks · 30d</p>
@@ -257,7 +259,7 @@ export default async function ManagePage({
 
       <section className="relative z-10 mb-8">
         <h2 className="mb-3 text-[13px] font-semibold text-fg">How you appear on the board</h2>
-        {rank ? (
+        {seat ? (
           <a
             href={`/r/${listing.slug}`}
             target="_blank"
@@ -274,7 +276,7 @@ export default async function ManagePage({
                   featured ? "text-[28px] text-gold" : "text-[13px] text-muted"
                 }`}
               >
-                {rank}
+                {seat}
               </span>
               <span className="flex items-center gap-1">
                 {listing.status === "past_due" && (
@@ -314,7 +316,7 @@ export default async function ManagePage({
 
             {next && (
               <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
-                take #{rank} · {next.label}/mo
+                take seat {seat} · {next.label}/mo
               </span>
             )}
           </a>
@@ -328,12 +330,12 @@ export default async function ManagePage({
 
       <section className="relative z-10 mb-8">
         <h2 className="mb-3 text-[13px] font-semibold text-fg">
-          Climb — currently {formatPrice(listing.price_cents)}/mo{rank ? ` · #${rank}` : ""}
+          Climb — currently {formatPrice(listing.price_cents)}/mo{seat ? ` · seat ${seat}` : ""}
         </h2>
         <ClimbPanel
           token={listing.manage_token}
           tierRanks={tierRanks}
-          currentRank={rank ?? null}
+          currentRank={seat ?? null}
         />
       </section>
 

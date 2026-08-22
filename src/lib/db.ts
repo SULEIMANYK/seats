@@ -6,12 +6,15 @@ import { createClient } from "@supabase/supabase-js";
  * and every query in this app runs on the server.
  */
 export function db() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  // Read at runtime. NEXT_PUBLIC_* is inlined at build time, which meant a
+  // changed URL appeared to have no effect until the next build — the older
+  // name is still honoured so existing deployments keep working.
+  const url = process.env.SUPABASE_URL ?? process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!url || !key) {
     throw new Error(
-      "Missing NEXT_PUBLIC_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY — see .env.example",
+      "Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY — see .env.example",
     );
   }
 

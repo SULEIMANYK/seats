@@ -99,3 +99,25 @@ export function rowForSeat(seat: number): number {
   }
   return ROWS.length - 1;
 }
+
+/**
+ * The seat a listing would take if it paid `cents` right now.
+ *
+ * Every surface that quotes a position — the submit preview, the climb panel,
+ * the manage dashboard — must go through here. Quoting a seat computed any
+ * other way is how the board and the dashboard end up disagreeing.
+ */
+export function seatIfPaying(
+  cents: number,
+  existing: Placeable[],
+  selfId?: string,
+): number {
+  const others = selfId ? existing.filter((l) => l.id !== selfId) : existing;
+  const probe: Placeable = {
+    id: "__probe__",
+    price_cents: cents,
+    // A newcomer sits behind anyone already holding this price.
+    tier_since: new Date(8.64e15).toISOString(),
+  };
+  return placeListings([...others, probe]).get("__probe__") ?? BOARD_SIZE;
+}

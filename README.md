@@ -76,7 +76,7 @@ supabase db reset       # applies migrations, then seeds 18 demo listings
 npm run dev
 ```
 
-Put the printed values in `.env.local` (`NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321`).
+Put the printed values in `.env.local` (`SUPABASE_URL=http://127.0.0.1:54321`).
 Everything works locally except checkout and climbing, which need real Polar
 credentials. Studio is at `http://127.0.0.1:54323`.
 

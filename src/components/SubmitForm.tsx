@@ -2,11 +2,13 @@
 
 import { useMemo, useState } from "react";
 import { SITE } from "@/lib/config";
-import { formatPrice, TIERS } from "@/lib/tiers";
+import { ROWS, seatIfPaying } from "@/lib/seating";
+import { formatPrice } from "@/lib/tiers";
 
 /** Just enough of a board row to compute where a price would land. */
 export type PreviewRow = {
-  rank: number;
+  id: string;
+  tier_since: string;
   name: string;
   price_cents: number;
 };
@@ -104,7 +106,15 @@ export function SubmitForm({
   minCents: number;
   defaultCents: number;
 }) {
-  const available = useMemo(() => TIERS.filter((t) => t.cents >= minCents), [minCents]);
+  // Rows, not raw tiers. A price between two row prices buys nothing extra —
+  // $15 landed in the same row as $12, which reads as the form being broken.
+  const available = useMemo(
+    () =>
+      ROWS.map((r) => ({ cents: r.askingCents, label: formatPrice(r.askingCents), row: r.label }))
+        .filter((t) => t.cents >= minCents)
+        .reverse(),
+    [minCents],
+  );
 
   const [cents, setCents] = useState(
     available.some((t) => t.cents === defaultCents) ? defaultCents : available[0]?.cents,
@@ -115,12 +125,15 @@ export function SubmitForm({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // What rank each available price would actually buy right now, and who it bumps.
+  // What seat each price actually buys, computed the same way the chart
+  // places listings — quoting anything else makes the two disagree.
   const ranked = useMemo(
     () =>
       available.map((tier) => {
-        const rank = rows.filter((r) => r.price_cents >= tier.cents).length + 1;
-        const displaces = rows[rank - 1] ?? null;
+        const rank = seatIfPaying(tier.cents, rows);
+        // Who currently holds the seat you would take — not simply anyone at
+        // the same price, since matching a price seats you behind them.
+        const displaces = rows.find((r) => r.price_cents > tier.cents) ?? null;
         return { ...tier, rank, displaces };
       }),
     [available, rows],
@@ -183,7 +196,10 @@ export function SubmitForm({
             </>
           ) : (
             <>
-              Lands in an open slot at <span className="tnum font-medium text-fg">#{selected?.rank}</span> —
+              Seat <span className="tnum font-medium text-fg">{selected?.rank}</span> in{" "}
+              <span className="font-medium text-fg">
+                {selected && (selected.row.length <= 2 ? `Row ${selected.row}` : selected.row.toLowerCase())}
+              </span>
               nobody to pass.
             </>
           )}
@@ -256,7 +272,7 @@ export function SubmitForm({
           <div>
             <p className={labelCls}>Monthly price</p>
             <p className="mt-1 text-[13px] text-muted">
-              Higher price, higher rank. You can raise it any time.
+              Every row has its own price. Move forward any time.
             </p>
           </div>
 
@@ -295,7 +311,7 @@ export function SubmitForm({
                   </span>
 
                   <span className={`truncate text-[11px] ${featured ? "text-gold" : "text-muted"}`}>
-                    {featured ? "front row" : tier.displaces ? `passes ${tier.displaces.name}` : "open slot"}
+                    {tier.row.length <= 2 ? `Row ${tier.row}` : tier.row.toLowerCase()}
                   </span>
                 </button>
               );
