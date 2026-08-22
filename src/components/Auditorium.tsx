@@ -1,3 +1,6 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
@@ -15,9 +18,13 @@ import { formatPrice, SEAT_CENTS } from "@/lib/tiers";
  * #1 sits alone deliberately. Three equal boxes across the front row blurred
  * who had actually won.
  *
- * The plan itself — seat counts, row prices, sizes — lives in lib/seating so
- * placement and pricing cannot drift apart. Each row arcs like a real
- * auditorium: the middle sits further from the stage than the ends.
+ * The plan itself — seat counts, sizes, curves — lives in lib/seating. Each
+ * row arcs like a real auditorium: the middle sits further from the stage
+ * than the ends.
+ *
+ * Filtering dims rather than removes. Seat numbers are absolute — seat 12 is
+ * seat 12 whatever you are looking at — so pulling non-matching seats out
+ * would renumber the room and destroy the thing the chart is for.
  */
 
 /** Width of an aisle, in px. */
@@ -56,7 +63,7 @@ function iconFor(url: string) {
 
 /* ---------------------------------------------------------------- front row */
 
-function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
+function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: boolean; dimmed?: boolean }) {
 
   return (
     <a
@@ -68,7 +75,7 @@ function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
         apex
           ? "w-[clamp(13rem,30vw,24rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(232,200,119,0.5),0_18px_44px_-18px_rgba(154,107,5,0.45)]"
           : "w-[clamp(10rem,24vw,19rem)] border-gold-line card-shadow"
-      }`}
+      } ${dimmed ? "opacity-20 grayscale" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
         <span className={`tnum leading-none font-semibold text-gold ${apex ? "text-3xl" : "text-2xl"}`}>
@@ -119,7 +126,17 @@ function EmptyBox({ seat, cents, apex = false }: { seat: number; cents: number; 
 
 /* -------------------------------------------------------------------- seats */
 
-function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }) {
+function Seat({
+  row,
+  seat,
+  size,
+  dimmed,
+}: {
+  row: BoardRow;
+  seat: number;
+  size: number;
+  dimmed: boolean;
+}) {
   return (
     <a
       href={`/r/${row.slug}`}
@@ -127,7 +144,9 @@ function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }
       // Dofollow is a Growth feature; everyone else is nofollow.
       rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
       style={{ width: size, height: size }}
-      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift"
+      className={`group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift ${
+        dimmed ? "opacity-20 grayscale" : ""
+      }`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
@@ -179,6 +198,20 @@ function EmptySeat({ seat, size, cents }: { seat: number; size: number; cents: n
 /* ---------------------------------------------------------------- the house */
 
 export function Auditorium({ rows }: { rows: BoardRow[] }) {
+  const [active, setActive] = useState<string | null>(null);
+
+  // Only categories actually on the board — a chip that filters to nothing
+  // is worse than no chip.
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const r of rows) {
+      if (r.category) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
+    }
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [rows]);
+
+  const isDimmed = (row: BoardRow) => active !== null && row.category !== active;
+
   // Seats are assigned by price bracket, not by raw ordering, so a listing
   // never appears in a row it has not paid for.
   const seats = placeListings(rows);
@@ -195,7 +228,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
       {/* The royal box: one seat, alone, centred and lifted above the rest. */}
       <div className="flex w-full items-stretch justify-center">
         {bySeat.get(1) ? (
-          <Box row={bySeat.get(1)!} apex />
+          <Box row={bySeat.get(1)!} apex dimmed={isDimmed(bySeat.get(1)!)} />
         ) : (
           <EmptyBox seat={1} cents={SEAT_CENTS} apex />
         )}
@@ -205,16 +238,44 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
       <div className="flex w-full items-stretch justify-center gap-2 md:gap-3">
         {[2, 3].map((seat) =>
           bySeat.get(seat) ? (
-            <Box key={seat} row={bySeat.get(seat)!} />
+            <Box key={seat} row={bySeat.get(seat)!} dimmed={isDimmed(bySeat.get(seat)!)} />
           ) : (
             <EmptyBox key={seat} seat={seat} cents={SEAT_CENTS} />
           ),
         )}
       </div>
 
-      <p className="mt-0.5 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">
-        seats {rowOffset(2)}–{BOARD_SIZE}
-      </p>
+      {categories.length > 1 ? (
+        <div className="mt-0.5 mb-0.5 flex max-w-full flex-wrap items-center justify-center gap-1.5 overflow-x-auto">
+          <button
+            onClick={() => setActive(null)}
+            className={`rounded-full border px-2.5 py-1 text-[10px] whitespace-nowrap transition ${
+              active === null
+                ? "border-fg bg-fg text-bg-lift"
+                : "border-edge bg-panel text-muted hover:border-edge-strong"
+            }`}
+          >
+            All {rows.length}
+          </button>
+          {categories.map(([name, count]) => (
+            <button
+              key={name}
+              onClick={() => setActive(active === name ? null : name)}
+              className={`tnum rounded-full border px-2.5 py-1 text-[10px] whitespace-nowrap transition ${
+                active === name
+                  ? "border-fg bg-fg text-bg-lift"
+                  : "border-edge bg-panel text-muted hover:border-edge-strong"
+              }`}
+            >
+              {name} {count}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-0.5 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">
+          seats {rowOffset(2)}–{BOARD_SIZE}
+        </p>
+      )}
 
       {houseRows.map((row, i) => {
         const rowIndex = i + 2;
@@ -248,7 +309,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
                         className="shrink-0"
                       >
                         {listing ? (
-                          <Seat row={listing} seat={seat} size={row.sizePx} />
+                          <Seat row={listing} seat={seat} size={row.sizePx} dimmed={isDimmed(listing)} />
                         ) : (
                           <EmptySeat seat={seat} size={row.sizePx} cents={SEAT_CENTS} />
                         )}
