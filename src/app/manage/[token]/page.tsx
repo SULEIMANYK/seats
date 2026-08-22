@@ -2,6 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, type Listing } from "@/lib/db";
 import { placeListings, type Placeable } from "@/lib/seating";
+import { PLAN_BY_ID, atLeast, type PlanId } from "@/lib/plans";
+import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
 import { formatPrice } from "@/lib/tiers";
@@ -21,7 +23,7 @@ const GOOGLE_CPC_HIGH = 8;
 async function loadStats(supabase: Supabase, listingId: string, graceUntil: string | null) {
   const since = new Date(Date.now() - 30 * 864e5).toISOString();
 
-  const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }] =
+  const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }, { data: bench }, { data: abTest }] =
     await Promise.all([
       supabase.from("board").select("id, rank, name, clicks_7d").returns<(Placeable & { name: string; clicks_7d: number })[]>(),
       supabase
@@ -30,6 +32,8 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
         .eq("listing_id", listingId)
         .gte("created_at", since),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("listing_id", listingId),
+      supabase.from("category_benchmark").select("*").eq("id", listingId).maybeSingle(),
+      supabase.from("tagline_test").select("*").eq("id", listingId).maybeSingle(),
     ]);
 
   const graceDaysLeft = graceUntil
@@ -41,6 +45,8 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
     // disagree, and the dashboard must not contradict the board.
     seat: placeListings(seated ?? []).get(listingId),
     seated: seated ?? [],
+    bench: bench as { category_rank: number; category_size: number; category_avg_clicks: number } | null,
+    abTest: abTest as { variant_a: string; variant_b: string; clicks_a: number; clicks_b: number } | null,
     clicks30d,
     clicksTotal,
     graceDaysLeft,
@@ -111,7 +117,9 @@ export default async function ManagePage({
 
   if (!listing) notFound();
 
-  const { seat, clicks30d, clicksTotal, graceDaysLeft } = await loadStats(
+  const plan = (listing.plan ?? "listed") as PlanId;
+
+  const { seat, clicks30d, clicksTotal, graceDaysLeft, bench, abTest } = await loadStats(
     supabase,
     listing.id,
     listing.grace_until,
@@ -314,6 +322,57 @@ export default async function ManagePage({
           </div>
         )}
       </section>
+
+      {bench && bench.category_size > 1 && (
+        <section className="relative z-10 mb-8 rounded-2xl border border-edge bg-panel p-5 card-shadow">
+          <h2 className="text-[13px] font-semibold">Category standing</h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-muted">
+            You are <span className="tnum font-semibold text-fg">#{bench.category_rank}</span> of{" "}
+            <span className="tnum font-semibold text-fg">{bench.category_size}</span> in{" "}
+            <span className="font-semibold text-fg">{listing.category ?? "your category"}</span>.
+            The average listing there earned{" "}
+            <span className="tnum font-semibold text-fg">{bench.category_avg_clicks}</span> clicks
+            this week.
+          </p>
+          {!atLeast(plan, "pro") && (
+            <p className="mt-3 text-[12px] text-muted/80">
+              {PLAN_BY_ID.pro.name} adds UTM tagging, tagline testing and a weekly report.
+            </p>
+          )}
+        </section>
+      )}
+
+      {atLeast(plan, "pro") && abTest && (
+        <section className="relative z-10 mb-8 rounded-2xl border border-edge bg-panel p-5 card-shadow">
+          <h2 className="text-[13px] font-semibold">Tagline test</h2>
+          <div className="mt-3 space-y-2">
+            {[
+              { label: "A", text: abTest.variant_a, clicks: abTest.clicks_a },
+              { label: "B", text: abTest.variant_b, clicks: abTest.clicks_b },
+            ].map((v) => {
+              const winning =
+                v.clicks > 0 && v.clicks >= Math.max(abTest.clicks_a, abTest.clicks_b);
+              return (
+                <div
+                  key={v.label}
+                  className={`flex items-start gap-3 rounded-xl border p-3 ${
+                    winning ? "border-gold-line bg-gold-soft" : "border-edge"
+                  }`}
+                >
+                  <span className="tnum text-[11px] font-semibold text-muted">{v.label}</span>
+                  <span className="flex-1 text-[13px]">{v.text}</span>
+                  <span className="tnum text-[13px] font-semibold">{v.clicks}</span>
+                </div>
+              );
+            })}
+          </div>
+          <p className="mt-3 text-[12px] text-muted/80">
+            Both are shown at random. Whichever earns more clicks is the one to keep.
+          </p>
+        </section>
+      )}
+
+      {atLeast(plan, "growth") && <BadgeEmbed slug={listing.slug} />}
 
       <section className="relative z-10 border-t border-edge pt-6 text-sm">
         <h2 className="mb-2 font-semibold tracking-tight text-fg">Billing</h2>

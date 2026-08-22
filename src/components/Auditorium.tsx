@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
 import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
+import { atLeast } from "@/lib/plans";
 import { formatPrice, SEAT_CENTS } from "@/lib/tiers";
 
 /**
@@ -61,7 +62,8 @@ function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
     <a
       href={`/r/${row.slug}`}
       target="_blank"
-      rel="noopener nofollow"
+      // Dofollow is a Growth feature; everyone else is nofollow.
+      rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
           ? "w-[clamp(13rem,30vw,24rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(232,200,119,0.5),0_18px_44px_-18px_rgba(154,107,5,0.45)]"
@@ -122,7 +124,8 @@ function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }
     <a
       href={`/r/${row.slug}`}
       target="_blank"
-      rel="noopener nofollow"
+      // Dofollow is a Growth feature; everyone else is nofollow.
+      rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
       style={{ width: size, height: size }}
       className="group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift"
     >

@@ -89,7 +89,7 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             href="/submit"
             className="rounded-xl bg-[#f7f7f5] px-4 py-2 text-[13px] font-semibold text-[#14141a] transition hover:-translate-y-0.5"
           >
-            {open > 0 ? `Take a seat — ${formatPrice(SEAT_CENTS)}/mo` : "House full"}
+            {open > 0 ? `Take a seat — from ${formatPrice(SEAT_CENTS)}/mo` : "House full"}
           </Link>
         </div>
       </header>
@@ -106,10 +106,10 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
 
           <div className="mt-6 grid gap-8 text-[13px] leading-relaxed text-muted sm:grid-cols-3">
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">One price for everyone</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">Pay for tools, not position</h3>
               <p>
-                Every seat costs the same — {formatPrice(SEAT_CENTS)} a month. What you pay
-                buys a place on the board, not a position on it.
+                From {formatPrice(SEAT_CENTS)} a month. Plans buy tools — attribution,
+                benchmarking, an embeddable badge — never position.
               </p>
             </div>
             <div>

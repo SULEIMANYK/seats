@@ -20,13 +20,14 @@ export type Tier = {
  * between neighbours: close enough that climbing one rung feels affordable,
  * far enough apart that each rung buys a real move up the board.
  */
-/**
- * One price. The subscription buys a place on the board; where you sit is
- * earned by clicks, so there is nothing to choose between.
- */
+/** Entry price. Plans live in lib/plans; this is the cheapest of them. */
 export const SEAT_CENTS = 1900;
 
-export const TIERS: Tier[] = [{ cents: SEAT_CENTS, label: "$19" }];
+export const TIERS: Tier[] = [
+  { cents: 1900, label: "$19" },
+  { cents: 4900, label: "$49" },
+  { cents: 14900, label: "$149" },
+];
 
 export const FLOOR_CENTS = SEAT_CENTS;
 export { BOARD_SIZE } from "./seating";

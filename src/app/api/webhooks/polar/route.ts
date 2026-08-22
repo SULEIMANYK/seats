@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { validateEvent, WebhookVerificationError } from "@polar-sh/sdk/webhooks";
 import { db } from "@/lib/db";
 import { centsForProductId } from "@/lib/tiers";
+import { planForCents } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -85,7 +86,14 @@ export async function POST(request: Request) {
       if (current && current.price_cents !== cents) {
         await supabase
           .from("listings")
-          .update({ price_cents: cents, tier_since: new Date().toISOString(), updated_at: new Date().toISOString() })
+          .update({
+            price_cents: cents,
+            // Plan follows the product, so an upgrade taken in Polar's portal
+            // grants the features here without a separate sync.
+            plan: planForCents(cents),
+            tier_since: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
           .eq("polar_subscription_id", sub.id);
       }
       break;

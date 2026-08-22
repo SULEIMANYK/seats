@@ -10,7 +10,8 @@ import { Polar } from "@polar-sh/sdk";
 
 // Keep in step with TIERS in src/lib/tiers.ts.
 // One price: the subscription buys a place, not a position.
-const TIERS = [1900];
+// Listed, Pro, Growth. Rank is earned in all three; these buy tools.
+const TIERS = [1900, 4900, 14900];
 
 const accessToken = process.env.POLAR_ACCESS_TOKEN;
 if (!accessToken) {

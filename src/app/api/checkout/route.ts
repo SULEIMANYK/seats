@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { polar, siteUrl } from "@/lib/polar";
 import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
-import { BOARD_SIZE, SEAT_CENTS, productIdForCents } from "@/lib/tiers";
+import { BOARD_SIZE, productIdForCents } from "@/lib/tiers";
 import { isValidCategory } from "@/lib/categories";
+import { PLAN_BY_ID, isValidPlan } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -14,6 +15,7 @@ type Body = {
   email?: string;
   cents?: number;
   category?: string;
+  plan?: string;
 };
 
 export async function POST(request: Request) {
@@ -27,8 +29,9 @@ export async function POST(request: Request) {
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
   const email = body.email?.trim().toLowerCase();
-  // Price is fixed — a seat costs what a seat costs.
-  const cents = SEAT_CENTS;
+  // Price comes from the chosen plan, never from the request body.
+  const plan = isValidPlan(body.plan) ? body.plan : "listed";
+  const cents = PLAN_BY_ID[plan].cents;
   // Optional — an uncategorised listing still belongs on the board.
   const category = isValidCategory(body.category) ? body.category : null;
   const url = body.url ? normalizeUrl(body.url) : null;
@@ -88,6 +91,7 @@ export async function POST(request: Request) {
       url,
       domain,
       category,
+      plan,
       tagline,
       email,
       price_cents: cents,
@@ -106,7 +110,7 @@ export async function POST(request: Request) {
       customerEmail: email,
       successUrl: `${siteUrl()}/success?checkout_id={CHECKOUT_ID}`,
       // The webhook reads this to know which listing just went live.
-      metadata: { listing_id: listing.id, price_cents: cents },
+      metadata: { listing_id: listing.id, price_cents: cents, plan },
     });
 
     return NextResponse.json({ url: checkout.url });
