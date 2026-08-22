@@ -21,21 +21,12 @@ export type Tier = {
  * far enough apart that each rung buys a real move up the board.
  */
 /** Entry price. Plans live in lib/plans; this is the cheapest of them. */
-export const SEAT_CENTS = 700;
+export const SEAT_CENTS = 1900;
 
 export const TIERS: Tier[] = [
-  { cents: 700, label: "$7" },
-  { cents: 1200, label: "$12" },
   { cents: 1900, label: "$19" },
-  { cents: 2900, label: "$29" },
-  { cents: 3900, label: "$39" },
   { cents: 4900, label: "$49" },
-  { cents: 5900, label: "$59" },
-  { cents: 7900, label: "$79" },
-  { cents: 9900, label: "$99" },
   { cents: 14900, label: "$149" },
-  { cents: 21900, label: "$219" },
-  { cents: 39900, label: "$399" },
 ];
 
 export const FLOOR_CENTS = SEAT_CENTS;

@@ -5,7 +5,6 @@ import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { getStats, recordVisit } from "@/lib/visits";
 import { headers } from "next/headers";
-import { ROWS } from "@/lib/seating";
 import { BOARD_SIZE, SEAT_CENTS, formatPrice } from "@/lib/tiers";
 
 // The board changes whenever someone pays, so never serve it stale.
@@ -115,19 +114,18 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
 
           <div className="mt-6 grid gap-8 text-[13px] leading-relaxed text-muted sm:grid-cols-3">
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Every row has a price</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">Pay for tools, not position</h3>
               <p>
-                {formatPrice(ROWS[0].askingCents)} for the royal box down to{" "}
-                {formatPrice(ROWS[ROWS.length - 1].askingCents)} at the back. The row you pay
-                for is the row you sit in, and it decides which tools come with the seat.
+                From {formatPrice(SEAT_CENTS)} a month. Plans buy tools — attribution,
+                benchmarking, an embeddable badge — never position.
               </p>
             </div>
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Move forward any time</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">Clicks move you forward</h3>
               <p>
-                Raise your monthly price from your manage link and you change rows within
-                seconds. Every click you get is counted and shown to you, so you can see
-                whether the seat is worth it.
+                Seats are ordered by clicks per day over the last week. Earn more clicks
+                than the listing in front of you and you take its seat — the board reorders
+                itself continuously.
               </p>
             </div>
             <div>
@@ -146,13 +144,14 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
               site can&apos;t occupy two seats.
             </li>
             <li>
-              <span className="text-fg">Same price, earlier wins.</span> Matching the price of
-              someone already seated puts you behind them in that row, not ahead.
+              <span className="text-fg">New listings get a fair start.</span> Ranking uses
+              clicks per active day, not lifetime totals, so a listing that joined yesterday
+              can outrank one that joined last month.
             </li>
             <li>
-              <span className="text-fg">You never sit further back than you paid for.</span>
-              A full row spills into the one behind it, so a row&apos;s price guarantees that
-              row or better.
+              <span className="text-fg">Position cannot be bought.</span> There is no upgrade,
+              no sponsored slot and no way to pay for a better seat. Clicks are the only
+              currency.
             </li>
             <li>
               <span className="text-fg">Cancel any time.</span> You keep the seat until the

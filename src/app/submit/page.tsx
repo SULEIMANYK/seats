@@ -6,12 +6,7 @@ import { BOARD_SIZE, SEAT_CENTS, formatPrice } from "@/lib/tiers";
 
 export const dynamic = "force-dynamic";
 
-export default async function SubmitPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ cents?: string }>;
-}) {
-  const { cents } = await searchParams;
+export default async function SubmitPage() {
 
   // The current board, so the price picker can show what rank each tier
   // would actually buy and who it would pass — not just a list of numbers.
@@ -45,7 +40,7 @@ export default async function SubmitPage({
         </p>
       </header>
 
-      <SubmitForm full={full} defaultCents={Number(cents) || SEAT_CENTS} />
+      <SubmitForm full={full} />
     </main>
   );
 }
