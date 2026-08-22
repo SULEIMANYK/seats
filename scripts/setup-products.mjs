@@ -30,7 +30,12 @@ const nameFor = (cents) => `Seat on seats.lol — $${(cents / 100).toLocaleStrin
 // Pull the existing catalogue first so re-runs are idempotent.
 const existing = new Map();
 for await (const page of await polar.products.list({ limit: 100 })) {
-  for (const product of page.result.items) existing.set(product.name, product.id);
+  for (const product of page.result.items) {
+    // Archived products still come back from the list endpoint, and reusing
+    // one produces ids that checkout rejects with "Product is archived".
+    if (product.isArchived) continue;
+    existing.set(product.name, product.id);
+  }
 }
 
 const map = {};

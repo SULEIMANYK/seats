@@ -4,6 +4,7 @@ import { polar, siteUrl } from "@/lib/polar";
 import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
 import { BOARD_SIZE, isValidTier, productIdForCents } from "@/lib/tiers";
 import { ROWS } from "@/lib/seating";
+import { isValidCategory } from "@/lib/categories";
 
 export const runtime = "nodejs";
 
@@ -13,6 +14,7 @@ type Body = {
   tagline?: string;
   email?: string;
   cents?: number;
+  category?: string;
 };
 
 export async function POST(request: Request) {
@@ -27,6 +29,8 @@ export async function POST(request: Request) {
   const tagline = body.tagline?.trim();
   const email = body.email?.trim().toLowerCase();
   const cents = Number(body.cents);
+  // Optional — an uncategorised listing still belongs on the board.
+  const category = isValidCategory(body.category) ? body.category : null;
   const url = body.url ? normalizeUrl(body.url) : null;
 
   if (!name || name.length > 60) {
@@ -102,6 +106,7 @@ export async function POST(request: Request) {
       name,
       url,
       domain,
+      category,
       tagline,
       email,
       price_cents: cents,

@@ -3,6 +3,8 @@ import { Auditorium } from "@/components/Auditorium";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { ROWS } from "@/lib/seating";
+import { getStats, recordVisit } from "@/lib/visits";
+import { headers } from "next/headers";
 import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
 
 // The board changes whenever someone pays, so never serve it stale.
@@ -29,7 +31,11 @@ async function getBoard(): Promise<Row[]> {
 }
 
 export default async function Home() {
-  const rows = await getBoard();
+  // Counted before anything renders, so a slow board query cannot lose the
+  // visit. recordVisit is fire-and-forget and never blocks.
+  recordVisit("/", await headers());
+
+  const [rows, stats] = await Promise.all([getBoard(), getStats()]);
   const open = BOARD_SIZE - rows.length;
 
   // On a full board the entry price is whatever clears the last seat.
@@ -61,10 +67,27 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
                 ? `${BOARD_SIZE} seats open`
                 : `${rows.length}/${BOARD_SIZE} taken`}
             </span>
-            {rows.length === 0 && (
+            {stats && stats.visitors_24h > 0 && (
+              <span className="tnum text-[#f7f7f5]/45">
+                · {stats.visitors_24h.toLocaleString()} visitors today
+              </span>
+            )}
+            {stats && stats.clicks_24h > 0 && (
+              <span className="tnum text-[#f7f7f5]/45">
+                · {stats.clicks_24h.toLocaleString()} clicks
+              </span>
+            )}
+            {rows.length === 0 && !stats?.visitors_24h && (
               <span className="text-[#f7f7f5]/45">· be the first</span>
             )}
           </span>
+
+          <Link
+            href="/stats"
+            className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
+          >
+            stats →
+          </Link>
 
           <Link
             href={entry ? `/submit?cents=${entry}` : "/submit"}

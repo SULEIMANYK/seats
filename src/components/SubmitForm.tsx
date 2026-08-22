@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { SITE } from "@/lib/config";
+import { CATEGORIES } from "@/lib/categories";
 import { ROWS, seatIfPaying } from "@/lib/seating";
 import { formatPrice } from "@/lib/tiers";
 
@@ -156,6 +157,7 @@ export function SubmitForm({
         url: form.get("url"),
         tagline: form.get("tagline"),
         email: form.get("email"),
+        category: form.get("category") || null,
         cents,
       }),
     });
@@ -254,6 +256,23 @@ export function SubmitForm({
               placeholder={`What your ${SITE.noun} does, in one sentence.`}
             />
             <p className="tnum text-[11px] text-muted/70">{tagline.length}/160</p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="category" className={labelCls}>
+              Category
+            </label>
+            <select id="category" name="category" defaultValue="" className={inputCls}>
+              <option value="">No category</option>
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+            <p className="text-[11px] text-muted/70">
+              Optional. Shown on your listing and on the stats page.
+            </p>
           </div>
 
           <div className="space-y-1.5">
