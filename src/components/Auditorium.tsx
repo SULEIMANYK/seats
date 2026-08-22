@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
-import { ROWS, placeListings, rowOffset } from "@/lib/seating";
+import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
 import { formatPrice, tierToBeat } from "@/lib/tiers";
 
 /**
@@ -216,7 +216,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
       </div>
 
       <p className="mt-0.5 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">
-        the house
+        seats {rowOffset(2)}–{BOARD_SIZE}
       </p>
 
       {houseRows.map((row, i) => {

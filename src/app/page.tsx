@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Auditorium } from "@/components/Auditorium";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
+import { ROWS } from "@/lib/seating";
 import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
 
 // The board changes whenever someone pays, so never serve it stale.
@@ -39,7 +40,7 @@ export default async function Home() {
     // One viewport, no scrolling: the whole house should be legible at a glance.
     // Phones fall back to scrolling — 100 seats in a phone viewport would be
     // unreadable.
-    <main className="stage relative flex w-full flex-col md:h-dvh md:overflow-hidden">
+    <main className="stage relative flex w-full flex-col">
       {/* The header is the stage. Everything else is the audience looking at it. */}
       <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-[#f7f7f5] sm:px-10">
         <div className="flex items-baseline gap-3">
@@ -56,9 +57,13 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
               <span className="relative inline-flex size-1.5 rounded-full bg-gold-line" />
             </span>
             <span className="tnum">
-              {rows.length}/{BOARD_SIZE} seats
+              {rows.length === 0
+                ? `${BOARD_SIZE} seats open`
+                : `${rows.length}/${BOARD_SIZE} taken`}
             </span>
-            {open > 0 && <span className="tnum text-[#f7f7f5]/45">· {open} free</span>}
+            {rows.length === 0 && (
+              <span className="text-[#f7f7f5]/45">· be the first</span>
+            )}
           </span>
 
           <Link
@@ -72,9 +77,69 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col px-3 pt-3 pb-4 sm:px-6">
+      <div className="flex min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 md:h-[calc(100dvh-4.5rem)]">
         <Auditorium rows={rows} />
       </div>
+
+      {/* Below the fold. The chart owns the first screen; anyone who scrolls
+          wants to know the rules before they spend money. */}
+      <section className="relative z-10 border-t border-edge bg-bg-lift/60 px-6 py-14 sm:px-10">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="text-xl font-semibold tracking-tight">How it works</h2>
+
+          <div className="mt-6 grid gap-8 text-[13px] leading-relaxed text-muted sm:grid-cols-3">
+            <div>
+              <h3 className="mb-1.5 font-semibold text-fg">Every row has a price</h3>
+              <p>
+                {formatPrice(ROWS[0].askingCents)} for the royal box down to{" "}
+                {formatPrice(ROWS[ROWS.length - 1].askingCents)} for the back row. Pay a
+                row&apos;s price and you sit in that row — never further back than advertised.
+              </p>
+            </div>
+            <div>
+              <h3 className="mb-1.5 font-semibold text-fg">Move forward any time</h3>
+              <p>
+                Raise your monthly price from your manage link and you change seats within
+                seconds. You&apos;re only charged the difference for the rest of the month.
+              </p>
+            </div>
+            <div>
+              <h3 className="mb-1.5 font-semibold text-fg">Only {BOARD_SIZE} seats</h3>
+              <p>
+                When the house fills, getting in means beating the last seat. Whoever it
+                displaces keeps their listing for 7 days to come back before the seat is gone.
+              </p>
+            </div>
+          </div>
+
+          <h2 className="mt-12 text-xl font-semibold tracking-tight">The rules</h2>
+          <ul className="mt-4 space-y-2 text-[13px] leading-relaxed text-muted">
+            <li>
+              <span className="text-fg">One seat per domain.</span> Two listings for the same
+              site can&apos;t occupy two seats.
+            </li>
+            <li>
+              <span className="text-fg">Same price, earlier wins.</span> Matching the price of
+              someone already seated puts you behind them, not ahead.
+            </li>
+            <li>
+              <span className="text-fg">Prices go up mid-cycle, down at renewal.</span>
+              Otherwise you could drop to the floor right after a traffic spike and climb back
+              before the next one.
+            </li>
+            <li>
+              <span className="text-fg">Cancel any time.</span> You keep the seat until the
+              period you&apos;ve paid for ends. No refunds for part-months.
+            </li>
+            <li>
+              <span className="text-fg">Every click is counted and shown to you.</span> If the
+              seat isn&apos;t worth what you pay, you&apos;ll be the first to know.
+            </li>
+          </ul>
+
+          <p className="mt-10 text-[11px] text-muted/60">{SITE.domain}</p>
+        </div>
+      </section>
     </main>
   );
 }
