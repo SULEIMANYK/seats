@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Auditorium } from "@/components/Auditorium";
+import { BoardList } from "@/components/BoardList";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { getStats, recordVisit } from "@/lib/visits";
@@ -94,8 +95,15 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 md:h-[calc(100dvh-4.5rem)]">
-        <Auditorium rows={rows} />
+      <div className="flex min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 xl:h-[calc(100dvh-4.5rem)]">
+        {/* The chart needs ~1200px before its widest row fits. Below that the
+            same board is a ranked list, which is what a phone is good at. */}
+        <div className="hidden xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
+          <Auditorium rows={rows} />
+        </div>
+        <div className="xl:hidden">
+          <BoardList rows={rows} />
+        </div>
       </div>
 
       {/* Below the fold. The chart owns the first screen; anyone who scrolls
