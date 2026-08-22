@@ -2,10 +2,9 @@ import Link from "next/link";
 import { Auditorium } from "@/components/Auditorium";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
-import { ROWS } from "@/lib/seating";
 import { getStats, recordVisit } from "@/lib/visits";
 import { headers } from "next/headers";
-import { BOARD_SIZE, FLOOR_CENTS, formatPrice, tierToBeat } from "@/lib/tiers";
+import { BOARD_SIZE, SEAT_CENTS, formatPrice } from "@/lib/tiers";
 
 // The board changes whenever someone pays, so never serve it stale.
 export const dynamic = "force-dynamic";
@@ -38,9 +37,6 @@ export default async function Home() {
   const [rows, stats] = await Promise.all([getBoard(), getStats()]);
   const open = BOARD_SIZE - rows.length;
 
-  // On a full board the entry price is whatever clears the last seat.
-  const cut = rows[BOARD_SIZE - 1]?.price_cents;
-  const entry = cut ? (tierToBeat(cut)?.cents ?? null) : FLOOR_CENTS;
 
   return (
     // One viewport, no scrolling: the whole house should be legible at a glance.
@@ -90,12 +86,10 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
           </Link>
 
           <Link
-            href={entry ? `/submit?cents=${entry}` : "/submit"}
+            href="/submit"
             className="rounded-xl bg-[#f7f7f5] px-4 py-2 text-[13px] font-semibold text-[#14141a] transition hover:-translate-y-0.5"
           >
-            {open > 0
-              ? `Take a seat — from ${formatPrice(entry ?? FLOOR_CENTS)}`
-              : `Outbid seat #${BOARD_SIZE}`}
+            {open > 0 ? `Take a seat — ${formatPrice(SEAT_CENTS)}/mo` : "House full"}
           </Link>
         </div>
       </header>
@@ -112,25 +106,25 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
 
           <div className="mt-6 grid gap-8 text-[13px] leading-relaxed text-muted sm:grid-cols-3">
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Every row has a price</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">One price for everyone</h3>
               <p>
-                {formatPrice(ROWS[0].askingCents)} for the royal box down to{" "}
-                {formatPrice(ROWS[ROWS.length - 1].askingCents)} for the back row. Pay a
-                row&apos;s price and you sit in that row — never further back than advertised.
+                Every seat costs the same — {formatPrice(SEAT_CENTS)} a month. What you pay
+                buys a place on the board, not a position on it.
               </p>
             </div>
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Move forward any time</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">Clicks move you forward</h3>
               <p>
-                Raise your monthly price from your manage link and you change seats within
-                seconds. You&apos;re only charged the difference for the rest of the month.
+                Seats are ordered by clicks per day over the last week. Earn more clicks
+                than the listing in front of you and you take its seat — the board reorders
+                itself continuously.
               </p>
             </div>
             <div>
               <h3 className="mb-1.5 font-semibold text-fg">Only {BOARD_SIZE} seats</h3>
               <p>
-                When the house fills, getting in means beating the last seat. Whoever it
-                displaces keeps their listing for 7 days to come back before the seat is gone.
+                When the house is full, nobody new gets in until a seat frees up. Listings
+                that stop earning clicks drift backwards and eventually out.
               </p>
             </div>
           </div>
@@ -142,13 +136,14 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
               site can&apos;t occupy two seats.
             </li>
             <li>
-              <span className="text-fg">Same price, earlier wins.</span> Matching the price of
-              someone already seated puts you behind them, not ahead.
+              <span className="text-fg">New listings get a fair start.</span> Ranking uses
+              clicks per active day, not lifetime totals, so a listing that joined yesterday
+              can outrank one that joined last month.
             </li>
             <li>
-              <span className="text-fg">Prices go up mid-cycle, down at renewal.</span>
-              Otherwise you could drop to the floor right after a traffic spike and climb back
-              before the next one.
+              <span className="text-fg">Position cannot be bought.</span> There is no upgrade,
+              no sponsored slot and no way to pay for a better seat. Clicks are the only
+              currency.
             </li>
             <li>
               <span className="text-fg">Cancel any time.</span> You keep the seat until the

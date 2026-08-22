@@ -2,7 +2,7 @@ import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
 import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
-import { formatPrice, tierToBeat } from "@/lib/tiers";
+import { formatPrice, SEAT_CENTS } from "@/lib/tiers";
 
 /**
  * The board as a theatre.
@@ -56,7 +56,6 @@ function iconFor(url: string) {
 /* ---------------------------------------------------------------- front row */
 
 function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
-  const next = tierToBeat(row.price_cents);
 
   return (
     <a
@@ -74,7 +73,7 @@ function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
           {row.rank}
         </span>
         <span className="tnum rounded-full bg-gold-soft px-1.5 py-0.5 text-[10px] leading-none text-gold">
-          {formatPrice(row.price_cents)}
+          {row.clicks_7d.toLocaleString()} clicks
         </span>
       </div>
 
@@ -91,14 +90,9 @@ function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
       </div>
 
       <p className="tnum mt-auto truncate pt-1.5 text-[10px] text-muted/80">
-        {displayDomain(row.url)} · {row.clicks_30d.toLocaleString()} clicks
+        {displayDomain(row.url)} · {row.clicks_7d.toLocaleString()} clicks this week
       </p>
 
-      {next && (
-        <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-1.5 text-center text-[10px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
-          take this box · {next.label}/mo
-        </span>
-      )}
     </a>
   );
 }
@@ -115,7 +109,7 @@ function EmptyBox({ seat, cents, apex = false }: { seat: number; cents: number; 
         {seat}
       </span>
       <span className="mt-1.5 text-[11px] text-muted/60 transition-colors group-hover:text-accent">
-        {apex ? "the royal box" : "front row"} · {formatPrice(cents)}
+{apex ? "the royal box" : "front row"} · earn it
       </span>
     </Link>
   );
@@ -141,7 +135,7 @@ function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
       <span className="tnum text-[10px] leading-none font-medium text-muted">
-        {formatPrice(row.price_cents)}
+        {row.clicks_7d.toLocaleString()}
       </span>
       <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/45">
         {seat}
@@ -152,7 +146,7 @@ function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 whitespace-nowrap card-shadow group-hover:block">
         <span className="block text-[11px] font-semibold">{row.name}</span>
         <span className="tnum block text-[10px] text-muted">
-          #{row.rank} · {formatPrice(row.price_cents)}/mo · {row.clicks_30d.toLocaleString()} clicks
+          seat {row.rank} · {row.clicks_7d.toLocaleString()} clicks this week
         </span>
       </span>
     </a>
@@ -166,8 +160,8 @@ function EmptySeat({ seat, size, cents }: { seat: number; size: number; cents: n
       style={{ width: size, height: size }}
       className="group relative flex flex-col items-center justify-center gap-0.5 rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
     >
-      <span className="tnum text-[11px] leading-none text-muted/45 transition-colors group-hover:text-accent">
-        {formatPrice(cents)}
+      <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-accent">
+        claim
       </span>
       <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/25">
         {seat}
@@ -191,7 +185,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
     if (seat) bySeat.set(seat, row);
   }
 
-  const [apexRow, frontRow, ...houseRows] = ROWS;
+  const [, , ...houseRows] = ROWS;
 
   return (
     <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-[2.5rem] pt-2">
@@ -200,7 +194,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
         {bySeat.get(1) ? (
           <Box row={bySeat.get(1)!} apex />
         ) : (
-          <EmptyBox seat={1} cents={apexRow.askingCents} apex />
+          <EmptyBox seat={1} cents={SEAT_CENTS} apex />
         )}
       </div>
 
@@ -210,7 +204,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
           bySeat.get(seat) ? (
             <Box key={seat} row={bySeat.get(seat)!} />
           ) : (
-            <EmptyBox key={seat} seat={seat} cents={frontRow.askingCents} />
+            <EmptyBox key={seat} seat={seat} cents={SEAT_CENTS} />
           ),
         )}
       </div>
@@ -253,7 +247,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
                         {listing ? (
                           <Seat row={listing} seat={seat} size={row.sizePx} />
                         ) : (
-                          <EmptySeat seat={seat} size={row.sizePx} cents={row.askingCents} />
+                          <EmptySeat seat={seat} size={row.sizePx} cents={SEAT_CENTS} />
                         )}
                       </span>
                     );

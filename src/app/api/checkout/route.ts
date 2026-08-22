@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { polar, siteUrl } from "@/lib/polar";
 import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
-import { BOARD_SIZE, isValidTier, productIdForCents } from "@/lib/tiers";
-import { ROWS } from "@/lib/seating";
+import { BOARD_SIZE, SEAT_CENTS, productIdForCents } from "@/lib/tiers";
 import { isValidCategory } from "@/lib/categories";
 
 export const runtime = "nodejs";
@@ -28,7 +27,8 @@ export async function POST(request: Request) {
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
   const email = body.email?.trim().toLowerCase();
-  const cents = Number(body.cents);
+  // Price is fixed — a seat costs what a seat costs.
+  const cents = SEAT_CENTS;
   // Optional — an uncategorised listing still belongs on the board.
   const category = isValidCategory(body.category) ? body.category : null;
   const url = body.url ? normalizeUrl(body.url) : null;
@@ -45,10 +45,6 @@ export async function POST(request: Request) {
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
   }
-  if (!isValidTier(cents)) {
-    return NextResponse.json({ error: "Pick one of the listed prices" }, { status: 400 });
-  }
-
   const supabase = db();
 
   const domain = canonicalDomain(url);
@@ -72,29 +68,14 @@ export async function POST(request: Request) {
     );
   }
 
-  // The chart advertises a price per row, so the cheapest tier on offer must
-  // be a real row price. Anything below the back row cannot be seated.
-  if (cents < ROWS[ROWS.length - 1].askingCents) {
-    return NextResponse.json(
-      { error: `The back row is ${ROWS[ROWS.length - 1].askingCents / 100} a month.` },
-      { status: 400 },
-    );
-  }
+  const { count } = await supabase
+    .from("listings")
+    .select("*", { count: "exact", head: true })
+    .in("status", ["active", "past_due"]);
 
-  // When the board is full, getting on means clearing the price at the last seat.
-  // This is the ratchet: every new listing raises the bar for the next one.
-  const { data: cut } = await supabase
-    .from("board")
-    .select("price_cents, rank")
-    .eq("rank", BOARD_SIZE)
-    .maybeSingle();
-
-  if (cut && cents <= cut.price_cents) {
+  if ((count ?? 0) >= BOARD_SIZE) {
     return NextResponse.json(
-      {
-        error: `The board is full. You need to beat #${BOARD_SIZE} to get on.`,
-        minimumCents: cut.price_cents,
-      },
+      { error: "Every seat is taken right now. Try again when one frees up." },
       { status: 409 },
     );
   }

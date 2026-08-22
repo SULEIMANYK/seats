@@ -20,31 +20,15 @@ export type Tier = {
  * between neighbours: close enough that climbing one rung feels affordable,
  * far enough apart that each rung buys a real move up the board.
  */
-export const TIERS: Tier[] = [
-  { cents: 700, label: "$7" },
-  { cents: 900, label: "$9" },
-  { cents: 1200, label: "$12" },
-  { cents: 1500, label: "$15" },
-  { cents: 1900, label: "$19" },
-  { cents: 2900, label: "$29" },
-  { cents: 3900, label: "$39" },
-  { cents: 4900, label: "$49" },
-  { cents: 5900, label: "$59" },
-  { cents: 7900, label: "$79" },
-  { cents: 9900, label: "$99" },
-  { cents: 12900, label: "$129" },
-  { cents: 16900, label: "$169" },
-  { cents: 21900, label: "$219" },
-  { cents: 29900, label: "$299" },
-  { cents: 39900, label: "$399" },
-  { cents: 54900, label: "$549" },
-  { cents: 74900, label: "$749" },
-  { cents: 99900, label: "$999" },
-  { cents: 149900, label: "$1,499" },
-  { cents: 249900, label: "$2,499" },
-];
+/**
+ * One price. The subscription buys a place on the board; where you sit is
+ * earned by clicks, so there is nothing to choose between.
+ */
+export const SEAT_CENTS = 1900;
 
-export const FLOOR_CENTS = TIERS[0].cents;
+export const TIERS: Tier[] = [{ cents: SEAT_CENTS, label: "$19" }];
+
+export const FLOOR_CENTS = SEAT_CENTS;
 export { BOARD_SIZE } from "./seating";
 
 /** Maps tier price -> Polar product id, from POLAR_PRODUCT_IDS. */
@@ -72,14 +56,6 @@ export function formatPrice(cents: number): string {
   return `$${(cents / 100).toLocaleString("en-US")}`;
 }
 
-/**
- * The cheapest tier that would actually move you above `targetCents`.
- * Ties break toward whoever got there first, so matching the price above you
- * isn't enough — you have to clear it.
- */
-export function tierToBeat(targetCents: number): Tier | null {
-  return TIERS.find((t) => t.cents > targetCents) ?? null;
-}
 
 /** Reverse of productIdForCents — used by the webhook to sync price from Polar. */
 export function centsForProductId(productId: string): number | null {

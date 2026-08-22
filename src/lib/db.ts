@@ -34,7 +34,10 @@ export type BoardRow = {
   tier_since: string;
   status: "active" | "past_due";
   created_at: string;
+  category: string | null;
   rank: number;
+  score: number;
+  clicks_7d: number;
   clicks_30d: number;
   clicks_total: number;
 };

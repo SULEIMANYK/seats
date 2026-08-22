@@ -9,10 +9,8 @@
 import { Polar } from "@polar-sh/sdk";
 
 // Keep in step with TIERS in src/lib/tiers.ts.
-const TIERS = [
-  700, 900, 1200, 1500, 1900, 2900, 3900, 4900, 5900, 7900, 9900, 12900,
-  16900, 21900, 29900, 39900, 54900, 74900, 99900, 149900, 249900,
-];
+// One price: the subscription buys a place, not a position.
+const TIERS = [1900];
 
 const accessToken = process.env.POLAR_ACCESS_TOKEN;
 if (!accessToken) {
@@ -50,7 +48,7 @@ for (const cents of TIERS) {
 
   const product = await polar.products.create({
     name,
-    description: `One of 100 seats on seats.lol at $${(cents / 100).toLocaleString("en-US")}/month. What you pay decides your rank — raise it any time to move forward.`,
+    description: `One of 200 seats on seats.lol at $${(cents / 100).toLocaleString("en-US")}/month. Where you sit is earned by clicks, not bought.`,
     recurringInterval: "month",
     prices: [{ amountType: "fixed", priceAmount: cents, priceCurrency: "usd" }],
   });

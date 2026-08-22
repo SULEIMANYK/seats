@@ -1,11 +1,10 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ClimbPanel } from "@/components/ClimbPanel";
 import { db, type Listing } from "@/lib/db";
-import { placeListings, seatIfPaying, type Placeable } from "@/lib/seating";
+import { placeListings, type Placeable } from "@/lib/seating";
 import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
-import { formatPrice, TIERS, tierToBeat } from "@/lib/tiers";
+import { formatPrice } from "@/lib/tiers";
 
 export const dynamic = "force-dynamic";
 // A secret manage link should never end up in a search index.
@@ -24,7 +23,7 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
 
   const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }] =
     await Promise.all([
-      supabase.from("board").select("id, price_cents, tier_since").returns<Placeable[]>(),
+      supabase.from("board").select("id, rank, name, clicks_7d").returns<(Placeable & { name: string; clicks_7d: number })[]>(),
       supabase
         .from("clicks")
         .select("*", { count: "exact", head: true })
@@ -112,7 +111,7 @@ export default async function ManagePage({
 
   if (!listing) notFound();
 
-  const { seat, seated, clicks30d, clicksTotal, graceDaysLeft } = await loadStats(
+  const { seat, clicks30d, clicksTotal, graceDaysLeft } = await loadStats(
     supabase,
     listing.id,
     listing.grace_until,
@@ -139,14 +138,8 @@ export default async function ManagePage({
   // What each higher price would actually buy: ties break toward whoever
   // climbed first, so landing on a price now puts you behind everyone
   // already sitting at or above it.
-  const tierRanks = TIERS.filter((t) => t.cents > listing.price_cents).map((t) => ({
-    cents: t.cents,
-    label: t.label,
-    rank: seatIfPaying(t.cents, seated, listing.id),
-  }));
 
   const featured = !!seat && seat <= 3;
-  const next = tierToBeat(listing.price_cents);
 
   return (
     <main className="stage relative mx-auto w-full max-w-lg px-4 pt-14 pb-24 sm:px-6">
@@ -313,12 +306,6 @@ export default async function ManagePage({
                 {displayDomain(listing.url)} · {(clicks30d ?? 0).toLocaleString()} clicks
               </p>
             </div>
-
-            {next && (
-              <span className="pointer-events-none absolute inset-x-0 bottom-0 translate-y-full bg-fg px-2 py-2 text-center text-[11px] font-semibold text-bg-lift transition-transform duration-200 group-hover:translate-y-0">
-                take seat {seat} · {next.label}/mo
-              </span>
-            )}
           </a>
         ) : (
           <div className="flex min-h-[100px] flex-col items-center justify-center rounded-2xl border border-faint px-4 py-6 text-center">
@@ -326,17 +313,6 @@ export default async function ManagePage({
             <p className="mt-1 text-[11px] text-muted/60">Climb below to get back on.</p>
           </div>
         )}
-      </section>
-
-      <section className="relative z-10 mb-8">
-        <h2 className="mb-3 text-[13px] font-semibold text-fg">
-          Climb — currently {formatPrice(listing.price_cents)}/mo{seat ? ` · seat ${seat}` : ""}
-        </h2>
-        <ClimbPanel
-          token={listing.manage_token}
-          tierRanks={tierRanks}
-          currentRank={seat ?? null}
-        />
       </section>
 
       <section className="relative z-10 border-t border-edge pt-6 text-sm">
