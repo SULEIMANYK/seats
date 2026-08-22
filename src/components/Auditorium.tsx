@@ -129,12 +129,14 @@ function EmptyBox({ seat, cents, apex = false }: { seat: number; cents: number; 
 function Seat({
   row,
   seat,
-  size,
+  width,
+  height,
   dimmed,
 }: {
   row: BoardRow;
   seat: number;
-  size: number;
+  width: string;
+  height: number;
   dimmed: boolean;
 }) {
   return (
@@ -143,7 +145,7 @@ function Seat({
       target="_blank"
       // Dofollow is a Growth feature; everyone else is nofollow.
       rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
-      style={{ width: size, height: size }}
+      style={{ width, height }}
       className={`group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift ${
         dimmed ? "opacity-20 grayscale" : ""
       }`}
@@ -153,7 +155,7 @@ function Seat({
         src={row.logo_url ?? iconFor(row.url)}
         alt=""
         fetchPriority="high"
-        style={{ width: size * 0.42, height: size * 0.42 }}
+        style={{ width: height * 0.44, height: height * 0.44 }}
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
       <span className="tnum text-[10px] leading-none font-medium text-muted">
@@ -175,11 +177,11 @@ function Seat({
   );
 }
 
-function EmptySeat({ seat, size, cents }: { seat: number; size: number; cents: number }) {
+function EmptySeat({ seat, width, height }: { seat: number; width: string; height: number }) {
   return (
     <Link
-      href={`/submit?cents=${cents}`}
-      style={{ width: size, height: size }}
+      href="/submit"
+      style={{ width, height }}
       className="group relative flex flex-col items-center justify-center gap-0.5 rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
     >
       <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-accent">
@@ -189,7 +191,7 @@ function EmptySeat({ seat, size, cents }: { seat: number; size: number; cents: n
         {seat}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
-        Empty seat · from {formatPrice(cents)}/mo
+        Empty seat · from {formatPrice(SEAT_CENTS)}/mo
       </span>
     </Link>
   );
@@ -309,9 +311,15 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
                         className="shrink-0"
                       >
                         {listing ? (
-                          <Seat row={listing} seat={seat} size={row.sizePx} dimmed={isDimmed(listing)} />
+                          <Seat
+                            row={listing}
+                            seat={seat}
+                            width={row.widthCss}
+                            height={row.heightPx}
+                            dimmed={isDimmed(listing)}
+                          />
                         ) : (
-                          <EmptySeat seat={seat} size={row.sizePx} cents={SEAT_CENTS} />
+                          <EmptySeat seat={seat} width={row.widthCss} height={row.heightPx} />
                         )}
                       </span>
                     );
