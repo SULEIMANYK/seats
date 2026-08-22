@@ -73,7 +73,7 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
       </header>
 
       <div className="flex min-h-0 flex-1 flex-col px-3 pt-3 pb-4 sm:px-6">
-        <Auditorium rows={rows} floorCents={entry ?? FLOOR_CENTS} />
+        <Auditorium rows={rows} />
       </div>
     </main>
   );

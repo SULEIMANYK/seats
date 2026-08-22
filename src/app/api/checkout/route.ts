@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { polar, siteUrl } from "@/lib/polar";
 import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
 import { BOARD_SIZE, isValidTier, productIdForCents } from "@/lib/tiers";
+import { ROWS } from "@/lib/seating";
 
 export const runtime = "nodejs";
 
@@ -67,7 +68,16 @@ export async function POST(request: Request) {
     );
   }
 
-  // When the board is full, getting on means clearing the price at #100.
+  // The chart advertises a price per row, so the cheapest tier on offer must
+  // be a real row price. Anything below the back row cannot be seated.
+  if (cents < ROWS[ROWS.length - 1].askingCents) {
+    return NextResponse.json(
+      { error: `The back row is ${ROWS[ROWS.length - 1].askingCents / 100} a month.` },
+      { status: 400 },
+    );
+  }
+
+  // When the board is full, getting on means clearing the price at the last seat.
   // This is the ratchet: every new listing raises the bar for the next one.
   const { data: cut } = await supabase
     .from("board")

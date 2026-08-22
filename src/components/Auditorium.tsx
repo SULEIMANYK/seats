@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
+import { ROWS, placeListings, rowOffset } from "@/lib/seating";
 import { formatPrice, tierToBeat } from "@/lib/tiers";
 
 /**
@@ -8,53 +9,18 @@ import { formatPrice, tierToBeat } from "@/lib/tiers";
  *
  * The site is called seats.lol, so the seating chart *is* the interface: a stage
  * at the top, the royal box alone above the front row, two boxes flanking it,
- * and seven rows curving back behind them. Paying more moves you forward.
+ * and ten rows curving back behind them. Paying more moves you forward.
  *
  * #1 sits alone deliberately. Three equal boxes across the front row blurred
  * who had actually won.
  *
- * Row sizes sum to exactly 100, and each row arcs like a real auditorium —
- * the middle of a row sits further from the stage than its edges.
+ * The plan itself — seat counts, row prices, sizes — lives in lib/seating so
+ * placement and pricing cannot drift apart. Each row arcs like a real
+ * auditorium: the middle sits further from the stage than the ends.
  */
-
-/**
- * Seats per row, front to back: 3 + 6 + 9 + 12 + 15 + 16 + 18 + 21 = 100.
- * Counts rise and seat sizes fall together, so each row is physically wider
- * than the one in front of it and the room fans out the way a real house does.
- */
-const ROW_SIZES = [1, 2, 13, 15, 16, 17, 18, 18];
-
-/** Seat edge length per row, in px. Seats shrink as they retreat. */
-const SEAT_PX = [0, 0, 82, 78, 74, 70, 67, 64];
-
-/** How far the centre of each row bows away from the stage, in px. */
-const ROW_CURVE = [0, 0, 7, 9, 11, 12, 14, 15];
-
-function rowsOfRanks(): number[][] {
-  const rows: number[][] = [];
-  let rank = 1;
-  for (const size of ROW_SIZES) {
-    rows.push(Array.from({ length: size }, () => rank++));
-  }
-  return rows;
-}
-
-/** Row letters, front to back. Seating charts label rows; grids don't. */
-const ROW_LETTERS = ["A", "B", "C", "D", "E", "F"];
 
 /** Width of an aisle, in px. */
-const AISLE = 20;
-
-/**
- * Asking price per row, front to back — the theatre part of the metaphor made
- * literal. A real box office charges more for a seat near the stage, and an
- * empty house should say so on its face rather than showing one flat floor
- * price on all hundred seats.
- *
- * Paying a row's price puts you in that row. Paying less still gets you on the
- * board, just further back, which is what the submit page shows.
- */
-const ROW_ASKING_CENTS = [249900, 149900, 74900, 39900, 21900, 9900, 2900, 700];
+const AISLE = 18;
 
 /**
  * Split a row into three blocks with aisles between them. This is the single
@@ -64,7 +30,6 @@ const ROW_ASKING_CENTS = [249900, 149900, 74900, 39900, 21900, 9900, 2900, 700];
 function intoBlocks(items: number[]): number[][] {
   const base = Math.floor(items.length / 3);
   const sizes = [base, base, base];
-  // Remainder goes to the middle block first, then the left.
   const order = [1, 0, 2];
   for (let i = 0; i < items.length % 3; i++) sizes[order[i]]++;
 
@@ -138,7 +103,7 @@ function Box({ row, apex = false }: { row: BoardRow; apex?: boolean }) {
   );
 }
 
-function EmptyBox({ rank, cents, apex = false }: { rank: number; cents: number; apex?: boolean }) {
+function EmptyBox({ seat, cents, apex = false }: { seat: number; cents: number; apex?: boolean }) {
   return (
     <Link
       href={`/submit?cents=${cents}`}
@@ -147,7 +112,7 @@ function EmptyBox({ rank, cents, apex = false }: { rank: number; cents: number; 
       }`}
     >
       <span className="tnum text-2xl leading-none font-semibold text-muted/30 transition-colors group-hover:text-accent">
-        {rank}
+        {seat}
       </span>
       <span className="mt-1.5 text-[11px] text-muted/60 transition-colors group-hover:text-accent">
         {apex ? "the royal box" : "front row"} · {formatPrice(cents)}
@@ -158,7 +123,7 @@ function EmptyBox({ rank, cents, apex = false }: { rank: number; cents: number; 
 
 /* -------------------------------------------------------------------- seats */
 
-function Seat({ row, size }: { row: BoardRow; size: number }) {
+function Seat({ row, seat, size }: { row: BoardRow; seat: number; size: number }) {
   return (
     <a
       href={`/r/${row.slug}`}
@@ -178,8 +143,8 @@ function Seat({ row, size }: { row: BoardRow; size: number }) {
       <span className="tnum text-[10px] leading-none font-medium text-muted">
         {formatPrice(row.price_cents)}
       </span>
-      <span className="tnum absolute top-1 left-1.5 text-[9px] leading-none text-muted/45">
-        {row.rank}
+      <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/45">
+        {seat}
       </span>
 
       {/* Detail lives in the tooltip: a seat this size can't carry it, and the
@@ -194,7 +159,7 @@ function Seat({ row, size }: { row: BoardRow; size: number }) {
   );
 }
 
-function EmptySeat({ rank, size, cents }: { rank: number; size: number; cents: number }) {
+function EmptySeat({ seat, size, cents }: { seat: number; size: number; cents: number }) {
   return (
     <Link
       href={`/submit?cents=${cents}`}
@@ -204,8 +169,8 @@ function EmptySeat({ rank, size, cents }: { rank: number; size: number; cents: n
       <span className="tnum text-[11px] leading-none text-muted/45 transition-colors group-hover:text-accent">
         {formatPrice(cents)}
       </span>
-      <span className="tnum absolute top-1 left-1.5 text-[9px] leading-none text-muted/25">
-        {rank}
+      <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/25">
+        {seat}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
         Empty seat · from {formatPrice(cents)}/mo
@@ -216,73 +181,79 @@ function EmptySeat({ rank, size, cents }: { rank: number; size: number; cents: n
 
 /* ---------------------------------------------------------------- the house */
 
-export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents: number }) {
-  const byRank = new Map(rows.map((r) => [r.rank, r]));
-  const [apex, flanks, ...backRows] = rowsOfRanks();
+export function Auditorium({ rows }: { rows: BoardRow[] }) {
+  // Seats are assigned by price bracket, not by raw ordering, so a listing
+  // never appears in a row it has not paid for.
+  const seats = placeListings(rows);
+  const bySeat = new Map<number, BoardRow>();
+  for (const row of rows) {
+    const seat = seats.get(row.id);
+    if (seat) bySeat.set(seat, row);
+  }
+
+  const [apexRow, frontRow, ...houseRows] = ROWS;
 
   return (
-    <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1.5 rounded-[2.5rem] pt-2">
+    <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-[2.5rem] pt-2">
       {/* The royal box: one seat, alone, centred and lifted above the rest. */}
       <div className="flex w-full items-stretch justify-center">
-        {apex.map((rank) => {
-          const listing = byRank.get(rank);
-          return listing ? (
-            <Box key={rank} row={listing} apex />
-          ) : (
-            <EmptyBox key={rank} rank={rank} cents={ROW_ASKING_CENTS[0]} apex />
-          );
-        })}
+        {bySeat.get(1) ? (
+          <Box row={bySeat.get(1)!} apex />
+        ) : (
+          <EmptyBox seat={1} cents={apexRow.askingCents} apex />
+        )}
       </div>
 
       {/* Front row: the only other seats with room for a pitch. */}
       <div className="flex w-full items-stretch justify-center gap-2 md:gap-3">
-        {flanks.map((rank) => {
-          const listing = byRank.get(rank);
-          return listing ? (
-            <Box key={rank} row={listing} />
+        {[2, 3].map((seat) =>
+          bySeat.get(seat) ? (
+            <Box key={seat} row={bySeat.get(seat)!} />
           ) : (
-            <EmptyBox key={rank} rank={rank} cents={ROW_ASKING_CENTS[1]} />
-          );
-        })}
+            <EmptyBox key={seat} seat={seat} cents={frontRow.askingCents} />
+          ),
+        )}
       </div>
 
-      <p className="mt-1 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">the house</p>
+      <p className="mt-0.5 mb-0.5 text-[10px] tracking-[0.22em] text-muted/45 uppercase">
+        the house
+      </p>
 
-      {backRows.map((ranks, i) => {
+      {houseRows.map((row, i) => {
         const rowIndex = i + 2;
-        const size = SEAT_PX[rowIndex];
-        const curve = ROW_CURVE[rowIndex];
-        const letter = ROW_LETTERS[i] ?? "";
-        const asking = ROW_ASKING_CENTS[rowIndex] ?? floorCents;
+        const offset = rowOffset(rowIndex);
+        const seatNumbers = Array.from({ length: row.seats }, (_, n) => offset + n);
         let seatIndex = -1;
 
         return (
           <div
-            key={rowIndex}
+            key={row.label}
             className="flex w-full items-center justify-center"
-            style={{ paddingBottom: curve }}
+            style={{ paddingBottom: row.curvePx }}
           >
-            <span className="tnum w-5 pr-1.5 text-right text-[9px] text-muted/35">{letter}</span>
+            <span className="tnum w-5 pr-1.5 text-right text-[9px] text-muted/35">
+              {row.label}
+            </span>
 
-            {intoBlocks(ranks).map((block, blockIndex) => (
+            {intoBlocks(seatNumbers).map((block, blockIndex) => (
               <span key={blockIndex} className="flex items-center">
                 {blockIndex > 0 && <span aria-hidden style={{ width: AISLE }} />}
-                <span className="flex gap-1.5">
-                  {block.map((rank) => {
+                <span className="flex gap-1">
+                  {block.map((seat) => {
                     seatIndex += 1;
-                    const listing = byRank.get(rank);
-                    const lift = arcOffset(seatIndex, ranks.length, curve);
+                    const listing = bySeat.get(seat);
+                    const lift = arcOffset(seatIndex, row.seats, row.curvePx);
 
                     return (
                       <span
-                        key={rank}
+                        key={seat}
                         style={{ transform: `translateY(${lift}px)` }}
                         className="shrink-0"
                       >
                         {listing ? (
-                          <Seat row={listing} size={size} />
+                          <Seat row={listing} seat={seat} size={row.sizePx} />
                         ) : (
-                          <EmptySeat rank={rank} size={size} cents={asking} />
+                          <EmptySeat seat={seat} size={row.sizePx} cents={row.askingCents} />
                         )}
                       </span>
                     );
@@ -291,11 +262,10 @@ export function Auditorium({ rows, floorCents }: { rows: BoardRow[]; floorCents:
               </span>
             ))}
 
-            <span className="tnum w-5 pl-1.5 text-[9px] text-muted/35">{letter}</span>
+            <span className="tnum w-5 pl-1.5 text-[9px] text-muted/35">{row.label}</span>
           </div>
         );
       })}
-
     </div>
   );
 }

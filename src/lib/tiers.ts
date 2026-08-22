@@ -22,7 +22,9 @@ export type Tier = {
  */
 export const TIERS: Tier[] = [
   { cents: 700, label: "$7" },
+  { cents: 900, label: "$9" },
   { cents: 1200, label: "$12" },
+  { cents: 1500, label: "$15" },
   { cents: 1900, label: "$19" },
   { cents: 2900, label: "$29" },
   { cents: 3900, label: "$39" },
@@ -43,7 +45,7 @@ export const TIERS: Tier[] = [
 ];
 
 export const FLOOR_CENTS = TIERS[0].cents;
-export const BOARD_SIZE = 100;
+export { BOARD_SIZE } from "./seating";
 
 /** Maps tier price -> Polar product id, from POLAR_PRODUCT_IDS. */
 export function productIdForCents(cents: number): string {
