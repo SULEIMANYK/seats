@@ -101,9 +101,12 @@ const STATUS_LABEL: Record<Listing["status"], string> = {
 
 export default async function ManagePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ token: string }>;
+  searchParams: Promise<{ new?: string }>;
 }) {
+  const { new: isNew } = await searchParams;
   const { token } = await params;
   const supabase = db();
 
@@ -151,6 +154,16 @@ export default async function ManagePage({
       <Link href="/" className="relative z-10 text-sm text-muted transition hover:text-fg">
         ← back to the board
       </Link>
+
+      {isNew && (
+        <section className="relative z-10 mt-5 rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
+          <h2 className="text-[15px] font-semibold">You&apos;re on the board.</h2>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            Save this page&apos;s address — it is the only way to edit or remove your listing,
+            and it is shown nowhere else. Anyone with the link controls the listing.
+          </p>
+        </section>
+      )}
 
       <header className="relative z-10 mt-6 mb-8 flex items-center justify-between gap-3">
         <div className="flex min-w-0 items-center gap-3">

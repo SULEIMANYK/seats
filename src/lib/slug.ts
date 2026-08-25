@@ -45,3 +45,21 @@ export function displayDomain(url: string): string {
     return url;
   }
 }
+
+/**
+ * Accepts a user-supplied image URL, or null.
+ *
+ * Only https is allowed: an http image on an https page is blocked by the
+ * browser anyway, and would show as a broken card rather than a picture.
+ */
+export function normalizeImageUrl(input: string | undefined | null): string | null {
+  if (!input?.trim()) return null;
+  try {
+    const parsed = new URL(input.trim());
+    if (parsed.protocol !== "https:") return null;
+    if (!parsed.hostname.includes(".")) return null;
+    return parsed.toString().slice(0, 500);
+  } catch {
+    return null;
+  }
+}

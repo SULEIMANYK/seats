@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
@@ -8,6 +9,7 @@ import { CATEGORIES } from "@/lib/categories";
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
 export function SubmitForm({ full }: { full: boolean }) {
+  const router = useRouter();
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
 
@@ -36,6 +38,8 @@ export function SubmitForm({ full }: { full: boolean }) {
         tagline: form.get("tagline"),
         email: form.get("email"),
         category: form.get("category") || null,
+        logoUrl: form.get("logoUrl") || null,
+        imageUrl: form.get("imageUrl") || null,
       }),
     });
 
@@ -46,7 +50,9 @@ export function SubmitForm({ full }: { full: boolean }) {
       return;
     }
 
-    window.location.href = data.url;
+    // Straight to the manage page: it is the only place the manage token is
+    // ever shown, and it doubles as confirmation that the listing is up.
+    router.push(`/manage/${data.manageToken}?new=1`);
   }
 
   const labelCls = "text-[11px] font-semibold tracking-wide text-muted uppercase";
@@ -146,6 +152,26 @@ export function SubmitForm({ full }: { full: boolean }) {
             </select>
             <p className="text-[11px] text-muted/70">
               Optional. Shown on your listing and on the stats page.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="logoUrl" className={labelCls}>
+              Logo URL
+            </label>
+            <input id="logoUrl" name="logoUrl" className={inputCls} placeholder="https://acme.com/logo.png" />
+            <p className="text-[11px] text-muted/70">
+              Optional. Without one we use your site&apos;s favicon.
+            </p>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="imageUrl" className={labelCls}>
+              Screenshot URL
+            </label>
+            <input id="imageUrl" name="imageUrl" className={inputCls} placeholder="https://acme.com/screenshot.png" />
+            <p className="text-[11px] text-muted/70">
+              Optional. Shown only if you reach the front row, where there&apos;s room for it.
             </p>
           </div>
 

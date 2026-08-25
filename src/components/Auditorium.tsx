@@ -83,6 +83,19 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
         </span>
       </div>
 
+      {row.image_url && (
+        <div className="mt-2 min-h-0 flex-1 overflow-hidden rounded-xl ring-1 ring-edge">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={row.image_url}
+            alt=""
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            className="size-full object-cover"
+          />
+        </div>
+      )}
+
       <div className="mt-2 min-w-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img

@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { isValidCategory } from "@/lib/categories";
 import { db } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
-import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
+import { canonicalDomain, makeSlug, normalizeImageUrl, normalizeUrl } from "@/lib/slug";
 
 export const runtime = "nodejs";
 
@@ -22,6 +22,8 @@ type Body = {
   tagline?: string;
   email?: string;
   category?: string;
+  logoUrl?: string;
+  imageUrl?: string;
 };
 
 /** Recent submissions per hashed IP, to blunt scripted signups. */
@@ -51,6 +53,10 @@ export async function POST(request: Request) {
   const email = body.email?.trim().toLowerCase();
   const url = body.url ? normalizeUrl(body.url) : null;
   const category = isValidCategory(body.category) ? body.category : null;
+  // Both optional. A bad value is dropped rather than refused — a broken
+  // image link should not stop someone getting on the board.
+  const logoUrl = normalizeImageUrl(body.logoUrl);
+  const imageUrl = normalizeImageUrl(body.imageUrl);
 
   if (!name || name.length > 60) {
     return NextResponse.json({ error: "Name is required (max 60 characters)" }, { status: 400 });
@@ -124,6 +130,8 @@ export async function POST(request: Request) {
       tagline,
       email,
       category,
+      logo_url: logoUrl,
+      image_url: imageUrl,
       submit_ip_hash: ipHash,
       price_cents: 0,
       // Nothing to wait for, so the listing goes up immediately.

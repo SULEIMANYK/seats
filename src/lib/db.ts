@@ -30,6 +30,7 @@ export type BoardRow = {
   url: string;
   tagline: string;
   logo_url: string | null;
+  image_url: string | null;
   price_cents: number;
   tier_since: string;
   status: "active" | "past_due";
@@ -53,6 +54,7 @@ export type Listing = {
   domain: string;
   tagline: string;
   logo_url: string | null;
+  image_url: string | null;
   email: string;
   category: string | null;
   tagline_b: string | null;
