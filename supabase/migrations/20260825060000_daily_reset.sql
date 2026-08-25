@@ -57,3 +57,17 @@ select
 from board b;
 
 grant select, insert, update, delete on all tables in schema public to service_role;
+
+-- A listing reappears on a later day as a new row, so the slug can no longer
+-- be globally unique — it is unique per day. The click redirect resolves the
+-- slug to today's row, so links keep working across days.
+alter table listings drop constraint if exists listings_slug_key;
+create unique index if not exists listings_slug_day_unique on listings (slug, seat_day);
+
+-- Domain uniqueness has to be per day too. It was unique across all time,
+-- which meant a listing that held a seat yesterday could never claim one
+-- again — reclaim would fail on the index every time.
+drop index if exists listings_domain_live_idx;
+create unique index if not exists listings_domain_day_unique
+  on listings (domain, seat_day)
+  where status in ('active', 'past_due');

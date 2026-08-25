@@ -20,6 +20,9 @@ export async function GET(
     .from("listings")
     .select("id, url, status")
     .eq("slug", slug)
+    // A slug repeats across days, so resolve to the most recent claim.
+    .order("seat_day", { ascending: false })
+    .limit(1)
     .maybeSingle<{ id: string; url: string; status: string }>();
 
   if (!listing || listing.status === "canceled") {

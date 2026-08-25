@@ -172,10 +172,15 @@ function Seat({
         style={{ width: height * 0.44, height: height * 0.44 }}
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
-      <span className="tnum text-[10px] leading-none font-medium text-muted">
-        {row.clicks_24h.toLocaleString()}
+      {height >= 55 && (
+        <span className="w-full truncate px-1 text-center text-[10px] leading-none font-medium">
+          {row.name}
+        </span>
+      )}
+      <span className="tnum text-[9px] leading-none text-muted">
+        {row.clicks_24h.toLocaleString()} {row.clicks_24h === 1 ? "click" : "clicks"}
       </span>
-      <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/45">
+      <span className="tnum absolute top-1 left-1.5 rounded bg-bg/70 px-1 text-[8px] leading-[1.4] font-medium text-muted backdrop-blur-sm">
         {seat}
       </span>
 
@@ -196,13 +201,16 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
     <Link
       href={`/submit?seat=${seat}`}
       style={{ width, height }}
-      className="group relative flex flex-col items-center justify-center gap-0.5 rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
+      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-[#14141a]/[0.03] ring-1 ring-black/[0.025] transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:shadow-[0_10px_24px_-12px_rgba(20,20,26,0.3)] hover:ring-accent"
     >
       <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-accent">
         claim
       </span>
-      <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/25">
+      <span className="tnum text-[13px] leading-none font-semibold text-muted/35 transition-colors group-hover:text-accent">
         {seat}
+      </span>
+      <span className="text-[9px] leading-none text-transparent transition-colors group-hover:text-accent">
+        claim
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
         Seat {seat} — claim it

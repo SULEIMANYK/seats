@@ -4,7 +4,7 @@ import { isValidCategory } from "@/lib/categories";
 import { isValidPricingModel } from "@/lib/pricing";
 import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { BOARD_SIZE } from "@/lib/seating";
+import { BOARD_SIZE, SEATS_PER_ACCOUNT } from "@/lib/seating";
 import { canonicalDomain, makeSlug, normalizeImageUrl, normalizeUrl } from "@/lib/slug";
 
 export const runtime = "nodejs";
@@ -106,18 +106,19 @@ export async function POST(request: Request) {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // One seat per account per day. Yesterday's claim does not count.
-  const { data: mine } = await supabase
+  // Up to two seats per account per day. Yesterday's claims do not count.
+  const { count: mine } = await supabase
     .from("listings")
-    .select("id, seat")
+    .select("*", { count: "exact", head: true })
     .eq("owner_email", owner)
     .eq("seat_day", today)
-    .in("status", ["active", "past_due"])
-    .maybeSingle();
+    .in("status", ["active", "past_due"]);
 
-  if (mine) {
+  if ((mine ?? 0) >= SEATS_PER_ACCOUNT) {
     return NextResponse.json(
-      { error: `You already hold seat ${mine.seat} today. Seats reset at midnight UTC.` },
+      {
+        error: `You already hold ${SEATS_PER_ACCOUNT} seats today. Seats reset at midnight UTC.`,
+      },
       { status: 409 },
     );
   }

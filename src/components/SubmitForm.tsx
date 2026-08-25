@@ -259,7 +259,7 @@ export function SubmitForm({
               {email}
             </p>
             <p className="text-[11px] text-muted/70">
-              Signed in. One seat per account per day, so nobody can take several.
+              Signed in. Up to two seats a day per account, and one seat per product — so nobody lists the same thing twice.
             </p>
           </div>
         </div>

@@ -41,6 +41,16 @@ export const ROWS: Row[] = [
 
 export const BOARD_SIZE = ROWS.reduce((n, r) => n + r.seats, 0);
 
+/**
+ * Seats one account may hold in a day.
+ *
+ * Two rather than one, so somebody with two products can list both — but a
+ * hard cap, so nobody quietly fills the house. Duplicates are prevented
+ * separately, by the one-listing-per-domain rule, which means the two seats
+ * must be two different products.
+ */
+export const SEATS_PER_ACCOUNT = 2;
+
 /** Seat number of the first seat in a row (1-based). */
 export function rowOffset(index: number): number {
   return ROWS.slice(0, index).reduce((n, r) => n + r.seats, 0) + 1;
