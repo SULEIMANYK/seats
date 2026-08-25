@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 /**
  * Counts down to the nightly clear.
@@ -28,17 +28,32 @@ function untilMidnightUTC(): { h: number; m: number; s: number; total: number } 
 
 export function ResetTimer() {
   const [left, setLeft] = useState<ReturnType<typeof untilMidnightUTC> | null>(null);
+  const day = useRef<string | null>(null);
 
   useEffect(() => {
     // Scheduled rather than set synchronously: a setState during the effect
     // itself triggers a cascading render.
     const first = setTimeout(() => setLeft(untilMidnightUTC()), 0);
+    day.current = new Date().toISOString().slice(0, 10);
+
     const id = setInterval(() => {
       const next = untilMidnightUTC();
       setLeft(next);
+
       // The board is server-rendered, so once the day rolls over the page is
       // stale — reload rather than show a fresh timer over yesterday's seats.
-      if (next.total <= 1000) window.location.reload();
+      //
+      // Keyed on the UTC date changing, not on the countdown reaching zero.
+      // Reloading at `total <= 1000` fired in the last second *before*
+      // midnight, so the request arrived while the server still called it
+      // yesterday: the page came back with the old board, the countdown
+      // jumped to ~24h, and nothing reloaded again. Whoever was watching sat
+      // on yesterday's seats until they refreshed by hand.
+      const now = new Date().toISOString().slice(0, 10);
+      if (day.current && now !== day.current) {
+        day.current = now;
+        window.location.reload();
+      }
     }, 1000);
     return () => {
       clearTimeout(first);
