@@ -197,3 +197,49 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .pill, .pill:hover, .pill:active { transition: none; transform: none; }
 }
+
+/* ---------------------------------------------------------------------------
+   Seat scale.
+
+   Rows A-E were laid out at fixed pixel heights, which is fine on a tall
+   window and silently destructive on a short one: the five back rows kept
+   their full height, so the royal box and the front row -- the seats the
+   whole page is selling -- were the ones pushed out of view.
+
+   The rows now shrink together with the viewport instead. Height is the only
+   constraint worth scaling on; the widths are already in vw.
+   --------------------------------------------------------------------------- */
+.house {
+  --seat-scale: 1;
+}
+
+@media (max-height: 900px) {
+  .house { --seat-scale: 0.88; }
+}
+
+@media (max-height: 800px) {
+  .house { --seat-scale: 0.78; }
+}
+
+@media (max-height: 700px) {
+  .house { --seat-scale: 0.66; }
+}
+
+@media (max-height: 620px) {
+  .house { --seat-scale: 0.56; }
+}
+
+/* On a short viewport the top three cards have to give something up. Better
+   to drop the least important line outright than to shrink every line until
+   the card is a rank number over a sliver of a logo. */
+@media (max-height: 800px) {
+  .seat-sub { display: none; }
+}
+
+@media (max-height: 700px) {
+  .seat-tagline { -webkit-line-clamp: 1; }
+}
+
+@media (max-height: 620px) {
+  .seat-tagline { display: none; }
+}

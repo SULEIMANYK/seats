@@ -70,14 +70,14 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       href={`/r/${row.slug}`}
       target="_blank"
       rel="noopener"
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
+      className={`group relative flex h-full flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
           ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft card-shadow-lift"
           : "w-[clamp(12rem,27vw,22rem)] border-gold-line card-shadow"
       } ${dimmed ? "opacity-20 grayscale" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className={`tnum leading-none font-semibold text-gold ${apex ? "text-4xl" : "text-3xl"}`}>
+        <span className={`tnum leading-none font-semibold text-gold ${apex ? "text-3xl" : "text-2xl"}`}>
           {row.rank}
         </span>
         <span className="tnum rounded-full bg-gold-soft px-1.5 py-0.5 text-[10px] leading-none text-gold">
@@ -91,22 +91,29 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
         </div>
       )}
 
-      <div className="mt-2 min-w-0">
+      {/* Logo beside the name, not above it. Stacked, an occupied royal box
+          measured 196px against ~90px empty, and three occupied top seats
+          pushed the whole house past the viewport it promises to fit in. */}
+      <div className="mt-1.5 flex min-h-0 min-w-0 items-start gap-2 overflow-hidden">
         <Favicon
           logoUrl={row.logo_url}
           domain={displayDomain(row.url)}
-          className="mb-1.5 size-8 rounded-lg bg-bg object-contain p-0.5 ring-1 ring-edge"
+          className="size-8 shrink-0 rounded-lg bg-bg object-contain p-0.5 ring-1 ring-edge"
         />
-        <p className="truncate text-[17px] font-semibold tracking-tight">{row.name}</p>
-        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-muted">{row.tagline}</p>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[16px] font-semibold tracking-tight">{row.name}</p>
+          <p className={`seat-tagline mt-0.5 text-[12px] leading-snug text-muted ${apex ? "line-clamp-2" : "line-clamp-1"}`}>
+            {row.tagline}
+          </p>
+        </div>
         {row.pricing_model && (
-          <span className="mt-1 inline-block rounded-full bg-faint px-2 py-0.5 text-[10px] text-muted">
+          <span className="shrink-0 rounded-full bg-faint px-2 py-0.5 text-[10px] whitespace-nowrap text-muted">
             {row.pricing_model}
           </span>
         )}
       </div>
 
-      <p className="tnum mt-auto truncate pt-1.5 text-[10px] text-muted/80">
+      <p className="seat-sub tnum mt-auto truncate pt-1.5 text-[10px] text-muted/80">
         {displayDomain(row.url)} · {row.clicks_24h.toLocaleString()} clicks today
       </p>
 
@@ -118,7 +125,7 @@ function EmptyBox({ seat, apex = false }: { seat: number; apex?: boolean }) {
   return (
     <Link
       href="/submit"
-      className={`group flex flex-col items-center justify-center rounded-2xl border-2 bg-faint p-3 transition-all duration-150 hover:-translate-y-1 hover:border-transparent hover:bg-gold hover:card-shadow ${
+      className={`group flex h-full max-h-[11rem] flex-col items-center justify-center rounded-2xl border-2 bg-faint p-3 transition-all duration-150 hover:-translate-y-1 hover:border-transparent hover:bg-gold hover:card-shadow ${
         apex ? "w-[clamp(15rem,34vw,28rem)] border-gold" : "w-[clamp(12rem,27vw,22rem)] border-gold-line"
       }`}
     >
@@ -152,7 +159,7 @@ function Seat({
       href={`/r/${row.slug}`}
       target="_blank"
       rel="noopener"
-      style={{ width, height }}
+      style={{ width, height: `calc(var(--seat-scale, 1) * ${height}px)` }}
       className={`group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift ${
         dimmed ? "opacity-20 grayscale" : ""
       }`}
@@ -160,7 +167,10 @@ function Seat({
       <Favicon
         logoUrl={row.logo_url}
         domain={displayDomain(row.url)}
-        style={{ width: height * 0.44, height: height * 0.44 }}
+        style={{
+          width: `calc(var(--seat-scale, 1) * ${height * 0.44}px)`,
+          height: `calc(var(--seat-scale, 1) * ${height * 0.44}px)`,
+        }}
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
       {height >= 55 && (
@@ -191,7 +201,7 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
   return (
     <Link
       href={`/submit?seat=${seat}`}
-      style={{ width, height }}
+      style={{ width, height: `calc(var(--seat-scale, 1) * ${height}px)` }}
       className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-faint ring-1 ring-edge transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-gold hover:shadow-[3px_3px_0_var(--hard-shadow)] hover:ring-transparent"
     >
       <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-[#141413]">
@@ -241,7 +251,10 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
   return (
     <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-[2.5rem] pt-2">
       {/* The royal box: one seat, alone, centred and lifted above the rest. */}
-      <div className="flex w-full items-stretch justify-center">
+      <div
+        className="flex w-full min-h-0 flex-[1.1] items-stretch justify-center"
+        style={{ minHeight: "calc(var(--seat-scale, 1) * 150px)" }}
+      >
         {bySeat.get(1) ? (
           <Box row={bySeat.get(1)!} apex dimmed={isDimmed(bySeat.get(1)!)} />
         ) : (
@@ -250,7 +263,10 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
       </div>
 
       {/* Front row: the only other seats with room for a pitch. */}
-      <div className="flex w-full items-stretch justify-center gap-2 md:gap-3">
+      <div
+        className="flex w-full min-h-0 flex-1 items-stretch justify-center gap-2 md:gap-3"
+        style={{ minHeight: "calc(var(--seat-scale, 1) * 138px)" }}
+      >
         {[2, 3].map((seat) =>
           bySeat.get(seat) ? (
             <Box key={seat} row={bySeat.get(seat)!} dimmed={isDimmed(bySeat.get(seat)!)} />
