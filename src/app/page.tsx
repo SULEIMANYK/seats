@@ -1,6 +1,5 @@
 import Link from "next/link";
-import { Auditorium } from "@/components/Auditorium";
-import { BoardList } from "@/components/BoardList";
+import { Board } from "@/components/Board";
 import { ResetTimer } from "@/components/ResetTimer";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -124,15 +123,8 @@ export default async function Home() {
         </div>
       </header>
 
-      <div className="flex min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 xl:h-[calc(100dvh-4.5rem)]">
-        {/* The chart needs ~1200px before its widest row fits. Below that the
-            same board is a ranked list, which is what a phone is good at. */}
-        <div className="hidden xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
-          <Auditorium rows={rows} />
-        </div>
-        <div className="xl:hidden">
-          <BoardList rows={rows} />
-        </div>
+      <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-10 sm:px-6">
+        <Board rows={rows} />
       </div>
 
       {/* Below the fold. The chart owns the first screen; anyone who scrolls
@@ -143,17 +135,17 @@ export default async function Home() {
 
           <div className="mt-6 grid gap-8 text-[13px] leading-relaxed text-muted sm:grid-cols-3">
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Pay for tools, not position</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">Free, with no catch</h3>
               <p>
-                No fee, no plan, no card. A seat costs nothing — what it costs you is being
-                worth clicking.</p>
+                No fee, no plan, no card, no upsell. A seat costs nothing — the only thing
+                it asks is that you turn up before the fifty are gone.
+              </p>
             </div>
             <div>
-              <h3 className="mb-1.5 font-semibold text-fg">Clicks move you forward</h3>
+              <h3 className="mb-1.5 font-semibold text-fg">First come, first served</h3>
               <p>
-                Seats are ordered by clicks per day over the last week. Earn more clicks
-                than the listing in front of you and you take its seat — the board reorders
-                itself continuously.
+                Seats go in the order people claim them, and yours stays yours all day.
+                Nobody can outbid you or click their way past.
               </p>
             </div>
             <div>
@@ -172,9 +164,8 @@ export default async function Home() {
               site can&apos;t occupy two seats.
             </li>
             <li>
-              <span className="text-fg">New listings get a fair start.</span> Ranking uses
-              clicks per active day, not lifetime totals, so a listing that joined yesterday
-              can outrank one that joined last month.
+              <span className="text-fg">Two seats per account, one per site.</span> Nobody
+              can quietly fill the house, and the same product cannot appear twice.
             </li>
             <li>
               <span className="text-fg">Position cannot be bought or won.</span> There is no
@@ -182,12 +173,12 @@ export default async function Home() {
               not move anyone.
             </li>
             <li>
-              <span className="text-fg">Cancel any time.</span> You keep the seat until the
-              period you&apos;ve paid for ends. No refunds for part-months.
+              <span className="text-fg">Leave whenever you like.</span> Remove your listing
+              from the manage page and the seat frees up straight away for someone else.
             </li>
             <li>
-              <span className="text-fg">Every click is counted and shown to you.</span> If the
-              seat isn&apos;t worth what you pay, you&apos;ll be the first to know.
+              <span className="text-fg">Every click is counted, in public.</span> You can see
+              exactly what the seat sent you, and so can everyone else.
             </li>
           </ul>
 
