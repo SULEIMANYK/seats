@@ -137,8 +137,8 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             <div>
               <h3 className="mb-1.5 font-semibold text-fg">Only {BOARD_SIZE} seats</h3>
               <p>
-                When the house is full, nobody new gets in until a seat frees up. Listings
-                that stop earning clicks drift backwards and eventually out.
+                When the last one goes, the house is full and stays full. A seat only comes
+                free if its owner gives it up.
               </p>
             </div>
           </div>
@@ -155,9 +155,9 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
               can outrank one that joined last month.
             </li>
             <li>
-              <span className="text-fg">Position cannot be bought.</span> There is no upgrade,
-              no sponsored slot and no way to pay for a better seat. Clicks are the only
-              currency.
+              <span className="text-fg">Position cannot be bought or won.</span> There is no
+              payment, no bidding and no ranking. Clicks are counted and shown, but they do
+              not move anyone.
             </li>
             <li>
               <span className="text-fg">Cancel any time.</span> You keep the seat until the

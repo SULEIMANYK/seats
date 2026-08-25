@@ -72,8 +72,8 @@ export function SubmitForm({ full }: { full: boolean }) {
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
           <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            Decided by clicks earned in the last 24 hours. Everyone starts at the back and
-            the front row is won again every day — a good week holds nothing.
+            You take the next free seat and it stays yours. No bidding, no ranking, nobody
+            climbing past you.
           </p>
         </div>
 

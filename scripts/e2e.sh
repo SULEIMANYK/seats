@@ -56,7 +56,8 @@ is "click redirects" "$(code "$B/r/$SA")" 302
 for i in 1 2 3 4 5; do _curl -s -o /dev/null -m 15 -H "x-forwarded-for: 203.0.113.$i" "$B/r/$SA" >/dev/null; done
 sleep 3
 is "clicks recorded" "$(psql "$DB" -tAc "select clicks_24h from board where slug='$SA'")" 6
-is "more clicks ranks first" "$(psql "$DB" -tAc "select name from board order by rank limit 1")" "Alpha"
+# Seats are owned: arrival order decides, and clicks must not move anyone.
+is "first to arrive holds seat 1" "$(psql "$DB" -tAc "select name from board order by rank limit 1")" "Alpha"
 
 echo "── 5. features"
 has "badge shows rank" "$(body "$B/api/badge/$SA")" "#1 in"

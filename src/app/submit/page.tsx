@@ -36,7 +36,7 @@ export default async function SubmitPage() {
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
           {full
             ? "Every seat is taken right now. Seats free up when listings go quiet — check back."
-            : `Free. Add your ${SITE.noun}, and where you sit is decided by the clicks you earn.`}
+            : `Free. Add your ${SITE.noun} and the next seat is yours — nobody can take it from you.`}
         </p>
       </header>
 
