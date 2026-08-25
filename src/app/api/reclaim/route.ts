@@ -61,6 +61,25 @@ export async function POST(request: Request) {
     );
   }
 
+  // One seat per domain per day, the same rule /api/submit enforces. Without
+  // it the insert still failed — there is a unique index — but as a 23505,
+  // which was reported as "the seat went". Retrying could never work, and
+  // the message pointed at the wrong thing entirely.
+  const { data: already } = await supabase
+    .from("listings")
+    .select("id")
+    .eq("domain", prev.domain)
+    .eq("seat_day", today)
+    .in("status", ["active", "past_due"])
+    .maybeSingle();
+
+  if (already) {
+    return NextResponse.json(
+      { error: "That product already has a seat today." },
+      { status: 409 },
+    );
+  }
+
   const wanted = Number(body.seat);
   const picked =
     Number.isInteger(wanted) && wanted >= 1 && wanted <= BOARD_SIZE ? wanted : null;
@@ -114,8 +133,15 @@ export async function POST(request: Request) {
 
   if (error || !created) {
     if (error?.code === "23505") {
+      // Could be the seat, or the domain/slug losing a race with another
+      // tab. Only the seat is worth retrying, so only that one says so.
+      const seatRace = (error.message ?? "").includes("seat");
       return NextResponse.json(
-        { error: `Seat ${seat} went a moment ago. Try again.` },
+        {
+          error: seatRace
+            ? `Seat ${seat} went a moment ago. Try again.`
+            : "That product already has a seat today.",
+        },
         { status: 409 },
       );
     }
