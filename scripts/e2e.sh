@@ -2,14 +2,24 @@
 #
 # End-to-end suite. Exercises the live site and the database behind it.
 #
-#   BASE=https://seats.lol SB_TOKEN=sbp_... sh scripts/e2e.sh
+#   BASE=http://localhost:3000 SB_TOKEN=sbp_... sh scripts/e2e.sh
 #
 # It truncates listings, clicks, rank_events and visits, so point it at a
-# board you are willing to empty — never at one with paying customers on it.
-#
-# Not covered: completing a real payment, and the subscription.active webhook
-# that follows one. Both need Polar to have enabled checkout_payments.
-B="${BASE:-https://seats.lol}"
+# board you are willing to empty. A comment saying so was not enough: BASE
+# defaulted to production, so running the suite bare wiped the real board.
+# Now the live host has to be asked for by name, out loud.
+B="${BASE:?set BASE, e.g. http://localhost:3000 — this suite empties the board it runs against}"
+
+case "$B" in
+  *seats.lol*)
+    if [ "${I_KNOW_THIS_EMPTIES_THE_BOARD:-}" != "1" ]; then
+      echo "Refusing to run against $B: this truncates every listing." >&2
+      echo "If that is really what you want:" >&2
+      echo "  I_KNOW_THIS_EMPTIES_THE_BOARD=1 BASE=$B sh scripts/e2e.sh" >&2
+      exit 2
+    fi
+    ;;
+esac
 # SQL goes through Supabase's management API rather than psql — the database
 # password lives in a scratch file that gets cleared, the CLI token does not.
 export SB_TOKEN="${SB_TOKEN:?set SB_TOKEN to a Supabase management token}"
