@@ -48,7 +48,7 @@ export function ResetTimer() {
 
   // Reserve the space so the header does not jump when the clock appears.
   if (!left) {
-    return <span className="tnum text-[11px] text-[#fdf0d8]/60" aria-hidden>&nbsp;</span>;
+    return <span className="tnum text-[11px] text-[#eef2ec]/60" aria-hidden>&nbsp;</span>;
   }
 
   const pad = (n: number) => String(n).padStart(2, "0");
@@ -57,7 +57,7 @@ export function ResetTimer() {
   return (
     <span
       className={`tnum inline-flex items-center gap-1.5 text-[11px] ${
-        soon ? "text-gold-line" : "text-[#fdf0d8]/60"
+        soon ? "text-gold-line" : "text-[#eef2ec]/60"
       }`}
       title="Every seat is cleared at midnight UTC"
     >

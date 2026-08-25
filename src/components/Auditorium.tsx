@@ -68,7 +68,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       rel="noopener"
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
-          ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(230,192,136,0.6),0_18px_44px_-18px_rgba(168,105,10,0.4)]"
+          ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(221,188,114,0.65),0_18px_44px_-18px_rgba(138,95,15,0.34)]"
           : "w-[clamp(12rem,27vw,22rem)] border-gold-line card-shadow"
       } ${dimmed ? "opacity-20 grayscale" : ""}`}
     >
@@ -188,7 +188,7 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
     <Link
       href={`/submit?seat=${seat}`}
       style={{ width, height }}
-      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-[#7c2d2d]/[0.045] ring-1 ring-[#7c2d2d]/[0.05] transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:shadow-[0_10px_24px_-12px_rgba(124,45,45,0.3)] hover:ring-accent"
+      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-[#1b3b32]/[0.045] ring-1 ring-[#1b3b32]/[0.05] transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:shadow-[0_10px_24px_-12px_rgba(23,26,24,0.28)] hover:ring-accent"
     >
       <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-accent">
         claim

@@ -19,7 +19,7 @@ export function Logo({ className = "size-6" }: { className?: string }) {
 
       {/* Front row — the gold one is the seat everyone wants */}
       <rect x="5" y="21" width="5" height="5.5" rx="1.5" fill="currentColor" opacity="0.5" />
-      <rect x="13" y="22" width="6" height="5.5" rx="1.5" fill="#e8c877" />
+      <rect x="13" y="22" width="6" height="5.5" rx="1.5" fill="#ddbc72" />
       <rect x="22" y="21" width="5" height="5.5" rx="1.5" fill="currentColor" opacity="0.5" />
     </svg>
   );

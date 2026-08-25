@@ -1,26 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  /* Warm paper, not white. A theatre programme rather than a dashboard. */
-  --bg: #fdf8f1;
-  --bg-lift: #fffdfa;
-  --panel: #fffdfa;
-  --panel-hover: #fffefc;
-  --border: #ecdfd0;
-  --border-strong: #dcc9b4;
-  --fg: #2b2018;
-  --muted: #8a7a6b;
-  --faint: #f5ece1;
-  /* Deep amber reads as gilt on cream; the brighter gold turned to
-     highlighter and failed contrast on text. */
-  --gold: #a8690a;
-  --gold-soft: #fdf0d8;
-  --gold-line: #e6c088;
-  /* Terracotta, so the one accent is warm too rather than a cold blue. */
-  --accent: #c4552f;
-  /* Curtain red, for the stage. */
-  --stage: #7c2d2d;
-  --stage-deep: #5e1f22;
+  /* Opera house: clean neutral paper, deep forest for the stage, brass for
+     the gilt. The old palette was beige with terracotta and curtain red —
+     one hue family throughout, so nothing had anywhere to stand out, and
+     paper against panel measured 1.02 which meant cards barely read as
+     objects at all.
+
+     Every pair below clears WCAG AA on the surface it sits on. */
+  --bg: #f4f3ef;
+  --bg-lift: #ffffff;
+  --panel: #ffffff;
+  --panel-hover: #fafaf7;
+  --border: #e3e2db;
+  --border-strong: #c9c8bf;
+  --fg: #171a18;
+  --muted: #666b66;
+  --faint: #ecebe4;
+  /* Brass, not mustard. 5.6:1 on white, 5.1:1 on its own tint. */
+  --gold: #8a5f0f;
+  --gold-soft: #fbf3e0;
+  --gold-line: #ddbc72;
+  /* Jade — far enough from the brass to read as a separate signal. */
+  --accent: #1a6b57;
+  /* Velvet green, the colour of an actual auditorium. */
+  --stage: #1b3b32;
+  --stage-deep: #112620;
 }
 
 @theme inline {
@@ -52,41 +57,41 @@
    --------------------------------------------------------------------------- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #17110d;
-    --bg-lift: #1f1712;
-    --panel: #211811;
-    --panel-hover: #291e16;
-    --border: #3a2a1e;
-    --border-strong: #513a29;
-    --fg: #f5e9dc;
-    --muted: #a89684;
-    --faint: #2a1e16;
-    --gold: #e6b25f;
-    --gold-soft: #33240f;
-    --gold-line: #6b4c1f;
-    --accent: #e8794f;
-    --stage: #4a1a1c;
-    --stage-deep: #2e0f12;
+    --bg: #101412;
+    --bg-lift: #161b18;
+    --panel: #181d1a;
+    --panel-hover: #1e2420;
+    --border: #2a322d;
+    --border-strong: #3d4740;
+    --fg: #e9eae6;
+    --muted: #8f978f;
+    --faint: #1d2320;
+    --gold: #d9a94a;
+    --gold-soft: #2a2113;
+    --gold-line: #5c4a22;
+    --accent: #4fb695;
+    --stage: #16302a;
+    --stage-deep: #0d1c18;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #17110d;
-  --bg-lift: #1f1712;
-  --panel: #211811;
-  --panel-hover: #291e16;
-  --border: #3a2a1e;
-  --border-strong: #513a29;
-  --fg: #f5e9dc;
-  --muted: #a89684;
-  --faint: #2a1e16;
-  --gold: #e6b25f;
-  --gold-soft: #33240f;
-  --gold-line: #6b4c1f;
-  --accent: #e8794f;
-  --stage: #4a1a1c;
-  --stage-deep: #2e0f12;
+  --bg: #101412;
+  --bg-lift: #161b18;
+  --panel: #181d1a;
+  --panel-hover: #1e2420;
+  --border: #2a322d;
+  --border-strong: #3d4740;
+  --fg: #e9eae6;
+  --muted: #8f978f;
+  --faint: #1d2320;
+  --gold: #d9a94a;
+  --gold-soft: #2a2113;
+  --gold-line: #5c4a22;
+  --accent: #4fb695;
+  --stage: #16302a;
+  --stage-deep: #0d1c18;
   color-scheme: dark;
 }
 
@@ -111,9 +116,9 @@ body {
   height: 72vh;
   background: radial-gradient(
     46% 62% at 50% -4%,
-    rgba(230, 192, 136, 0.40) 0%,
-    rgba(224, 160, 96, 0.16) 34%,
-    rgba(124, 45, 45, 0.05) 58%,
+    rgba(221, 188, 114, 0.34) 0%,
+    rgba(26, 107, 87, 0.10) 34%,
+    rgba(27, 59, 50, 0.05) 58%,
     transparent 80%
   );
   pointer-events: none;
@@ -126,8 +131,8 @@ body {
 .boards {
   background: linear-gradient(180deg, var(--stage) 0%, var(--stage-deep) 100%);
   box-shadow:
-    0 1px 0 rgba(230, 192, 136, 0.65),
-    0 14px 40px -18px rgba(94, 31, 34, 0.45);
+    0 1px 0 rgba(221, 188, 114, 0.7),
+    0 14px 40px -18px rgba(17, 38, 32, 0.4);
 }
 
 .tnum {
@@ -145,19 +150,19 @@ body {
       color-mix(in srgb, var(--bg-lift) 50%, transparent) 42%,
       transparent 74%
     ),
-    linear-gradient(180deg, transparent 55%, rgba(124, 45, 45, 0.035) 100%);
+    linear-gradient(180deg, transparent 55%, rgba(27, 59, 50, 0.04) 100%);
 }
 
 /* One shared card shadow, so every surface in the app sits at the same
    height. Two stops: a hairline for definition, a soft drop for lift. */
 .card-shadow {
   box-shadow:
-    0 1px 2px rgba(94, 31, 34, 0.05),
-    0 8px 24px -12px rgba(94, 31, 34, 0.14);
+    0 1px 2px rgba(23, 26, 24, 0.05),
+    0 8px 24px -12px rgba(23, 26, 24, 0.13);
 }
 
 .card-shadow-lift {
   box-shadow:
-    0 1px 2px rgba(94, 31, 34, 0.06),
-    0 18px 40px -16px rgba(94, 31, 34, 0.2);
+    0 1px 2px rgba(23, 26, 24, 0.06),
+    0 18px 40px -16px rgba(23, 26, 24, 0.18);
 }

@@ -21,22 +21,22 @@ export default function Image() {
       <div
         style={{
           width: "100%", height: "100%", display: "flex", flexDirection: "column",
-          justifyContent: "center", alignItems: "center", background: "#fdf8f1",
+          justifyContent: "center", alignItems: "center", background: "#f4f3ef",
           fontFamily: "sans-serif", position: "relative",
         }}
       >
-        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 96, background: "#7c2d2d" }} />
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 96, background: "#1b3b32" }} />
 
         <div style={{ position: "relative", width: 760, height: 210, display: "flex", marginTop: 40 }}>
           {[0, 1, 2, 3, 4, 5, 6].map((i) => seat(40 + i * 104, 8 + Math.abs(i - 3) * -6 + 18, 84, 62, "rgba(124,45,45,0.10)"))}
-          {[0, 1, 2, 3, 4].map((i) => seat(140 + i * 104, 124 + Math.abs(i - 2) * -5, 84, 66, i === 2 ? "#e0a15f" : "rgba(124,45,45,0.18)"))}
+          {[0, 1, 2, 3, 4].map((i) => seat(140 + i * 104, 124 + Math.abs(i - 2) * -5, 84, 66, i === 2 ? "#c8992f" : "rgba(124,45,45,0.18)"))}
         </div>
 
-        <div style={{ display: "flex", fontSize: 76, fontWeight: 700, letterSpacing: -3, color: "#2b2018", marginTop: 46 }}>
+        <div style={{ display: "flex", fontSize: 76, fontWeight: 700, letterSpacing: -3, color: "#171a18", marginTop: 46 }}>
           seats<span style={{ color: "rgba(43,32,24,0.4)" }}>.lol</span>
         </div>
 
-        <div style={{ display: "flex", fontSize: 27, color: "#8a7a6b", marginTop: 14 }}>
+        <div style={{ display: "flex", fontSize: 27, color: "#666b66", marginTop: 14 }}>
           {BOARD_SIZE} free seats · cleared every midnight
         </div>
       </div>

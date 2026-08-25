@@ -27,12 +27,12 @@ function badge(left: string, right: string, accent: string): string {
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${lw + rw}" height="24" role="img" aria-label="${esc(left)}: ${esc(right)}">
   <title>${esc(left)}: ${esc(right)}</title>
-  <rect width="${lw + rw}" height="24" rx="5" fill="#14141a"/>
+  <rect width="${lw + rw}" height="24" rx="5" fill="#112620"/>
   <rect x="${lw}" width="${rw}" height="24" rx="5" fill="${accent}"/>
   <rect x="${lw}" width="6" height="24" fill="${accent}"/>
   <g font-family="ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,sans-serif" font-size="11">
     <text x="${lw / 2}" y="16" fill="#f7f7f5" text-anchor="middle">${esc(left)}</text>
-    <text x="${lw + rw / 2}" y="16" fill="#14141a" text-anchor="middle" font-weight="600">${esc(right)}</text>
+    <text x="${lw + rw / 2}" y="16" fill="#112620" text-anchor="middle" font-weight="600">${esc(right)}</text>
   </g>
 </svg>`;
 }
@@ -73,7 +73,7 @@ export async function GET(
       if (bench) label = `#${bench.category_rank} in ${row.category}`;
     }
 
-    return svg(badge("seats.lol", label, "#e8c877"), 900);
+    return svg(badge("seats.lol", label, "#ddbc72"), 900);
   } catch (err) {
     console.error("badge failed", err);
     return svg(badge("seats.lol", "—", "#d2d2cb"), 60);
