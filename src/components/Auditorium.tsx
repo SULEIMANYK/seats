@@ -106,6 +106,11 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
         />
         <p className="truncate text-[15px] font-semibold tracking-tight">{row.name}</p>
         <p className="mt-0.5 line-clamp-1 text-xs text-muted">{row.tagline}</p>
+        {row.pricing_model && (
+          <span className="mt-1 inline-block rounded-full bg-faint px-2 py-0.5 text-[10px] text-muted">
+            {row.pricing_model}
+          </span>
+        )}
       </div>
 
       <p className="tnum mt-auto truncate pt-1.5 text-[10px] text-muted/80">

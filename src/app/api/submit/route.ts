@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { isValidCategory } from "@/lib/categories";
+import { isValidPricingModel } from "@/lib/pricing";
 import { db } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
 import { canonicalDomain, makeSlug, normalizeImageUrl, normalizeUrl } from "@/lib/slug";
@@ -24,6 +25,9 @@ type Body = {
   category?: string;
   logoUrl?: string;
   imageUrl?: string;
+  description?: string;
+  pricingModel?: string;
+  docsUrl?: string;
 };
 
 /** Recent submissions per hashed IP, to blunt scripted signups. */
@@ -57,6 +61,12 @@ export async function POST(request: Request) {
   // image link should not stop someone getting on the board.
   const logoUrl = normalizeImageUrl(body.logoUrl);
   const imageUrl = normalizeImageUrl(body.imageUrl);
+  const description = body.description?.trim().slice(0, 600) || null;
+  const pricingModel = isValidPricingModel(body.pricingModel) ? body.pricingModel : null;
+
+  // A second link, stored in the same shape as any other extra link.
+  const docs = body.docsUrl ? normalizeUrl(body.docsUrl) : null;
+  const extraLinks = docs ? [{ label: "Docs", url: docs }] : [];
 
   if (!name || name.length > 60) {
     return NextResponse.json({ error: "Name is required (max 60 characters)" }, { status: 400 });
@@ -132,6 +142,9 @@ export async function POST(request: Request) {
       category,
       logo_url: logoUrl,
       image_url: imageUrl,
+      description,
+      pricing_model: pricingModel,
+      extra_links: extraLinks,
       submit_ip_hash: ipHash,
       price_cents: 0,
       // Nothing to wait for, so the listing goes up immediately.
