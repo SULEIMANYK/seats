@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
+import { Favicon } from "./Favicon";
 import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
 
 /**
@@ -55,10 +56,6 @@ function arcOffset(index: number, count: number, curve: number): number {
   return Math.round(curve * (1 - t * t));
 }
 
-function iconFor(url: string) {
-  return `/api/icon?domain=${encodeURIComponent(displayDomain(url))}`;
-}
-
 /* ---------------------------------------------------------------- front row */
 
 function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: boolean; dimmed?: boolean }) {
@@ -97,11 +94,9 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       )}
 
       <div className="mt-2 min-w-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={row.logo_url ?? iconFor(row.url)}
-          alt=""
-          fetchPriority="high"
+        <Favicon
+          logoUrl={row.logo_url}
+          domain={displayDomain(row.url)}
           className="mb-1.5 size-8 rounded-lg bg-bg object-contain p-0.5 ring-1 ring-edge"
         />
         <p className="truncate text-[15px] font-semibold tracking-tight">{row.name}</p>
@@ -164,11 +159,9 @@ function Seat({
         dimmed ? "opacity-20 grayscale" : ""
       }`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={row.logo_url ?? iconFor(row.url)}
-        alt=""
-        fetchPriority="high"
+      <Favicon
+        logoUrl={row.logo_url}
+        domain={displayDomain(row.url)}
         style={{ width: height * 0.44, height: height * 0.44 }}
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />

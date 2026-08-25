@@ -243,5 +243,16 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Could not create listing" }, { status: 500 });
   }
 
-  return NextResponse.json({ slug: listing.slug, manageToken: listing.manage_token, seat });
+  // Surface anything that was thrown away, so a mistyped logo is visible
+  // rather than mysteriously absent from the seat.
+  const dropped: string[] = [];
+  if (body.logoUrl?.trim() && !logoUrl) dropped.push("logo");
+  if (body.imageUrl?.trim() && !imageUrl) dropped.push("screenshot");
+
+  return NextResponse.json({
+    slug: listing.slug,
+    manageToken: listing.manage_token,
+    seat,
+    ...(dropped.length && { warning: `Couldn't read your ${dropped.join(" or ")} URL, so it was left off.` }),
+  });
 }

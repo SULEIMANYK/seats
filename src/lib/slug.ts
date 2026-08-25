@@ -53,9 +53,14 @@ export function displayDomain(url: string): string {
  * browser anyway, and would show as a broken card rather than a picture.
  */
 export function normalizeImageUrl(input: string | undefined | null): string | null {
-  if (!input?.trim()) return null;
+  const raw = input?.trim();
+  if (!raw) return null;
   try {
-    const parsed = new URL(input.trim());
+    // Most people paste "acme.com/logo.png" without a scheme, and an http one
+    // would be blocked by the browser on an https page — so assume https
+    // rather than silently discarding what they typed.
+    const withScheme = /^https?:\/\//i.test(raw) ? raw.replace(/^http:/i, "https:") : `https://${raw}`;
+    const parsed = new URL(withScheme);
     if (parsed.protocol !== "https:") return null;
     if (!parsed.hostname.includes(".")) return null;
     return parsed.toString().slice(0, 500);

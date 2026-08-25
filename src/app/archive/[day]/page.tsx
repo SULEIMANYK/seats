@@ -15,6 +15,7 @@ type Row = {
   url: string;
   slug: string;
   category: string | null;
+  logo_url: string | null;
   clicks_24h: number;
 };
 
@@ -53,7 +54,7 @@ export default async function ArchiveDayPage({
   try {
     const { data } = await db()
       .from("daily_ranks")
-      .select("rank, listing_id, name, url, slug, category, clicks_24h")
+      .select("rank, listing_id, name, url, slug, category, logo_url, clicks_24h")
       .eq("day", day)
       .order("rank", { ascending: true })
       .returns<Row[]>();
@@ -103,7 +104,7 @@ export default async function ArchiveDayPage({
 
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/api/icon?domain=${encodeURIComponent(displayDomain(r.url))}`}
+                  src={r.logo_url ?? `/api/icon?domain=${encodeURIComponent(displayDomain(r.url))}`}
                   alt=""
                   className="size-8 shrink-0 rounded-lg bg-bg object-contain p-1 ring-1 ring-edge"
                 />

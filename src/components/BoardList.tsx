@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { BoardRow } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
 import { displayDomain } from "@/lib/slug";
+import { Favicon } from "./Favicon";
 
 /**
  * The board for narrow screens.
@@ -97,10 +98,9 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
                   {row.rank}
                 </span>
 
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={row.logo_url ?? `/api/icon?domain=${encodeURIComponent(displayDomain(row.url))}`}
-                  alt=""
+                <Favicon
+                  logoUrl={row.logo_url}
+                  domain={displayDomain(row.url)}
                   className="size-9 shrink-0 rounded-lg bg-bg object-contain p-1 ring-1 ring-edge"
                 />
 
