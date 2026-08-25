@@ -5,8 +5,6 @@ import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
 import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
-import { atLeast } from "@/lib/plans";
-import { formatPrice, SEAT_CENTS } from "@/lib/tiers";
 
 /**
  * The board as a theatre.
@@ -69,8 +67,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
     <a
       href={`/r/${row.slug}`}
       target="_blank"
-      // Dofollow is a Growth feature; everyone else is nofollow.
-      rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
+      rel="noopener"
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
           ? "w-[clamp(13rem,30vw,24rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(232,200,119,0.5),0_18px_44px_-18px_rgba(154,107,5,0.45)]"
@@ -82,7 +79,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
           {row.rank}
         </span>
         <span className="tnum rounded-full bg-gold-soft px-1.5 py-0.5 text-[10px] leading-none text-gold">
-          {row.clicks_7d.toLocaleString()} clicks
+          {row.clicks_24h.toLocaleString()} clicks
         </span>
       </div>
 
@@ -99,17 +96,17 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       </div>
 
       <p className="tnum mt-auto truncate pt-1.5 text-[10px] text-muted/80">
-        {displayDomain(row.url)} · {row.clicks_7d.toLocaleString()} clicks this week
+        {displayDomain(row.url)} · {row.clicks_24h.toLocaleString()} clicks today
       </p>
 
     </a>
   );
 }
 
-function EmptyBox({ seat, cents, apex = false }: { seat: number; cents: number; apex?: boolean }) {
+function EmptyBox({ seat, apex = false }: { seat: number; apex?: boolean }) {
   return (
     <Link
-      href={`/submit?cents=${cents}`}
+      href="/submit"
       className={`group flex flex-col items-center justify-center rounded-2xl border border-dashed bg-bg-lift/50 p-3 transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:bg-panel hover:card-shadow ${
         apex ? "w-[clamp(13rem,30vw,24rem)] border-gold/60" : "w-[clamp(10rem,24vw,19rem)] border-gold-line/70"
       }`}
@@ -143,8 +140,7 @@ function Seat({
     <a
       href={`/r/${row.slug}`}
       target="_blank"
-      // Dofollow is a Growth feature; everyone else is nofollow.
-      rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
+      rel="noopener"
       style={{ width, height }}
       className={`group relative flex flex-col items-center justify-center gap-1 rounded-xl border border-edge bg-panel card-shadow transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:border-edge-strong hover:card-shadow-lift ${
         dimmed ? "opacity-20 grayscale" : ""
@@ -159,7 +155,7 @@ function Seat({
         className="rounded-md bg-bg object-contain p-0.5 ring-1 ring-edge"
       />
       <span className="tnum text-[10px] leading-none font-medium text-muted">
-        {row.clicks_7d.toLocaleString()}
+        {row.clicks_24h.toLocaleString()}
       </span>
       <span className="tnum absolute top-0.5 left-1 text-[8px] leading-none text-muted/45">
         {seat}
@@ -170,7 +166,7 @@ function Seat({
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 whitespace-nowrap card-shadow group-hover:block">
         <span className="block text-[11px] font-semibold">{row.name}</span>
         <span className="tnum block text-[10px] text-muted">
-          seat {row.rank} · {row.clicks_7d.toLocaleString()} clicks this week
+          seat {row.rank} · {row.clicks_24h.toLocaleString()} clicks today
         </span>
       </span>
     </a>
@@ -191,7 +187,7 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
         {seat}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
-        Empty seat · from {formatPrice(SEAT_CENTS)}/mo
+        Empty seat — claim it
       </span>
     </Link>
   );
@@ -232,7 +228,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
         {bySeat.get(1) ? (
           <Box row={bySeat.get(1)!} apex dimmed={isDimmed(bySeat.get(1)!)} />
         ) : (
-          <EmptyBox seat={1} cents={SEAT_CENTS} apex />
+          <EmptyBox seat={1} apex />
         )}
       </div>
 
@@ -242,7 +238,7 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
           bySeat.get(seat) ? (
             <Box key={seat} row={bySeat.get(seat)!} dimmed={isDimmed(bySeat.get(seat)!)} />
           ) : (
-            <EmptyBox key={seat} seat={seat} cents={SEAT_CENTS} />
+            <EmptyBox key={seat} seat={seat} />
           ),
         )}
       </div>

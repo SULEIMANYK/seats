@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { db } from "@/lib/db";
-import { atLeast, type PlanId } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -19,9 +18,9 @@ export async function GET(
 
   const { data: listing } = await supabase
     .from("listings")
-    .select("id, url, status, plan")
+    .select("id, url, status")
     .eq("slug", slug)
-    .maybeSingle<{ id: string; url: string; status: string; plan: PlanId }>();
+    .maybeSingle<{ id: string; url: string; status: string }>();
 
   if (!listing || listing.status === "canceled") {
     return NextResponse.redirect(new URL("/", request.url), 302);
@@ -54,10 +53,10 @@ export async function GET(
       if (error) console.error("click insert failed", error);
     });
 
-  // Pro and above get UTM tagging, so the click lands in the subscriber's own
+  // Everyone gets UTM tagging, so a click lands in the listing owner's own
   // analytics rather than appearing as anonymous referral traffic.
   let target = listing.url;
-  if (atLeast(listing.plan, "pro")) {
+  {
     try {
       const url = new URL(listing.url);
       if (!url.searchParams.has("utm_source")) {

@@ -3,14 +3,11 @@
 import { useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
-import { PLANS, type PlanId } from "@/lib/plans";
-import { formatPrice } from "@/lib/tiers";
 
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
 export function SubmitForm({ full }: { full: boolean }) {
-  const [plan, setPlan] = useState<PlanId>("listed");
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
 
@@ -30,7 +27,7 @@ export function SubmitForm({ full }: { full: boolean }) {
     setError(null);
 
     const form = new FormData(event.currentTarget);
-    const res = await fetch("/api/checkout", {
+    const res = await fetch("/api/submit", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
@@ -39,7 +36,6 @@ export function SubmitForm({ full }: { full: boolean }) {
         tagline: form.get("tagline"),
         email: form.get("email"),
         category: form.get("category") || null,
-        plan,
       }),
     });
 
@@ -60,47 +56,30 @@ export function SubmitForm({ full }: { full: boolean }) {
   return (
     <div className="relative z-10 grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
       <aside className="space-y-2.5 lg:order-2 lg:sticky lg:top-6 lg:self-start">
-        <p className="px-1 text-[11px] tracking-wide text-muted uppercase">Choose a plan</p>
+        <div className="rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
+          <p className="text-[11px] tracking-wide text-gold uppercase">Free</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            No fee, no card, no plan. Add your listing and it goes up straight away.
+          </p>
+        </div>
 
-        {PLANS.map((p) => {
-          const active = plan === p.id;
-          return (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => setPlan(p.id)}
-              className={`w-full rounded-2xl border p-4 text-left transition-all duration-200 ${
-                active
-                  ? "border-gold-line bg-gold-soft card-shadow"
-                  : "border-edge bg-panel hover:border-edge-strong"
-              }`}
-            >
-              <span className="flex items-baseline justify-between gap-2">
-                <span className="text-[14px] font-semibold">{p.name}</span>
-                <span className="tnum text-[14px] font-semibold">
-                  {formatPrice(p.cents)}
-                  <span className="text-[11px] font-normal text-muted">/mo</span>
-                </span>
-              </span>
-              <span className="mt-0.5 block text-[12px] text-muted">{p.tagline}</span>
-              {active && (
-                <ul className="mt-3 space-y-1 border-t border-gold-line/40 pt-3">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex gap-1.5 text-[12px] leading-snug text-muted">
-                      <span className="text-gold">·</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </button>
-          );
-        })}
+        <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
+          <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            Decided by clicks earned in the last 24 hours. Everyone starts at the back and
+            the front row is won again every day — a good week holds nothing.
+          </p>
+        </div>
 
-        <p className="px-1 pt-1 text-[11px] leading-relaxed text-muted/80">
-          Every plan is ranked the same way — by clicks earned. Plans buy tools, never
-          position.
-        </p>
+        <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
+          <p className="text-[11px] tracking-wide text-muted uppercase">What you get</p>
+          <ul className="mt-2 space-y-1 text-[12px] leading-snug text-muted">
+            <li>· Logo, tagline and a link people can click</li>
+            <li>· Your click count, in public</li>
+            <li>· UTM tagging so clicks land in your own analytics</li>
+            <li>· An embeddable rank badge for your site</li>
+          </ul>
+        </div>
       </aside>
 
       <form onSubmit={onSubmit} className="space-y-6 lg:order-1">
@@ -190,11 +169,11 @@ export function SubmitForm({ full }: { full: boolean }) {
           disabled={busy || full}
           className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
-          {full ? "House full" : busy ? "Starting checkout…" : `Continue — ${formatPrice(PLANS.find((p) => p.id === plan)!.cents)}/mo`}
+          {full ? "House full" : busy ? "Adding…" : "Add my listing"}
         </button>
 
         <p className="text-center text-[11px] text-muted">
-          Cancel any time and keep your seat until the period ends.
+          Free. Remove it any time with your manage link.
         </p>
       </form>
     </div>

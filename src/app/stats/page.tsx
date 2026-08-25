@@ -3,7 +3,6 @@ import { headers } from "next/headers";
 import { SITE } from "@/lib/config";
 import { db } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
-import { formatPrice } from "@/lib/tiers";
 import { getStats, recordVisit } from "@/lib/visits";
 
 export const dynamic = "force-dynamic";
@@ -62,10 +61,6 @@ export default async function StatsPage() {
   recordVisit("/stats", await headers());
   const [stats, { trending, categories }] = await Promise.all([getStats(), getPageData()]);
 
-  // What a seat actually costs per click, board-wide. The single number that
-  // decides whether anyone renews.
-  const cpc =
-    stats && stats.clicks_total > 0 ? stats.mrr_cents / 100 / stats.clicks_total : null;
 
   return (
     <main className="stage relative mx-auto w-full max-w-5xl px-5 py-12 sm:px-8">
@@ -81,7 +76,7 @@ export default async function StatsPage() {
         </p>
       </header>
 
-      <section className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="relative z-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <Stat
           label="Visitors today"
           value={(stats?.visitors_24h ?? 0).toLocaleString()}
@@ -95,19 +90,13 @@ export default async function StatsPage() {
         <Stat
           label="Seats taken"
           value={(stats?.seats_taken ?? 0).toLocaleString()}
-          sub={stats ? `${formatPrice(stats.mrr_cents)} a month` : undefined}
-        />
-        <Stat
-          label="Cost per click"
-          value={cpc === null ? "—" : `$${cpc.toFixed(2)}`}
-          sub={cpc === null ? "no clicks yet" : "board-wide average"}
         />
       </section>
 
       <section className="relative z-10 mt-12">
         <h2 className="text-xl font-semibold tracking-tight">Trending</h2>
         <p className="mt-1.5 text-[13px] text-muted">
-          Clicks this week against the week before.
+          Clicks today against yesterday.
         </p>
 
         {trending.length === 0 ? (

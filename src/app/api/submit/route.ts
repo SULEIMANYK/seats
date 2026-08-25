@@ -1,22 +1,42 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { polar, siteUrl } from "@/lib/polar";
-import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
-import { BOARD_SIZE, productIdForCents } from "@/lib/tiers";
+import { createHash } from "node:crypto";
 import { isValidCategory } from "@/lib/categories";
-import { PLAN_BY_ID, isValidPlan } from "@/lib/plans";
+import { db } from "@/lib/db";
+import { BOARD_SIZE } from "@/lib/seating";
+import { canonicalDomain, makeSlug, normalizeUrl } from "@/lib/slug";
 
 export const runtime = "nodejs";
+
+/**
+ * Claim a seat. Free — there is no payment step.
+ *
+ * Because nothing is charged, the usual filter against junk is gone, so the
+ * checks that remain do more work: one listing per domain, a real http(s)
+ * URL, and a per-IP rate limit. None of that stops a determined spammer, so
+ * a listing can be pulled with its manage token and the board is capped.
+ */
 
 type Body = {
   name?: string;
   url?: string;
   tagline?: string;
   email?: string;
-  cents?: number;
   category?: string;
-  plan?: string;
 };
+
+/** Recent submissions per hashed IP, to blunt scripted signups. */
+const RATE_WINDOW_MS = 60 * 60 * 1000;
+const RATE_LIMIT = 3;
+
+async function overRateLimit(supabase: ReturnType<typeof db>, ipHash: string) {
+  const since = new Date(Date.now() - RATE_WINDOW_MS).toISOString();
+  const { count } = await supabase
+    .from("listings")
+    .select("*", { count: "exact", head: true })
+    .eq("submit_ip_hash", ipHash)
+    .gte("created_at", since);
+  return (count ?? 0) >= RATE_LIMIT;
+}
 
 export async function POST(request: Request) {
   let body: Body;
@@ -29,12 +49,8 @@ export async function POST(request: Request) {
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
   const email = body.email?.trim().toLowerCase();
-  // Price comes from the chosen plan, never from the request body.
-  const plan = isValidPlan(body.plan) ? body.plan : "listed";
-  const cents = PLAN_BY_ID[plan].cents;
-  // Optional — an uncategorised listing still belongs on the board.
-  const category = isValidCategory(body.category) ? body.category : null;
   const url = body.url ? normalizeUrl(body.url) : null;
+  const category = isValidCategory(body.category) ? body.category : null;
 
   if (!name || name.length > 60) {
     return NextResponse.json({ error: "Name is required (max 60 characters)" }, { status: 400 });
@@ -48,15 +64,30 @@ export async function POST(request: Request) {
   if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
   }
-  const supabase = db();
 
   const domain = canonicalDomain(url);
   if (!domain) {
     return NextResponse.json({ error: "A valid http(s) URL is required" }, { status: 400 });
   }
 
-  // One slot per company. Matching on domain rather than the full URL, so
-  // acme.com/a and acme.com/b can't quietly occupy two ranks.
+  const supabase = db();
+
+  const forwarded = request.headers.get("x-forwarded-for") ?? "";
+  const ip = forwarded.split(",")[0]?.trim() || "unknown";
+  const ipHash = createHash("sha256")
+    .update(ip + (process.env.CLICK_SALT ?? "seats.lol"))
+    .digest("hex")
+    .slice(0, 32);
+
+  if (await overRateLimit(supabase, ipHash)) {
+    return NextResponse.json(
+      { error: "That's a few listings in a short time. Try again later." },
+      { status: 429 },
+    );
+  }
+
+  // One seat per company, matched on domain so acme.com/a and acme.com/b
+  // cannot quietly hold two.
   const { data: existing } = await supabase
     .from("listings")
     .select("id")
@@ -66,7 +97,7 @@ export async function POST(request: Request) {
 
   if (existing) {
     return NextResponse.json(
-      { error: "That domain is already on the board. Use your manage link to change price." },
+      { error: "That domain is already on the board." },
       { status: 409 },
     );
   }
@@ -78,7 +109,7 @@ export async function POST(request: Request) {
 
   if ((count ?? 0) >= BOARD_SIZE) {
     return NextResponse.json(
-      { error: "Every seat is taken right now. Try again when one frees up." },
+      { error: "Every seat is taken right now. Check back when one frees up." },
       { status: 409 },
     );
   }
@@ -90,34 +121,22 @@ export async function POST(request: Request) {
       name,
       url,
       domain,
-      category,
-      plan,
       tagline,
       email,
-      price_cents: cents,
-      status: "pending",
+      category,
+      submit_ip_hash: ipHash,
+      price_cents: 0,
+      // Nothing to wait for, so the listing goes up immediately.
+      status: "active",
+      tier_since: new Date().toISOString(),
     })
-    .select("id")
+    .select("slug, manage_token")
     .single();
 
   if (error || !listing) {
+    console.error("listing insert failed", error);
     return NextResponse.json({ error: "Could not create listing" }, { status: 500 });
   }
 
-  try {
-    const checkout = await polar().checkouts.create({
-      products: [productIdForCents(cents)],
-      customerEmail: email,
-      successUrl: `${siteUrl()}/success?checkout_id={CHECKOUT_ID}`,
-      // The webhook reads this to know which listing just went live.
-      metadata: { listing_id: listing.id, price_cents: cents, plan },
-    });
-
-    return NextResponse.json({ url: checkout.url });
-  } catch (err) {
-    // Don't leave an orphaned pending row behind if Polar rejected us.
-    await supabase.from("listings").delete().eq("id", listing.id);
-    console.error("polar checkout failed", err);
-    return NextResponse.json({ error: "Could not start checkout" }, { status: 502 });
-  }
+  return NextResponse.json({ slug: listing.slug, manageToken: listing.manage_token });
 }

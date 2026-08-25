@@ -2,7 +2,7 @@ import Link from "next/link";
 import { SubmitForm } from "@/components/SubmitForm";
 import { SITE } from "@/lib/config";
 import { db } from "@/lib/db";
-import { BOARD_SIZE, SEAT_CENTS, formatPrice } from "@/lib/tiers";
+import { BOARD_SIZE } from "@/lib/seating";
 
 export const dynamic = "force-dynamic";
 
@@ -35,8 +35,8 @@ export default async function SubmitPage() {
         <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Take a seat</h1>
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
           {full
-            ? "Every seat is taken right now. Seats free up when listings lapse — check back."
-            : `${formatPrice(SEAT_CENTS)} a month for a place on the board. Where you sit is earned — the most clicked ${SITE.nounPlural} move to the front.`}
+            ? "Every seat is taken right now. Seats free up when listings go quiet — check back."
+            : `Free. Add your ${SITE.noun}, and where you sit is decided by the clicks you earn.`}
         </p>
       </header>
 

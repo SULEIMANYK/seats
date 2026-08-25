@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BoardRow } from "@/lib/db";
-import { atLeast } from "@/lib/plans";
 import { BOARD_SIZE } from "@/lib/seating";
 import { displayDomain } from "@/lib/slug";
 
@@ -83,7 +82,7 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
               <a
                 href={`/r/${row.slug}`}
                 target="_blank"
-                rel={atLeast(row.plan, "growth") ? "noopener" : "noopener nofollow"}
+                rel="noopener"
                 className={`flex items-center gap-3 rounded-2xl border p-3 transition-colors ${
                   featured
                     ? "border-gold-line bg-gold-soft card-shadow"
@@ -113,7 +112,7 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
                 </span>
 
                 <span className="shrink-0 text-right">
-                  <span className="tnum block text-[13px] font-semibold">{row.clicks_7d}</span>
+                  <span className="tnum block text-[13px] font-semibold">{row.clicks_24h}</span>
                   <span className="block text-[10px] text-muted">clicks</span>
                 </span>
               </a>

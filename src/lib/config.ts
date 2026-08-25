@@ -5,7 +5,7 @@ export const SITE = {
   /** What the board lists. Appears throughout the copy. */
   noun: "product",
   nounPlural: "products",
-  tagline: "200 seats. The most clicked sit at the front.",
+  tagline: "200 seats, free. The most clicked sit at the front.",
   description:
-    "A house of 200 seats. Everyone pays the same to be listed; where you sit is earned. The most clicked products move to the front, every day. No ads, no algorithm — just the room.",
+    "A house of 200 free seats. Where you sit is earned, never bought — the most clicked products move to the front, and the board reorders every day.",
 } as const;

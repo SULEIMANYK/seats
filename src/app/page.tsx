@@ -3,9 +3,9 @@ import { Auditorium } from "@/components/Auditorium";
 import { BoardList } from "@/components/BoardList";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
+import { BOARD_SIZE } from "@/lib/seating";
 import { getStats, recordVisit } from "@/lib/visits";
 import { headers } from "next/headers";
-import { BOARD_SIZE, SEAT_CENTS, formatPrice } from "@/lib/tiers";
 
 // The board changes whenever someone pays, so never serve it stale.
 export const dynamic = "force-dynamic";
@@ -90,7 +90,7 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             href="/submit"
             className="rounded-xl bg-[#f7f7f5] px-4 py-2 text-[13px] font-semibold text-[#14141a] transition hover:-translate-y-0.5"
           >
-            {open > 0 ? `Take a seat — from ${formatPrice(SEAT_CENTS)}/mo` : "House full"}
+            {open > 0 ? "Take a seat — free" : "House full"}
           </Link>
         </div>
       </header>
@@ -116,9 +116,8 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             <div>
               <h3 className="mb-1.5 font-semibold text-fg">Pay for tools, not position</h3>
               <p>
-                From {formatPrice(SEAT_CENTS)} a month. Plans buy tools — attribution,
-                benchmarking, an embeddable badge — never position.
-              </p>
+                No fee, no plan, no card. A seat costs nothing — what it costs you is being
+                worth clicking.</p>
             </div>
             <div>
               <h3 className="mb-1.5 font-semibold text-fg">Clicks move you forward</h3>

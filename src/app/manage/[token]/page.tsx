@@ -2,11 +2,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { db, type Listing } from "@/lib/db";
 import { placeListings, type Placeable } from "@/lib/seating";
-import { PLAN_BY_ID, atLeast, type PlanId } from "@/lib/plans";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
-import { formatPrice } from "@/lib/tiers";
 
 export const dynamic = "force-dynamic";
 // A secret manage link should never end up in a search index.
@@ -117,7 +115,6 @@ export default async function ManagePage({
 
   if (!listing) notFound();
 
-  const plan = (listing.plan ?? "listed") as PlanId;
 
   const { seat, clicks30d, clicksTotal, graceDaysLeft, bench, abTest } = await loadStats(
     supabase,
@@ -290,7 +287,7 @@ export default async function ManagePage({
                     featured ? "bg-gold-soft text-gold" : "bg-faint text-muted"
                   }`}
                 >
-                  {formatPrice(listing.price_cents)}
+                  {clicks30d ?? 0} clicks
                 </span>
               </span>
             </div>
@@ -334,15 +331,10 @@ export default async function ManagePage({
             <span className="tnum font-semibold text-fg">{bench.category_avg_clicks}</span> clicks
             this week.
           </p>
-          {!atLeast(plan, "pro") && (
-            <p className="mt-3 text-[12px] text-muted/80">
-              {PLAN_BY_ID.pro.name} adds UTM tagging, tagline testing and a weekly report.
-            </p>
-          )}
-        </section>
+                  </section>
       )}
 
-      {atLeast(plan, "pro") && abTest && (
+      {abTest && (
         <section className="relative z-10 mb-8 rounded-2xl border border-edge bg-panel p-5 card-shadow">
           <h2 className="text-[13px] font-semibold">Tagline test</h2>
           <div className="mt-3 space-y-2">
@@ -372,7 +364,7 @@ export default async function ManagePage({
         </section>
       )}
 
-      {atLeast(plan, "growth") && <BadgeEmbed slug={listing.slug} />}
+      <BadgeEmbed slug={listing.slug} />
 
       <section className="relative z-10 border-t border-edge pt-6 text-sm">
         <h2 className="mb-2 font-semibold tracking-tight text-fg">Billing</h2>

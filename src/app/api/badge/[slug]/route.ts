@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { atLeast, type PlanId } from "@/lib/plans";
 
 export const runtime = "nodejs";
 
@@ -58,23 +57,11 @@ export async function GET(
     const supabase = db();
     const { data: row } = await supabase
       .from("board")
-      .select("id, rank, category, plan, clicks_7d")
+      .select("id, rank, category, clicks_7d")
       .eq("slug", slug)
-      .maybeSingle<{
-        id: string;
-        rank: number;
-        category: string | null;
-        plan: PlanId;
-        clicks_7d: number;
-      }>();
+      .maybeSingle<{ id: string; rank: number; category: string | null }>();
 
     if (!row) return svg(badge("seats.lol", "not listed", "#d2d2cb"), 300);
-
-    // The badge is a Growth feature. Lower plans get an honest badge rather
-    // than an error image, so an embed never breaks someone's page.
-    if (!atLeast(row.plan, "growth")) {
-      return svg(badge("seats.lol", "listed", "#e8c877"), 300);
-    }
 
     let label = `#${row.rank}`;
     if (row.category) {

@@ -35,11 +35,11 @@ export type BoardRow = {
   status: "active" | "past_due";
   created_at: string;
   category: string | null;
-  plan: import("./plans").PlanId;
   tagline_b: string | null;
   extra_links: { label: string; url: string }[];
   rank: number;
   score: number;
+  clicks_24h: number;
   clicks_7d: number;
   clicks_30d: number;
   clicks_total: number;
@@ -55,7 +55,6 @@ export type Listing = {
   logo_url: string | null;
   email: string;
   category: string | null;
-  plan: import("./plans").PlanId;
   tagline_b: string | null;
   extra_links: { label: string; url: string }[];
   price_cents: number;
