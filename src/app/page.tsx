@@ -51,7 +51,7 @@ export default async function Home() {
       <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-fg sm:px-10">
         <div className="flex items-baseline gap-3">
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
-            <Logo className="size-7 text-fg" />
+            <Logo className="text-[20px]" />
             seats
           </h1>
           <p className="hidden text-[13px] text-fg/55 sm:block">{SITE.tagline}</p>

@@ -1,28 +1,32 @@
 /**
- * The mark: a stage with two arcs of seats curving away from it — the board
- * itself, small enough to read at 16px.
+ * The mark: two chairs.
  *
- * The nearest seat takes the accent colour because that is the one people
- * are here for. It reads from --gold rather than a literal, so it follows
- * the theme instead of staying the brass of an older palette.
+ * Written as an escaped surrogate pair rather than a literal emoji so the
+ * source stays ASCII — a literal survives most toolchains and then fails
+ * silently in the one that re-encodes it, and mojibake in a logo is not
+ * something a build error would ever catch.
+ *
+ * Emoji render from the system font, so an explicit stack is set: without
+ * one, a machine whose default sans has no chair glyph draws tofu.
  */
-export function Logo({ className = "size-6" }: { className?: string }) {
+const CHAIRS = "\uD83E\uDE91\uD83E\uDE91";
+
+export function Logo({ className = "text-lg" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" className={className} aria-hidden="true">
-      {/* Stage */}
-      <rect x="6" y="4" width="20" height="3" rx="1.5" fill="currentColor" opacity="0.9" />
-
-      {/* Back row — five seats, bowing away from the stage */}
-      <rect x="2.5" y="12" width="4" height="4.5" rx="1.2" fill="currentColor" opacity="0.28" />
-      <rect x="8.5" y="13" width="4" height="4.5" rx="1.2" fill="currentColor" opacity="0.28" />
-      <rect x="14" y="13.4" width="4" height="4.5" rx="1.2" fill="currentColor" opacity="0.28" />
-      <rect x="19.5" y="13" width="4" height="4.5" rx="1.2" fill="currentColor" opacity="0.28" />
-      <rect x="25.5" y="12" width="4" height="4.5" rx="1.2" fill="currentColor" opacity="0.28" />
-
-      {/* Front row — the gold one is the seat everyone wants */}
-      <rect x="5" y="21" width="5" height="5.5" rx="1.5" fill="currentColor" opacity="0.5" />
-      <rect x="13" y="22" width="6" height="5.5" rx="1.5" fill="var(--gold)" />
-      <rect x="22" y="21" width="5" height="5.5" rx="1.5" fill="currentColor" opacity="0.5" />
-    </svg>
+    <span
+      // whitespace-nowrap and no fixed box: two emoji are wider than they are
+      // tall, so a square (size-7) wrapped them onto two lines. The caller
+      // sizes the mark with a font-size class, which is what emoji actually
+      // scale by -- they ignore `color` and width entirely.
+      className={`inline-flex items-center whitespace-nowrap leading-none ${className}`}
+      style={{
+        fontFamily:
+          '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif',
+      }}
+      role="img"
+      aria-label="seats"
+    >
+      {CHAIRS}
+    </span>
   );
 }
