@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Board } from "@/components/Board";
+import { Auditorium } from "@/components/Auditorium";
+import { BoardList } from "@/components/BoardList";
 import { ResetTimer } from "@/components/ResetTimer";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -123,8 +124,15 @@ export default async function Home() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl px-4 pt-6 pb-10 sm:px-6">
-        <Board rows={rows} />
+      <div className="mx-auto flex w-full max-w-[1500px] min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 xl:h-[calc(100dvh-4.5rem)]">
+        {/* The chart needs about 1200px before its widest row fits; below
+            that the same board is a ranked list. */}
+        <div className="hidden xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
+          <Auditorium rows={rows} />
+        </div>
+        <div className="xl:hidden">
+          <BoardList rows={rows} />
+        </div>
       </div>
 
       {/* Below the fold. The chart owns the first screen; anyone who scrolls
