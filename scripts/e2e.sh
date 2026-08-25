@@ -73,7 +73,14 @@ TOK=$(psql "$DB" -tAc "select manage_token from listings where domain='$SA' or d
 has "manage shows seat"     "$(body "$B/manage/$TOK")" "Seat"
 has "manage shows clicks"   "$(body "$B/manage/$TOK")" "Clicks"
 
-echo "── 8. cleanup"
+echo "── 8. edit and delete"
+TOKA=$(psql "$DB" -tAc "select manage_token from listings where slug='alpha-e2e'")
+is "edit with token"        "$(code -X PATCH "$B/api/listing" -H 'content-type: application/json' -d "{\"token\":\"$TOKA\",\"name\":\"Alpha2\",\"tagline\":\"edited\"}")" 200
+is "edit with wrong token"  "$(code -X PATCH "$B/api/listing" -H 'content-type: application/json' -d '{"token":"00000000-0000-0000-0000-000000000000","name":"X","tagline":"y"}')" 404
+is "delete frees the seat"  "$(code -X DELETE "$B/api/listing" -H 'content-type: application/json' -d "{\"token\":\"$TOKA\"}")" 200
+is "seat released"          "$(psql "$DB" -tAc "select count(*) from board")" 1
+
+echo "── 9. cleanup"
 psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1
 is "board empty" "$(psql "$DB" -tAc "select count(*) from board")" 0
 

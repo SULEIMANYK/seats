@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { db, type Listing } from "@/lib/db";
 import { placeListings, type Placeable } from "@/lib/seating";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
+import { EditListing } from "@/components/EditListing";
 import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
 
@@ -376,6 +377,20 @@ export default async function ManagePage({
           </p>
         </section>
       )}
+
+      <EditListing
+        token={listing.manage_token}
+        listing={{
+          name: listing.name,
+          tagline: listing.tagline,
+          description: listing.description,
+          category: listing.category,
+          pricing_model: listing.pricing_model,
+          logo_url: listing.logo_url,
+          image_url: listing.image_url,
+          extra_links: listing.extra_links ?? [],
+        }}
+      />
 
       <BadgeEmbed slug={listing.slug} />
 
