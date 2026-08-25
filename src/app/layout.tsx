@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Anton, Outfit, Geist_Mono } from "next/font/google";
 import { SITE } from "@/lib/config";
 import "./theme.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
+// Anton carries every heading; Outfit carries everything else. Anton ships
+// one weight only — asking for others silently falls back, which is what
+// made the headings look thin in the mock.
+const anton = Anton({ variable: "--font-anton", weight: "400", subsets: ["latin"], display: "swap" });
+const outfit = Outfit({ variable: "--font-outfit", subsets: ["latin"], display: "swap" });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -32,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} min-h-screen font-sans`}>
+      <body className={`${anton.variable} ${outfit.variable} ${geistMono.variable} min-h-screen font-sans`}>
         {children}
       </body>
     </html>

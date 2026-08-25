@@ -72,7 +72,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       rel="noopener"
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
-          ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(221,188,114,0.65),0_18px_44px_-18px_rgba(138,95,15,0.34)]"
+          ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft card-shadow-lift"
           : "w-[clamp(12rem,27vw,22rem)] border-gold-line card-shadow"
       } ${dimmed ? "opacity-20 grayscale" : ""}`}
     >
@@ -118,14 +118,14 @@ function EmptyBox({ seat, apex = false }: { seat: number; apex?: boolean }) {
   return (
     <Link
       href="/submit"
-      className={`group flex flex-col items-center justify-center rounded-2xl border border-dashed bg-bg-lift/50 p-3 transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:bg-panel hover:card-shadow ${
-        apex ? "w-[clamp(15rem,34vw,28rem)] border-gold/60" : "w-[clamp(12rem,27vw,22rem)] border-gold-line/70"
+      className={`group flex flex-col items-center justify-center rounded-2xl border-2 bg-faint p-3 transition-all duration-150 hover:-translate-y-1 hover:border-transparent hover:bg-gold hover:card-shadow ${
+        apex ? "w-[clamp(15rem,34vw,28rem)] border-gold" : "w-[clamp(12rem,27vw,22rem)] border-gold-line"
       }`}
     >
-      <span className="tnum text-2xl leading-none font-semibold text-muted/30 transition-colors group-hover:text-accent">
+      <span className="tnum font-display text-3xl leading-none text-muted transition-colors group-hover:text-[#141413]">
         {seat}
       </span>
-      <span className="mt-1.5 text-[11px] text-muted/60 transition-colors group-hover:text-accent">
+      <span className="mt-1.5 text-[11px] text-muted transition-colors group-hover:text-[#141413]">
 {apex ? "the royal box" : "front row"} · claim it
       </span>
     </Link>
@@ -192,15 +192,15 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
     <Link
       href={`/submit?seat=${seat}`}
       style={{ width, height }}
-      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-panel ring-1 ring-edge transition-all duration-200 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:shadow-[0_10px_24px_-12px_rgba(23,26,24,0.28)] hover:ring-accent"
+      className="group relative flex flex-col items-center justify-center gap-1 rounded-xl bg-faint ring-1 ring-edge transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-gold hover:shadow-[3px_3px_0_var(--hard-shadow)] hover:ring-transparent"
     >
-      <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-accent">
+      <span className="text-[10px] leading-none text-muted/0 transition-colors group-hover:text-[#141413]">
         claim
       </span>
-      <span className="tnum text-[13px] leading-none font-semibold text-muted/70 transition-colors group-hover:text-accent">
+      <span className="tnum font-display text-[15px] leading-none text-muted transition-colors group-hover:text-[#141413]">
         {seat}
       </span>
-      <span className="text-[9px] leading-none text-muted/0 transition-colors group-hover:text-accent">
+      <span className="text-[9px] leading-none text-muted/0 transition-colors group-hover:text-[#141413]">
         claim
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">

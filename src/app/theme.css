@@ -1,31 +1,50 @@
 @import "tailwindcss";
 
-:root {
-  /* Opera house: clean neutral paper, deep forest for the stage, brass for
-     the gilt. The old palette was beige with terracotta and curtain red —
-     one hue family throughout, so nothing had anywhere to stand out, and
-     paper against panel measured 1.02 which meant cards barely read as
-     objects at all.
+/* ---------------------------------------------------------------------------
+   Fireship: flat surfaces, one loud accent, hard shadows.
 
-     Every pair below clears WCAG AA on the surface it sits on. */
-  --bg: #f4f3ef;
+   The palette is fixed — these hex values are the brief, not a starting
+   point. The previous opera-house theme built depth out of gradients and
+   soft drop shadows; this one builds it out of offset solid shadows and
+   hairlines, so nothing here blurs.
+
+   Token names are unchanged from the old theme on purpose: every component
+   already reads `bg-panel`, `text-gold`, `border-edge`, so re-pointing the
+   values here redresses the whole app without touching 25 files. `gold` is
+   now the orange, `accent` the cyan.
+   --------------------------------------------------------------------------- */
+:root {
+  --bg: #f7f7f7;
   --bg-lift: #ffffff;
   --panel: #ffffff;
-  --panel-hover: #fafaf7;
-  --border: #e3e2db;
-  --border-strong: #c9c8bf;
-  --fg: #171a18;
-  --muted: #666b66;
-  --faint: #ecebe4;
-  /* Brass, not mustard. 5.6:1 on white, 5.1:1 on its own tint. */
-  --gold: #8a5f0f;
-  --gold-soft: #fbf3e0;
-  --gold-line: #ddbc72;
-  /* Jade — far enough from the brass to read as a separate signal. */
-  --accent: #1a6b57;
-  /* Velvet green, the colour of an actual auditorium. */
-  --stage: #1b3b32;
-  --stage-deep: #112620;
+  --panel-hover: #faf9f5;
+  --faint: #faf9f5;
+
+  --border: rgba(20, 20, 19, 0.1);
+  --border-strong: rgba(20, 20, 19, 0.22);
+  --hairline: rgba(20, 20, 19, 0.1);
+
+  --fg: #231f20;
+  --heading: #141413;
+  --muted: rgba(35, 31, 32, 0.62);
+
+  /* The loud one. Everything that wants attention is this orange. */
+  --gold: #fc7428;
+  --gold-soft: #fff1e8;
+  --gold-line: rgba(252, 116, 40, 0.35);
+
+  --accent: #12b5e5;
+  --cyan: #12b5e5;
+  --purple: #7b5ea7;
+  --green: #0ba95b;
+  --red: #ed203d;
+
+  /* The stage is the near-black header bar, not a green auditorium. */
+  --stage: #141413;
+  --stage-deep: #0f0d0e;
+
+  --hard-shadow: #141413;
+  --r-card: 20px;
 }
 
 @theme inline {
@@ -36,62 +55,68 @@
   --color-edge: var(--border);
   --color-edge-strong: var(--border-strong);
   --color-fg: var(--fg);
+  --color-heading: var(--heading);
   --color-muted: var(--muted);
   --color-faint: var(--faint);
   --color-gold: var(--gold);
   --color-gold-soft: var(--gold-soft);
   --color-gold-line: var(--gold-line);
   --color-accent: var(--accent);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --color-cyan: var(--cyan);
+  --color-purple: var(--purple);
+  --color-green: var(--green);
+  --color-red: var(--red);
+  --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-anton), "Archivo Black", Impact, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
-
-/* ---------------------------------------------------------------------------
-   Dark: the same room after the house lights drop. Warm throughout — a cold
-   grey dark mode next to a cream light mode reads as two different products.
-
-   Declared three ways on purpose. The bare :root above is light. A visitor
-   who has chosen nothing follows their system. A visitor who has chosen
-   overrides it either way, which the media query alone cannot do.
-   --------------------------------------------------------------------------- */
+/* Dark is a stamped override rather than a system follow: the brief asks for
+   a page that opens light and darkens on request. The media query is still
+   honoured for anyone who has expressed no preference here. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #0f1211;
-    --bg-lift: #171c19;
-    --panel: #1c211e;
-    --panel-hover: #242a26;
-    --border: #333b36;
-    --border-strong: #4a544d;
-    --fg: #edefeb;
-    --muted: #98a099;
-    --faint: #232925;
-    --gold: #e2b45c;
-    --gold-soft: #2f2514;
-    --gold-line: #6a5528;
-    --accent: #5cc7a4;
-    --stage: #17332c;
-    --stage-deep: #0d1e19;
+    --bg: #0f0d0e;
+    --bg-lift: #141413;
+    --panel: #141413;
+    --panel-hover: #1c1a1b;
+    --faint: #1c1a1b;
+    --border: rgba(249, 244, 218, 0.08);
+    --border-strong: rgba(249, 244, 218, 0.18);
+    --hairline: rgba(249, 244, 218, 0.08);
+    --fg: #f9f4da;
+    --heading: #f9f4da;
+    --muted: rgba(249, 244, 218, 0.6);
+    --gold: #fcba28;
+    --gold-soft: #2a1d10;
+    --gold-line: rgba(252, 186, 40, 0.35);
+    --red: #f38ba3;
+    --stage: #141413;
+    --stage-deep: #0a0909;
+    --hard-shadow: #000000;
     color-scheme: dark;
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #0f1211;
-  --bg-lift: #171c19;
-  --panel: #1c211e;
-  --panel-hover: #242a26;
-  --border: #333b36;
-  --border-strong: #4a544d;
-  --fg: #edefeb;
-  --muted: #98a099;
-  --faint: #232925;
-  --gold: #e2b45c;
-  --gold-soft: #2f2514;
-  --gold-line: #6a5528;
-  --accent: #5cc7a4;
-  --stage: #17332c;
-  --stage-deep: #0d1e19;
+  --bg: #0f0d0e;
+  --bg-lift: #141413;
+  --panel: #141413;
+  --panel-hover: #1c1a1b;
+  --faint: #1c1a1b;
+  --border: rgba(249, 244, 218, 0.08);
+  --border-strong: rgba(249, 244, 218, 0.18);
+  --hairline: rgba(249, 244, 218, 0.08);
+  --fg: #f9f4da;
+  --heading: #f9f4da;
+  --muted: rgba(249, 244, 218, 0.6);
+  --gold: #fcba28;
+  --gold-soft: #2a1d10;
+  --gold-line: rgba(252, 186, 40, 0.35);
+  --red: #f38ba3;
+  --stage: #141413;
+  --stage-deep: #0a0909;
+  --hard-shadow: #000000;
   color-scheme: dark;
 }
 
@@ -106,63 +131,67 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* Light thrown from the stage onto the house: a soft cone that lands on the
-   front row and falls away toward the back, so the room reads as lit from one
-   source rather than evenly flooded. */
-.stage::before {
-  content: "";
-  position: fixed;
-  inset: 0 0 auto 0;
-  height: 72vh;
-  background: radial-gradient(
-    46% 62% at 50% -4%,
-    rgba(221, 188, 114, 0.34) 0%,
-    rgba(26, 107, 87, 0.10) 34%,
-    rgba(27, 59, 50, 0.05) 58%,
-    transparent 80%
-  );
-  pointer-events: none;
-  z-index: 0;
+/* Headings are the display face, uppercase, tight. This is the loudest
+   single signal that the page changed. */
+/* Deliberately sets no colour. Headings inherit from their container, so a
+   heading on the dark header bar stays light while one on the page stays
+   dark. Setting `color` here — even inside :where() — painted the header
+   wordmark #141413 on a #141413 bar: specificity lowers how hard a rule
+   competes, but any declaration at all still beats inheriting. Use the
+   `text-heading` utility where a heading wants the darker ink. */
+:where(h1, h2, h3, .display) {
+  font-family: var(--font-anton), "Archivo Black", Impact, sans-serif;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.95;
+  text-wrap: balance;
 }
 
-/* The stage itself: dark boards, with the footlights spilling off the front
-   edge. Everything above the house is this one object. */
-/* The stage: curtain red with a gilt edge, rather than a black slab. */
+/* The old theme lit the room from the stage. Fireship does not do
+   atmosphere, so the spotlight and the floor wash are gone rather than
+   restyled — a soft radial gradient is exactly the blur the brief rules
+   out. Kept as no-op rules so components can keep the class names. */
+.stage::before { content: none; }
+
+.house { background: none; }
+
+/* The header bar: a solid near-black slab with a hard orange underline. */
 .boards {
-  background: linear-gradient(180deg, var(--stage) 0%, var(--stage-deep) 100%);
-  box-shadow:
-    0 1px 0 rgba(221, 188, 114, 0.7),
-    0 14px 40px -18px rgba(17, 38, 32, 0.4);
+  background: var(--stage);
+  border-bottom: 3px solid var(--gold);
+  box-shadow: none;
 }
 
-.tnum {
-  font-variant-numeric: tabular-nums;
-}
+.tnum { font-variant-numeric: tabular-nums; }
 
-/* The floor of the house: a soft pool of light under the front rows that
-   fades toward the back, so the seating reads as a room with depth rather
-   than tiles floating on a page. */
-.house {
-  background:
-    radial-gradient(
-      120% 78% at 50% -6%,
-      color-mix(in srgb, var(--bg-lift) 90%, transparent) 0%,
-      color-mix(in srgb, var(--bg-lift) 50%, transparent) 42%,
-      transparent 74%
-    ),
-    linear-gradient(180deg, transparent 55%, rgba(27, 59, 50, 0.04) 100%);
-}
-
-/* One shared card shadow, so every surface in the app sits at the same
-   height. Two stops: a hairline for definition, a soft drop for lift. */
+/* Cards sit on an offset solid shadow — no blur, ever. */
 .card-shadow {
-  box-shadow:
-    0 1px 2px rgba(23, 26, 24, 0.05),
-    0 8px 24px -12px rgba(23, 26, 24, 0.13);
+  box-shadow: 3px 3px 0 var(--hard-shadow);
 }
 
 .card-shadow-lift {
-  box-shadow:
-    0 1px 2px rgba(23, 26, 24, 0.06),
-    0 18px 40px -16px rgba(23, 26, 24, 0.18);
+  box-shadow: 5px 5px 0 var(--hard-shadow);
+}
+
+/* The 3D pill: full round, hard offset, and it presses into the shadow on
+   click rather than sliding around under it. */
+.pill {
+  border-radius: 999px;
+  box-shadow: 4px 4px 0 var(--hard-shadow);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.pill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 var(--hard-shadow);
+}
+
+.pill:active {
+  transform: translate(4px, 4px);
+  box-shadow: 0 0 0 var(--hard-shadow);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pill, .pill:hover, .pill:active { transition: none; transform: none; }
 }

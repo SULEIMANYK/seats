@@ -51,7 +51,7 @@ export function ThemeToggle() {
       onClick={() => pick(isDark ? "light" : "dark")}
       title={choice === null ? "Following your system" : `Switch to ${isDark ? "light" : "dark"}`}
       aria-label="Toggle theme"
-      className="inline-flex size-7 items-center justify-center rounded-full border border-[#eef2ec]/20 text-[#eef2ec]/70 transition hover:border-[#eef2ec]/40 hover:text-[#eef2ec]"
+      className="inline-flex size-7 items-center justify-center rounded-full border border-[#f9f4da]/20 text-[#f9f4da]/70 transition hover:border-[#f9f4da]/40 hover:text-[#f9f4da]"
     >
       {isDark ? (
         <svg viewBox="0 0 20 20" className="size-3.5" fill="currentColor" aria-hidden>
