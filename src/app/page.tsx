@@ -80,6 +80,13 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
           </span>
 
           <Link
+            href="/archive"
+            className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
+          >
+            archive
+          </Link>
+
+          <Link
             href="/stats"
             className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
           >
