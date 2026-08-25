@@ -4,6 +4,7 @@ import { db, type Listing } from "@/lib/db";
 import { placeListings, type Placeable } from "@/lib/seating";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { EditListing } from "@/components/EditListing";
+import { MoveSeat } from "@/components/MoveSeat";
 import { displayDomain } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
@@ -78,7 +79,12 @@ export default async function ManagePage({
   if (!listing) notFound();
 
 
-  const { seat, clicks30d, clicksTotal, bench } = await loadStats(supabase, listing.id);
+  const { seat, seated, clicks30d, clicksTotal, bench } = await loadStats(supabase, listing.id);
+
+  // Every seat the chart currently shows as occupied. The picker greys these
+  // out; the API refuses them again on submit, because this list is a render
+  // old the moment it reaches the browser.
+  const takenSeats = [...placeListings(seated).values()];
 
   // Seats are free, so there is no cost per click to report.
 
@@ -257,6 +263,10 @@ export default async function ManagePage({
       )}
 
       
+      {listing.status === "active" && (
+        <MoveSeat token={listing.manage_token} current={seat ?? null} taken={takenSeats} />
+      )}
+
       <EditListing
         token={listing.manage_token}
         listing={{

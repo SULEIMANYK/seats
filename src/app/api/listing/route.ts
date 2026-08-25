@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { isValidCategory } from "@/lib/categories";
-import { currentEmail } from "@/lib/auth";
-import { db } from "@/lib/db";
+import { authoriseListing } from "@/lib/listing-auth";
 import { isValidPricingModel } from "@/lib/pricing";
 import { normalizeImageUrl, normalizeUrl } from "@/lib/slug";
 
@@ -10,30 +9,12 @@ export const runtime = "nodejs";
 /**
  * Edit or remove a listing.
  *
- * Authorised two ways, because both are legitimate: a signed-in owner, or
- * the manage token. The token predates sign-in and people saved those links,
- * so dropping it would lock them out of listings they own.
- *
  * The URL is deliberately not editable. Changing it would let someone claim a
  * seat with one product and swap in another after the fact, which is the
  * whole thing the domain rule exists to prevent.
+ *
+ * Moving between free seats lives in ./seat.
  */
-async function authorise(token: string | undefined, listingId: string | undefined) {
-  const supabase = db();
-  const owner = await currentEmail();
-
-  const query = supabase.from("listings").select("*");
-  const { data } = token
-    ? await query.eq("manage_token", token).maybeSingle()
-    : await query.eq("id", listingId ?? "").maybeSingle();
-
-  if (!data) return { listing: null, supabase };
-  if (token) return { listing: data, supabase };
-  // Without a token, the caller must be signed in as the owner.
-  if (owner && data.owner_email === owner) return { listing: data, supabase };
-  return { listing: null, supabase };
-}
-
 export async function PATCH(request: Request) {
   let body: Record<string, string | undefined>;
   try {
@@ -42,7 +23,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { listing, supabase } = await authorise(body.token, body.listingId);
+  const { listing, supabase } = await authoriseListing(body.token, body.listingId);
   if (!listing) {
     return NextResponse.json({ error: "Not yours, or no longer there." }, { status: 404 });
   }
@@ -90,7 +71,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { listing, supabase } = await authorise(body.token, body.listingId);
+  const { listing, supabase } = await authoriseListing(body.token, body.listingId);
   if (!listing) {
     return NextResponse.json({ error: "Not yours, or no longer there." }, { status: 404 });
   }

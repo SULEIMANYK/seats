@@ -52,7 +52,7 @@ export default async function Home() {
         <div className="flex items-baseline gap-3">
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
             <Logo className="size-7 text-[#f9f4da]" />
-            seats<span className="text-[#f9f4da]/40">.lol</span>
+            seats
           </h1>
           <p className="hidden text-[13px] text-[#f9f4da]/55 sm:block">{SITE.tagline}</p>
         </div>

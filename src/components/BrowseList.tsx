@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { CATEGORIES } from "@/lib/categories";
 import type { BrowseRow } from "@/app/browse/page";
 import { Favicon } from "./Favicon";
 
@@ -13,13 +14,20 @@ export function BrowseList({ rows }: { rows: BrowseRow[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string | null>(null);
 
-  const categories = useMemo(() => {
-    const counts = new Map<string, number>();
+  const counts = useMemo(() => {
+    const map = new Map<string, number>();
     for (const r of rows) {
-      if (r.category) counts.set(r.category, (counts.get(r.category) ?? 0) + 1);
+      if (r.category) map.set(r.category, (map.get(r.category) ?? 0) + 1);
     }
-    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    return map;
   }, [rows]);
+
+  // Chips are the quick path: only categories something is actually filed
+  // under, busiest first. The select below carries the whole taxonomy.
+  const categories = useMemo(
+    () => [...counts.entries()].sort((a, b) => b[1] - a[1]),
+    [counts],
+  );
 
   const shown = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -55,9 +63,30 @@ export function BrowseList({ rows }: { rows: BrowseRow[] }) {
           placeholder="Search by name, tagline or domain…"
           className="w-full min-w-0 rounded-xl border border-edge bg-panel px-3.5 py-2.5 text-[13px] text-fg placeholder:text-muted/70 outline-none transition focus:border-edge-strong sm:max-w-xs"
         />
-        <span className="tnum shrink-0 text-[11px] text-muted">
-          {shown.length} of {rows.length}
-        </span>
+        <div className="flex shrink-0 items-center gap-3">
+          {/* Every category, not just the occupied ones — someone browsing
+              should be able to see the whole shelf. Empty ones are shown but
+              not selectable, so picking one never lands on an empty list. */}
+          <select
+            value={category ?? ""}
+            onChange={(e) => setCategory(e.target.value || null)}
+            aria-label="Filter by category"
+            className="min-w-0 rounded-xl border border-edge bg-panel px-3 py-2.5 text-[13px] text-fg outline-none transition focus:border-edge-strong"
+          >
+            <option value="">All categories ({rows.length})</option>
+            {CATEGORIES.map((name) => {
+              const n = counts.get(name) ?? 0;
+              return (
+                <option key={name} value={name} disabled={n === 0}>
+                  {name} ({n})
+                </option>
+              );
+            })}
+          </select>
+          <span className="tnum text-[11px] text-muted">
+            {shown.length} of {rows.length}
+          </span>
+        </div>
       </div>
 
       {categories.length > 1 && (

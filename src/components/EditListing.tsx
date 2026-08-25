@@ -163,13 +163,14 @@ export function EditListing({ token, listing }: { token: string; listing: Listin
                 onClick={() => setConfirming(true)}
                 className="text-[12px] text-muted underline-offset-4 transition hover:text-gold hover:underline"
               >
-                Remove this listing
+                Free my seat
               </button>
             ) : (
               <div className="space-y-2.5">
                 <p className="text-[12px] leading-relaxed text-muted">
-                  This frees the seat immediately and takes the listing off the board. Days
-                  already recorded in the archive stay as they were.
+                  Your seat goes back on the board for someone else, and the listing
+                  comes off. Days already recorded in the archive stay as they were.
+                  If you only want to sit somewhere else, move seat above instead.
                 </p>
                 <div className="flex gap-2">
                   <button
@@ -177,13 +178,13 @@ export function EditListing({ token, listing }: { token: string; listing: Listin
                     disabled={busy}
                     className="rounded-xl border border-gold-line bg-gold-soft px-3.5 py-2 text-[12px] font-semibold text-gold disabled:opacity-50"
                   >
-                    {busy ? "Removing…" : "Yes, remove it"}
+                    {busy ? "Freeing…" : "Yes, free it"}
                   </button>
                   <button
                     onClick={() => setConfirming(false)}
                     className="rounded-xl border border-edge px-3.5 py-2 text-[12px] text-muted"
                   >
-                    Keep it
+                    Keep my seat
                   </button>
                 </div>
               </div>
