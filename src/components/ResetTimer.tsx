@@ -63,22 +63,40 @@ export function ResetTimer() {
 
   // Reserve the space so the header does not jump when the clock appears.
   if (!left) {
-    return <span className="tnum text-[11px] text-fg/60" aria-hidden>&nbsp;</span>;
+    return (
+      <span className="tnum block h-[34px] text-center text-[26px] leading-[34px]" aria-hidden>
+        &nbsp;
+      </span>
+    );
   }
 
   const pad = (n: number) => String(n).padStart(2, "0");
+  // Under half an hour the clear stops being trivia and starts being news.
   const soon = left.total < 30 * 60_000;
 
   return (
     <span
-      className={`tnum inline-flex items-center gap-1.5 text-[11px] ${
-        soon ? "text-gold-line" : "text-fg/60"
-      }`}
+      className="flex min-w-0 items-center justify-center gap-2.5 sm:gap-3.5"
       title="Every seat is cleared at midnight UTC"
     >
-      <span className="hidden sm:inline">clears in</span>
-      <span className="font-medium">
-        {pad(left.h)}:{pad(left.m)}:{pad(left.s)}
+      <span className="hidden text-[10px] tracking-[0.18em] text-fg/40 uppercase sm:inline">
+        every seat clears in
+      </span>
+      <span className="sr-only">Every seat clears in</span>
+
+      {/* Anton, tabular, and big enough to be the thing you look at. The
+          segments are separate so the colons do not jitter as digits change
+          width -- tabular-nums fixes the digits, not the punctuation. */}
+      <span
+        className={`tnum font-display inline-flex items-baseline gap-0.5 text-[26px] leading-none tracking-tight tabular-nums sm:text-[30px] ${
+          soon ? "text-gold" : "text-fg"
+        }`}
+      >
+        <span>{pad(left.h)}</span>
+        <span className="text-fg/25">:</span>
+        <span>{pad(left.m)}</span>
+        <span className="text-fg/25">:</span>
+        <span>{pad(left.s)}</span>
       </span>
     </span>
   );
