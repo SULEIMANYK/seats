@@ -6,7 +6,14 @@ import { BOARD_SIZE } from "@/lib/seating";
 
 export const dynamic = "force-dynamic";
 
-export default async function SubmitPage() {
+export default async function SubmitPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ seat?: string }>;
+}) {
+  const { seat: seatParam } = await searchParams;
+  const wanted = Number(seatParam);
+  const seat = Number.isInteger(wanted) && wanted >= 1 && wanted <= BOARD_SIZE ? wanted : null;
 
   // The current board, so the price picker can show what rank each tier
   // would actually buy and who it would pass — not just a list of numbers.
@@ -40,7 +47,7 @@ export default async function SubmitPage() {
         </p>
       </header>
 
-      <SubmitForm full={full} />
+      <SubmitForm full={full} seat={seat} />
     </main>
   );
 }

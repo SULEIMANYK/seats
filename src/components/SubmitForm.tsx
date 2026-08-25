@@ -9,7 +9,7 @@ import { PRICING_MODELS } from "@/lib/pricing";
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
-export function SubmitForm({ full }: { full: boolean }) {
+export function SubmitForm({ full, seat }: { full: boolean; seat: number | null }) {
   const router = useRouter();
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
@@ -44,6 +44,7 @@ export function SubmitForm({ full }: { full: boolean }) {
         description: form.get("description") || null,
         pricingModel: form.get("pricingModel") || null,
         docsUrl: form.get("docsUrl") || null,
+        seat,
       }),
     });
 
@@ -75,10 +76,23 @@ export function SubmitForm({ full }: { full: boolean }) {
 
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
           <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
-          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            You take the next free seat and it stays yours. No bidding, no ranking, nobody
-            climbing past you.
-          </p>
+          {seat === null ? (
+            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+              You take the next free seat and it stays yours. No bidding, no ranking, nobody
+              climbing past you.
+            </p>
+          ) : (
+            <>
+              <p className="tnum mt-1.5 text-3xl font-semibold tracking-tight">Seat {seat}</p>
+              <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+                Yours once you claim it, and it stays yours.{" "}
+                <a href="/submit" className="text-accent hover:underline">
+                  Any free seat instead
+                </a>
+                .
+              </p>
+            </>
+          )}
         </div>
 
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
@@ -246,7 +260,7 @@ export function SubmitForm({ full }: { full: boolean }) {
           disabled={busy || full}
           className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
-          {full ? "House full" : busy ? "Adding…" : "Add my listing"}
+          {full ? "House full" : busy ? "Adding…" : seat === null ? "Add my listing" : `Claim seat ${seat}`}
         </button>
 
         <p className="text-center text-[11px] text-muted">

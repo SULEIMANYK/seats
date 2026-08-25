@@ -28,6 +28,7 @@ type Body = {
   description?: string;
   pricingModel?: string;
   docsUrl?: string;
+  seat?: number;
 };
 
 /** Recent submissions per hashed IP, to blunt scripted signups. */
@@ -118,6 +119,28 @@ export async function POST(request: Request) {
     );
   }
 
+  // The seat picked on the chart, if any. Anything outside the house or
+  // already taken is refused rather than quietly reassigned — being moved
+  // without being told is what made the old behaviour feel broken.
+  const wanted = Number(body.seat);
+  const picked = Number.isInteger(wanted) && wanted >= 1 && wanted <= BOARD_SIZE ? wanted : null;
+
+  if (picked !== null) {
+    const { data: held } = await supabase
+      .from("listings")
+      .select("id")
+      .eq("seat", picked)
+      .in("status", ["active", "past_due"])
+      .maybeSingle();
+
+    if (held) {
+      return NextResponse.json(
+        { error: `Seat ${picked} was taken. Pick another.`, seatTaken: picked },
+        { status: 409 },
+      );
+    }
+  }
+
   const { count } = await supabase
     .from("listings")
     .select("*", { count: "exact", head: true })
@@ -128,6 +151,25 @@ export async function POST(request: Request) {
       { error: "Every seat is taken right now. Check back when one frees up." },
       { status: 409 },
     );
+  }
+
+  // No pick means the lowest free seat, so the house fills from the front.
+  let seat = picked;
+  if (seat === null) {
+    const { data: taken } = await supabase
+      .from("listings")
+      .select("seat")
+      .in("status", ["active", "past_due"])
+      .not("seat", "is", null)
+      .returns<{ seat: number }[]>();
+
+    const used = new Set((taken ?? []).map((t) => t.seat));
+    for (let n = 1; n <= BOARD_SIZE; n++) {
+      if (!used.has(n)) { seat = n; break; }
+    }
+    if (seat === null) {
+      return NextResponse.json({ error: "Every seat is taken." }, { status: 409 });
+    }
   }
 
   const { data: listing, error } = await supabase
@@ -145,6 +187,7 @@ export async function POST(request: Request) {
       description,
       pricing_model: pricingModel,
       extra_links: extraLinks,
+      seat,
       submit_ip_hash: ipHash,
       price_cents: 0,
       // Nothing to wait for, so the listing goes up immediately.
@@ -155,9 +198,17 @@ export async function POST(request: Request) {
     .single();
 
   if (error || !listing) {
+    // 23505 is the unique violation on the seat index: someone claimed it in
+    // the moment between the check above and this insert.
+    if (error?.code === "23505") {
+      return NextResponse.json(
+        { error: `Seat ${seat} was claimed a moment ago. Pick another.`, seatTaken: seat },
+        { status: 409 },
+      );
+    }
     console.error("listing insert failed", error);
     return NextResponse.json({ error: "Could not create listing" }, { status: 500 });
   }
 
-  return NextResponse.json({ slug: listing.slug, manageToken: listing.manage_token });
+  return NextResponse.json({ slug: listing.slug, manageToken: listing.manage_token, seat });
 }

@@ -194,7 +194,7 @@ function Seat({
 function EmptySeat({ seat, width, height }: { seat: number; width: string; height: number }) {
   return (
     <Link
-      href="/submit"
+      href={`/submit?seat=${seat}`}
       style={{ width, height }}
       className="group relative flex flex-col items-center justify-center gap-0.5 rounded-xl bg-[#14141a]/[0.026] ring-1 ring-black/[0.02] transition-all duration-150 hover:z-20 hover:-translate-y-1 hover:bg-panel hover:ring-accent"
     >
@@ -205,7 +205,7 @@ function EmptySeat({ seat, width, height }: { seat: number; width: string; heigh
         {seat}
       </span>
       <span className="pointer-events-none absolute bottom-[calc(100%+6px)] left-1/2 z-30 hidden -translate-x-1/2 rounded-lg border border-edge bg-bg-lift px-2 py-1.5 text-[10px] whitespace-nowrap card-shadow group-hover:block">
-        Empty seat — claim it
+        Seat {seat} — claim it
       </span>
     </Link>
   );
