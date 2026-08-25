@@ -57,3 +57,10 @@ select
 from board b;
 
 grant select, insert, update, delete on all tables in schema public to service_role;
+
+-- Sign-in identity. A listing belongs to the account that created it, which
+-- is what makes "one seat per account" enforceable — the domain check alone
+-- only stops the same site twice, not one person taking several seats.
+alter table listings add column if not exists owner_email text;
+create index if not exists listings_owner_idx
+  on listings (owner_email) where status in ('active', 'past_due');

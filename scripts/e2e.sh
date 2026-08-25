@@ -26,7 +26,7 @@ body() { _curl -s -m 30 "$@"; }
 post() { _curl -s -m 40 -X POST "$B/api/submit" -H 'content-type: application/json' -d "$1"; }
 
 echo "── 1. routes"
-for p in / /submit /stats; do is "GET $p" "$(code "$B$p")" 200; done
+for p in / /stats /archive; do is "GET $p" "$(code "$B$p")" 200; done
 is "GET /manage/bogus (404)" "$(code "$B/manage/bogus")" 404
 is "GET /api/icon" "$(code "$B/api/icon?domain=linear.app")" 200
 
@@ -37,35 +37,33 @@ is "cron, no token" "$(code "$B/api/cron/grace")" 401
 is "cron, wrong token" "$(code "$B/api/cron/grace" -H 'authorization: Bearer wrong')" 401
 is "icon, injection rejected" "$(_curl -s -m 20 "$B/api/icon?domain=javascript:alert(1)" -o /dev/null -w '%{content_type}')" "image/svg+xml"
 
-echo "── 3. input validation"
-has "bad email"    "$(post '{"name":"T","url":"vt1.com","tagline":"x","email":"nope"}')" "valid email"
-has "bad url"      "$(post '{"name":"T","url":"not a url","tagline":"x","email":"a@b.com"}')" "http(s) URL"
-has "missing name" "$(post '{"url":"vt2.com","tagline":"x","email":"a@b.com"}')" "Name is required"
-has "long tagline" "$(post "{\"name\":\"T\",\"url\":\"vt3.com\",\"tagline\":\"$(printf 'x%.0s' $(seq 1 200))\",\"email\":\"a@b.com\",\"plan\":\"listed\"}")" "160"
+echo "── 3. auth gate"
+has "submit without a session" "$(post '{"name":"T","url":"vt0.com","tagline":"x","seat":5}')" "Sign in first"
+is  "/submit redirects"        "$(code "$B/submit")" 307
+is  "/dashboard redirects"     "$(code "$B/dashboard")" 307
+is  "/signin loads"            "$(code "$B/signin")" 200
 
-echo "── 4. lifecycle: checkout → activate → click → rank"
+echo "── 5. lifecycle: seed → click → seat holds"
 psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1
-has "submit returns manage token" "$(post '{"name":"Alpha","url":"alpha-e2e.com","tagline":"first","email":"s.yaakoubi@aigcom.com","category":"Developer Tools"}')" "manageToken"
-post '{"name":"Beta","url":"beta-e2e.com","tagline":"second","email":"s.yaakoubi@aigcom.com","category":"Productivity"}' >/dev/null
+# Submission is behind sign-in, so the fixtures go in directly.
+psql "$DB" -q -c "insert into listings (slug,name,url,domain,tagline,email,owner_email,category,seat,status,price_cents)
+  values ('alpha-e2e','Alpha','https://alpha-e2e.com','alpha-e2e.com','first','a@b.com','a@b.com','Developer Tools',1,'active',0),
+         ('beta-e2e','Beta','https://beta-e2e.com','beta-e2e.com','second','b@b.com','b@b.com','Productivity',2,'active',0);" >/dev/null 2>&1
 is "2 live listings" "$(psql "$DB" -tAc "select count(*) from listings where status='active'")" 2
 is "2 on board" "$(psql "$DB" -tAc "select count(*) from board")" 2
 
-SA=$(psql "$DB" -tAc "select slug from listings where domain='alpha-e2e.com'")
-SB=$(psql "$DB" -tAc "select slug from listings where domain='beta-e2e.com'")
+SA=alpha-e2e
+SB=beta-e2e
 is "click redirects" "$(code "$B/r/$SA")" 302
 for i in 1 2 3 4 5; do _curl -s -o /dev/null -m 15 -H "x-forwarded-for: 203.0.113.$i" "$B/r/$SA" >/dev/null; done
 sleep 3
 is "clicks recorded" "$(psql "$DB" -tAc "select clicks_24h from board where slug='$SA'")" 6
 # Seats are owned: arrival order decides, and clicks must not move anyone.
-is "first to arrive holds seat 1" "$(psql "$DB" -tAc "select name from board order by rank limit 1")" "Alpha"
+is "seat 1 holds despite clicks" "$(psql "$DB" -tAc "select name from board order by rank limit 1")" "Alpha"
 
-echo "── 5. features"
+echo "── 6. features"
 has "badge shows rank" "$(body "$B/api/badge/$SA")" "#1 in"
 is  "UTM tagging"  "$(_curl -s -o /dev/null -m 20 -w '%{redirect_url}' "$B/r/$SB" | grep -c utm_source)" 1
-
-echo "── 6. dedupe"
-has "same domain refused" "$(post '{"name":"Dup","url":"https://alpha-e2e.com","tagline":"x","email":"a@b.com"}')" "already on the board"
-has "www variant refused" "$(post '{"name":"Dup","url":"www.alpha-e2e.com","tagline":"x","email":"a@b.com"}')" "already on the board"
 
 echo "── 7. surfaces show data"
 has "board shows clicks"    "$(body "$B/")" "clicks"

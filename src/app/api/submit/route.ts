@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { isValidCategory } from "@/lib/categories";
 import { isValidPricingModel } from "@/lib/pricing";
+import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
 import { canonicalDomain, makeSlug, normalizeImageUrl, normalizeUrl } from "@/lib/slug";
@@ -53,9 +54,20 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Signed in or nothing. A verified address is what stops one person
+  // listing the same product under several names.
+  const owner = await currentEmail();
+  if (!owner) {
+    return NextResponse.json(
+      { error: "Sign in first — we email you a link, no password.", needsAuth: true },
+      { status: 401 },
+    );
+  }
+
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
-  const email = body.email?.trim().toLowerCase();
+  // The signed-in address is the identity; the form no longer supplies one.
+  const email = owner;
   const url = body.url ? normalizeUrl(body.url) : null;
   const category = isValidCategory(body.category) ? body.category : null;
   // Both optional. A bad value is dropped rather than refused — a broken
@@ -78,10 +90,6 @@ export async function POST(request: Request) {
   if (!tagline || tagline.length > 160) {
     return NextResponse.json({ error: "Tagline is required (max 160 characters)" }, { status: 400 });
   }
-  if (!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
-    return NextResponse.json({ error: "A valid email is required" }, { status: 400 });
-  }
-
   const domain = canonicalDomain(url);
   if (!domain) {
     return NextResponse.json({ error: "A valid http(s) URL is required" }, { status: 400 });
@@ -95,6 +103,21 @@ export async function POST(request: Request) {
     .update(ip + (process.env.CLICK_SALT ?? "seats.lol"))
     .digest("hex")
     .slice(0, 32);
+
+  // One listing per account. The domain check below stops the same site
+  // appearing twice; this stops one person filling the house.
+  const { count: mine } = await supabase
+    .from("listings")
+    .select("*", { count: "exact", head: true })
+    .eq("owner_email", owner)
+    .in("status", ["active", "past_due"]);
+
+  if ((mine ?? 0) >= 1) {
+    return NextResponse.json(
+      { error: "You already have a seat. One per account." },
+      { status: 409 },
+    );
+  }
 
   if (await overRateLimit(supabase, ipHash)) {
     return NextResponse.json(
@@ -181,6 +204,7 @@ export async function POST(request: Request) {
       domain,
       tagline,
       email,
+      owner_email: owner,
       category,
       logo_url: logoUrl,
       image_url: imageUrl,

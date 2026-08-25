@@ -9,7 +9,15 @@ import { PRICING_MODELS } from "@/lib/pricing";
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
-export function SubmitForm({ full, seat }: { full: boolean; seat: number | null }) {
+export function SubmitForm({
+  full,
+  seat,
+  email,
+}: {
+  full: boolean;
+  seat: number | null;
+  email: string;
+}) {
   const router = useRouter();
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
@@ -37,7 +45,6 @@ export function SubmitForm({ full, seat }: { full: boolean; seat: number | null 
         name: form.get("name"),
         url: form.get("url"),
         tagline: form.get("tagline"),
-        email: form.get("email"),
         category: form.get("category") || null,
         logoUrl: form.get("logoUrl") || null,
         imageUrl: form.get("imageUrl") || null,
@@ -50,6 +57,10 @@ export function SubmitForm({ full, seat }: { full: boolean; seat: number | null 
 
     const data = await res.json();
     if (!res.ok) {
+      if (data.needsAuth) {
+        router.push(`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
       setError(data.error ?? "Something went wrong");
       setBusy(false);
       return;
@@ -241,12 +252,14 @@ export function SubmitForm({ full, seat }: { full: boolean; seat: number | null 
           </div>
 
           <div className="space-y-1.5">
-            <label htmlFor="email" className={labelCls}>
-              Email
-            </label>
-            <input id="email" name="email" type="email" required className={inputCls} placeholder="you@acme.com" />
+            <span className="block text-[11px] font-semibold tracking-wide text-muted uppercase">
+              Account
+            </span>
+            <p className="rounded-xl border border-edge bg-bg px-3.5 py-3 text-[15px] text-muted">
+              {email}
+            </p>
             <p className="text-[11px] text-muted/70">
-              Required. This is how you will sign in to manage your listing. Never shown publicly.
+              Signed in. One seat per account, so nobody lists the same product twice.
             </p>
           </div>
         </div>
