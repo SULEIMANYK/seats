@@ -48,17 +48,17 @@ export default async function Home() {
     // unreadable.
     <main className="stage relative flex w-full flex-col">
       {/* The header is the stage. Everything else is the audience looking at it. */}
-      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-[#f9f4da] sm:px-10">
+      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-fg sm:px-10">
         <div className="flex items-baseline gap-3">
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
-            <Logo className="size-7 text-[#f9f4da]" />
+            <Logo className="size-7 text-fg" />
             seats
           </h1>
-          <p className="hidden text-[13px] text-[#f9f4da]/55 sm:block">{SITE.tagline}</p>
+          <p className="hidden text-[13px] text-fg/55 sm:block">{SITE.tagline}</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-[#f9f4da]/20 bg-[#f9f4da]/10 px-3 py-1.5 text-[11px] text-[#f9f4da]/75">
+          <span className="inline-flex items-center gap-2 rounded-full border border-fg/20 bg-fg/10 px-3 py-1.5 text-[11px] text-fg/75">
             <span className="relative flex size-1.5">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold-line opacity-70" />
               <span className="relative inline-flex size-1.5 rounded-full bg-gold-line" />
@@ -69,19 +69,19 @@ export default async function Home() {
                 : `${rows.length}/${BOARD_SIZE} taken`}
             </span>
             {stats && stats.visitors_24h > 0 && (
-              <span className="tnum text-[#f9f4da]/45">
+              <span className="tnum text-fg/45">
                 · {stats.visitors_24h.toLocaleString()} visitors today
               </span>
             )}
             {stats && stats.clicks_24h > 0 && (
-              <span className="tnum text-[#f9f4da]/45">
+              <span className="tnum text-fg/45">
                 · {stats.clicks_24h.toLocaleString()} clicks
               </span>
             )}
             {rows.length === 0 && !stats?.visitors_24h && (
-              <span className="text-[#f9f4da]/45">· be the first</span>
+              <span className="text-fg/45">· be the first</span>
             )}
-            <span className="text-[#f9f4da]/25">·</span>
+            <span className="text-fg/25">·</span>
             <ResetTimer />
           </span>
 
@@ -89,28 +89,28 @@ export default async function Home() {
 
           <Link
             href="/dashboard"
-            className="hidden text-[12px] text-[#f9f4da]/55 transition hover:text-[#f9f4da] sm:block"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
           >
             your seat
           </Link>
 
           <Link
             href="/archive"
-            className="hidden text-[12px] text-[#f9f4da]/55 transition hover:text-[#f9f4da] sm:block"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
           >
             archive
           </Link>
 
           <Link
             href="/browse"
-            className="hidden text-[12px] text-[#f9f4da]/55 transition hover:text-[#f9f4da] sm:block"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
           >
             browse
           </Link>
 
           <Link
             href="/stats"
-            className="hidden text-[12px] text-[#f9f4da]/55 transition hover:text-[#f9f4da] sm:block"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
           >
             stats →
           </Link>

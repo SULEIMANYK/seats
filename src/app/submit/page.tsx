@@ -24,20 +24,23 @@ export default async function SubmitPage({
 
   // The current board, so the price picker can show what rank each tier
   // would actually buy and who it would pass — not just a list of numbers.
-  let rows: { id: string }[] = [];
+  let rows: { id: string; rank: number }[] = [];
   try {
     const { data } = await db()
       .from("board")
-      .select("id")
+      .select("id, rank")
       .order("rank", { ascending: true })
       .limit(BOARD_SIZE)
-      .returns<{ id: string }[]>();
+      .returns<{ id: string; rank: number }[]>();
     rows = data ?? [];
   } catch (err) {
     console.error("board lookup failed", err);
   }
 
   const full = rows.length >= BOARD_SIZE;
+  // Seats already spoken for, so the picker can open with the right ones
+  // greyed out. It re-checks on a timer once it is on screen.
+  const taken = rows.map((r) => r.rank).filter((n) => n >= 1 && n <= BOARD_SIZE);
 
   return (
     <main className="stage relative mx-auto w-full max-w-5xl px-4 pt-14 pb-24 sm:px-6">
@@ -54,7 +57,7 @@ export default async function SubmitPage({
         </p>
       </header>
 
-      <SubmitForm full={full} seat={seat} email={email!} />
+      <SubmitForm full={full} seat={seat} email={email!} taken={taken} />
     </main>
   );
 }

@@ -39,9 +39,11 @@
   --green: #0ba95b;
   --red: #ed203d;
 
-  /* The stage is the near-black header bar, not a green auditorium. */
-  --stage: #141413;
-  --stage-deep: #0f0d0e;
+  /* The header slab. Light in the light theme and dark in the dark one —
+     it is a surface like any other, so it follows the theme rather than
+     staying black through both. Its ink is --fg for the same reason. */
+  --stage: #ffffff;
+  --stage-deep: #faf9f5;
 
   --hard-shadow: #141413;
   --r-card: 20px;

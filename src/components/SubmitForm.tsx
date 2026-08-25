@@ -1,10 +1,11 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
 import { PRICING_MODELS } from "@/lib/pricing";
+import { BOARD_SIZE } from "@/lib/seating";
 
 /** Just enough of a board row to compute where a price would land. */
 
@@ -13,10 +14,12 @@ export function SubmitForm({
   full,
   seat,
   email,
+  taken: initialTaken,
 }: {
   full: boolean;
   seat: number | null;
   email: string;
+  taken: number[];
 }) {
   const router = useRouter();
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
@@ -27,6 +30,47 @@ export function SubmitForm({
   const [tagline, setTagline] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // The seat being claimed. Null means "whichever is free when I submit",
+  // which is still the default — picking one is an option, not a chore.
+  const [chosen, setChosen] = useState<number | null>(seat);
+  const [taken, setTaken] = useState<number[]>(initialTaken);
+  // Set when the seat in the dropdown gets claimed by somebody else while
+  // this form is open. Filling in a listing takes a minute, and finding out
+  // at the last click that the seat went is the worst moment to find out.
+  const [lost, setLost] = useState<number | null>(null);
+
+  const takenSet = new Set(taken);
+
+  const refreshSeats = useCallback(async () => {
+    try {
+      const res = await fetch("/api/seats", { cache: "no-store" });
+      if (!res.ok) return;
+      const data: { taken?: number[] } = await res.json();
+      if (!Array.isArray(data.taken)) return;
+      setTaken(data.taken);
+      setChosen((current) => {
+        if (current !== null && data.taken!.includes(current)) {
+          setLost(current);
+          return null;
+        }
+        return current;
+      });
+    } catch {
+      // A failed poll is not worth surfacing: the submit itself still
+      // refuses a taken seat, so this is an early warning, not the guard.
+    }
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(refreshSeats, 15000);
+    const onFocus = () => refreshSeats();
+    window.addEventListener("focus", onFocus);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+    };
+  }, [refreshSeats]);
 
   // What seat each price actually buys, computed the same way the chart
   // places listings — quoting anything else makes the two disagree.
@@ -51,7 +95,7 @@ export function SubmitForm({
         description: form.get("description") || null,
         pricingModel: form.get("pricingModel") || null,
         docsUrl: form.get("docsUrl") || null,
-        seat,
+        seat: chosen,
       }),
     });
 
@@ -59,6 +103,16 @@ export function SubmitForm({
     if (!res.ok) {
       if (data.needsAuth) {
         router.push(`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
+        return;
+      }
+      // The seat went in the moment between rendering and submitting.
+      // Say which one, take it off the list, and drop back to "next free".
+      if (data.seatTaken) {
+        setTaken((t) => (t.includes(data.seatTaken) ? t : [...t, data.seatTaken]));
+        setLost(data.seatTaken);
+        setChosen(null);
+        setError(null);
+        setBusy(false);
         return;
       }
       setError(data.error ?? "Something went wrong");
@@ -87,23 +141,48 @@ export function SubmitForm({
 
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
           <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
-          {seat === null ? (
-            <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-              You take the next free seat, and it is yours until midnight UTC. No bidding and
-              no ranking — just be early.
+
+          <p className="tnum mt-1.5 text-3xl font-semibold tracking-tight">
+            {chosen === null ? "Next free seat" : `Seat ${chosen}`}
+          </p>
+
+          <label htmlFor="seatPick" className="sr-only">
+            Choose a seat
+          </label>
+          <select
+            id="seatPick"
+            value={chosen ?? ""}
+            onChange={(e) => {
+              setChosen(e.target.value ? Number(e.target.value) : null);
+              setLost(null);
+            }}
+            className="mt-2.5 w-full rounded-xl border border-edge bg-bg-lift px-3 py-2.5 text-[13px] text-fg outline-none transition-colors focus:border-accent"
+          >
+            <option value="">Next free seat</option>
+            {Array.from({ length: BOARD_SIZE }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n} disabled={takenSet.has(n)}>
+                Seat {n}
+                {takenSet.has(n) ? " — taken" : ""}
+              </option>
+            ))}
+          </select>
+
+          {lost !== null ? (
+            <p className="mt-2 rounded-xl border border-gold-line bg-gold-soft px-3 py-2 text-[12px] leading-relaxed text-gold">
+              Seat {lost} was claimed while you were filling this in. You are set to the next
+              free seat — pick a different one above if you would rather choose.
             </p>
           ) : (
-            <>
-              <p className="tnum mt-1.5 text-3xl font-semibold tracking-tight">Seat {seat}</p>
-              <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-                Yours until midnight UTC, when every seat frees up again.{" "}
-                <a href="/submit" className="text-accent hover:underline">
-                  Any free seat instead
-                </a>
-                .
-              </p>
-            </>
+            <p className="mt-2 text-[13px] leading-relaxed text-muted">
+              {chosen === null
+                ? "You take the next free seat, and it is yours until midnight UTC. No bidding and no ranking — just be early."
+                : "Yours until midnight UTC, when every seat frees up again."}
+            </p>
           )}
+
+          <p className="tnum mt-2 text-[11px] text-muted/70">
+            {BOARD_SIZE - taken.length} of {BOARD_SIZE} free right now
+          </p>
         </div>
 
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
@@ -273,7 +352,7 @@ export function SubmitForm({
           disabled={busy || full}
           className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
-          {full ? "House full" : busy ? "Adding…" : seat === null ? "Add my listing" : `Claim seat ${seat}`}
+          {full ? "House full" : busy ? "Adding…" : chosen === null ? "Add my listing" : `Claim seat ${chosen}`}
         </button>
 
         <p className="text-center text-[11px] text-muted">
