@@ -1,23 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  /* Light, editorial. Paper-white rather than pure #fff so the white cards
-     sitting on it still read as objects. */
-  --bg: #f7f7f5;
-  --bg-lift: #ffffff;
-  --panel: #ffffff;
-  --panel-hover: #ffffff;
-  --border: #e6e6e1;
-  --border-strong: #d2d2cb;
-  --fg: #14141a;
-  --muted: #6f6f7a;
-  --faint: #ececE6;
-  /* Deep amber reads as premium on white; the bright gold used on the dark
-     theme turns to highlighter here and fails contrast on text. */
-  --gold: #9a6b05;
-  --gold-soft: #fdf6e3;
-  --gold-line: #e8c877;
-  --accent: #3d3dd6;
+  /* Warm paper, not white. A theatre programme rather than a dashboard. */
+  --bg: #fdf8f1;
+  --bg-lift: #fffdfa;
+  --panel: #fffdfa;
+  --panel-hover: #fffefc;
+  --border: #ecdfd0;
+  --border-strong: #dcc9b4;
+  --fg: #2b2018;
+  --muted: #8a7a6b;
+  --faint: #f5ece1;
+  /* Deep amber reads as gilt on cream; the brighter gold turned to
+     highlighter and failed contrast on text. */
+  --gold: #a8690a;
+  --gold-soft: #fdf0d8;
+  --gold-line: #e6c088;
+  /* Terracotta, so the one accent is warm too rather than a cold blue. */
+  --accent: #c4552f;
+  /* Curtain red, for the stage. */
+  --stage: #7c2d2d;
+  --stage-deep: #5e1f22;
 }
 
 @theme inline {
@@ -59,9 +62,9 @@ body {
   height: 72vh;
   background: radial-gradient(
     46% 62% at 50% -4%,
-    rgba(232, 200, 119, 0.30) 0%,
-    rgba(232, 200, 119, 0.13) 34%,
-    rgba(61, 61, 214, 0.04) 58%,
+    rgba(230, 192, 136, 0.40) 0%,
+    rgba(224, 160, 96, 0.16) 34%,
+    rgba(124, 45, 45, 0.05) 58%,
     transparent 80%
   );
   pointer-events: none;
@@ -70,11 +73,12 @@ body {
 
 /* The stage itself: dark boards, with the footlights spilling off the front
    edge. Everything above the house is this one object. */
+/* The stage: curtain red with a gilt edge, rather than a black slab. */
 .boards {
-  background: linear-gradient(180deg, #16161c 0%, #0e0e13 100%);
+  background: linear-gradient(180deg, var(--stage) 0%, var(--stage-deep) 100%);
   box-shadow:
-    0 1px 0 rgba(232, 200, 119, 0.55),
-    0 14px 40px -18px rgba(20, 20, 26, 0.55);
+    0 1px 0 rgba(230, 192, 136, 0.65),
+    0 14px 40px -18px rgba(94, 31, 34, 0.45);
 }
 
 .tnum {
@@ -88,23 +92,23 @@ body {
   background:
     radial-gradient(
       120% 78% at 50% -6%,
-      rgba(255, 255, 255, 0.85) 0%,
-      rgba(255, 255, 255, 0.45) 42%,
+      rgba(255, 253, 250, 0.9) 0%,
+      rgba(255, 250, 242, 0.5) 42%,
       transparent 74%
     ),
-    linear-gradient(180deg, transparent 55%, rgba(20, 20, 26, 0.028) 100%);
+    linear-gradient(180deg, transparent 55%, rgba(124, 45, 45, 0.035) 100%);
 }
 
 /* One shared card shadow, so every surface in the app sits at the same
    height. Two stops: a hairline for definition, a soft drop for lift. */
 .card-shadow {
   box-shadow:
-    0 1px 2px rgba(20, 20, 26, 0.04),
-    0 8px 24px -12px rgba(20, 20, 26, 0.12);
+    0 1px 2px rgba(94, 31, 34, 0.05),
+    0 8px 24px -12px rgba(94, 31, 34, 0.14);
 }
 
 .card-shadow-lift {
   box-shadow:
-    0 1px 2px rgba(20, 20, 26, 0.05),
-    0 18px 40px -16px rgba(20, 20, 26, 0.18);
+    0 1px 2px rgba(94, 31, 34, 0.06),
+    0 18px 40px -16px rgba(94, 31, 34, 0.2);
 }

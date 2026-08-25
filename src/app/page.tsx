@@ -47,17 +47,17 @@ export default async function Home() {
     // unreadable.
     <main className="stage relative flex w-full flex-col">
       {/* The header is the stage. Everything else is the audience looking at it. */}
-      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-[#f7f7f5] sm:px-10">
+      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-[#fdf0d8] sm:px-10">
         <div className="flex items-baseline gap-3">
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
-            <Logo className="size-7 text-[#f7f7f5]" />
-            seats<span className="text-[#f7f7f5]/40">.lol</span>
+            <Logo className="size-7 text-[#fdf0d8]" />
+            seats<span className="text-[#fdf0d8]/40">.lol</span>
           </h1>
-          <p className="hidden text-[13px] text-[#f7f7f5]/55 sm:block">{SITE.tagline}</p>
+          <p className="hidden text-[13px] text-[#fdf0d8]/55 sm:block">{SITE.tagline}</p>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/6 px-3 py-1.5 text-[11px] text-[#f7f7f5]/75">
+          <span className="inline-flex items-center gap-2 rounded-full border border-[#fdf0d8]/20 bg-[#fdf0d8]/10 px-3 py-1.5 text-[11px] text-[#fdf0d8]/75">
             <span className="relative flex size-1.5">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold-line opacity-70" />
               <span className="relative inline-flex size-1.5 rounded-full bg-gold-line" />
@@ -68,46 +68,46 @@ export default async function Home() {
                 : `${rows.length}/${BOARD_SIZE} taken`}
             </span>
             {stats && stats.visitors_24h > 0 && (
-              <span className="tnum text-[#f7f7f5]/45">
+              <span className="tnum text-[#fdf0d8]/45">
                 · {stats.visitors_24h.toLocaleString()} visitors today
               </span>
             )}
             {stats && stats.clicks_24h > 0 && (
-              <span className="tnum text-[#f7f7f5]/45">
+              <span className="tnum text-[#fdf0d8]/45">
                 · {stats.clicks_24h.toLocaleString()} clicks
               </span>
             )}
             {rows.length === 0 && !stats?.visitors_24h && (
-              <span className="text-[#f7f7f5]/45">· be the first</span>
+              <span className="text-[#fdf0d8]/45">· be the first</span>
             )}
-            <span className="text-[#f7f7f5]/25">·</span>
+            <span className="text-[#fdf0d8]/25">·</span>
             <ResetTimer />
           </span>
 
           <Link
             href="/dashboard"
-            className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
+            className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
           >
             your seat
           </Link>
 
           <Link
             href="/archive"
-            className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
+            className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
           >
             archive
           </Link>
 
           <Link
             href="/stats"
-            className="hidden text-[12px] text-[#f7f7f5]/55 transition hover:text-[#f7f7f5] sm:block"
+            className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
           >
             stats →
           </Link>
 
           <Link
             href="/submit"
-            className="rounded-xl bg-[#f7f7f5] px-4 py-2 text-[13px] font-semibold text-[#14141a] transition hover:-translate-y-0.5"
+            className="rounded-xl bg-[#fdf0d8] px-4 py-2 text-[13px] font-semibold text-[#5e1f22] transition hover:-translate-y-0.5"
           >
             {open > 0 ? "Take a seat — free" : "House full"}
           </Link>

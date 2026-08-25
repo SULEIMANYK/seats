@@ -69,8 +69,5 @@ export type Listing = {
   grace_until: string | null;
   cancel_scheduled: boolean;
   manage_token: string;
-  polar_subscription_id: string | null;
-  polar_customer_id: string | null;
-  polar_product_id: string | null;
   created_at: string;
 };

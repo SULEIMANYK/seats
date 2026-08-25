@@ -4,7 +4,6 @@ import { db, type Listing } from "@/lib/db";
 import { placeListings, type Placeable } from "@/lib/seating";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { EditListing } from "@/components/EditListing";
-import { polar } from "@/lib/polar";
 import { displayDomain } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
@@ -125,20 +124,6 @@ export default async function ManagePage({
     listing.id,
     listing.grace_until,
   );
-
-  // Card changes, invoices and cancellation all live in Polar's portal —
-  // no reason to rebuild any of that here.
-  let portalUrl: string | null = null;
-  if (listing.polar_customer_id) {
-    try {
-      const session = await polar().customerSessions.create({
-        customerId: listing.polar_customer_id,
-      });
-      portalUrl = session.customerPortalUrl;
-    } catch (err) {
-      console.error("could not create customer session", err);
-    }
-  }
 
   const costPerClick =
     clicks30d && clicks30d > 0 ? listing.price_cents / 100 / clicks30d : null;
@@ -395,23 +380,11 @@ export default async function ManagePage({
       <BadgeEmbed slug={listing.slug} />
 
       <section className="relative z-10 border-t border-edge pt-6 text-sm">
-        <h2 className="mb-2 font-semibold tracking-tight text-fg">Billing</h2>
+        <h2 className="mb-2 font-semibold tracking-tight text-fg">Your seat</h2>
         <p className="text-muted">
-          Card, invoices, lowering your price and cancelling all live in the billing portal.
-          Cancel any time — you keep the slot until the period ends.
+          Free, and held until midnight UTC. After that every seat frees up and you can claim
+          one again from your dashboard in a click.
         </p>
-        {portalUrl ? (
-          <a
-            href={portalUrl}
-            className="mt-3 inline-block rounded-xl border border-edge bg-panel px-4 py-2 text-[13px] font-semibold transition-all duration-200 hover:-translate-y-0.5 hover:border-edge-strong hover:bg-panel-hover"
-          >
-            Open billing portal →
-          </a>
-        ) : (
-          <p className="mt-3 text-xs text-muted">
-            Billing portal unavailable — the subscription isn&apos;t active yet.
-          </p>
-        )}
         <p className="tnum mt-6 text-xs text-muted">
           {(clicksTotal ?? 0).toLocaleString()} clicks all time · on the board since{" "}
           {new Date(listing.created_at).toLocaleDateString()}

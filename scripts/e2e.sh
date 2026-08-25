@@ -33,8 +33,8 @@ is "GET /api/icon" "$(code "$B/api/icon?domain=linear.app")" 200
 echo "── 2. security"
 # Payments were removed, so there is no webhook endpoint to protect.
 is "snapshot cron, no token" "$(code "$B/api/cron/snapshot")" 401
-is "cron, no token" "$(code "$B/api/cron/grace")" 401
-is "cron, wrong token" "$(code "$B/api/cron/grace" -H 'authorization: Bearer wrong')" 401
+is "cron, no token" "$(code "$B/api/cron/snapshot")" 401
+is "cron, wrong token" "$(code "$B/api/cron/snapshot" -H 'authorization: Bearer wrong')" 401
 is "icon, injection rejected" "$(_curl -s -m 20 "$B/api/icon?domain=javascript:alert(1)" -o /dev/null -w '%{content_type}')" "image/svg+xml"
 
 echo "── 3. auth gate"
