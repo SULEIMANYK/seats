@@ -10,20 +10,25 @@
 # Now the live host has to be asked for by name, out loud.
 B="${BASE:?set BASE, e.g. http://localhost:3000 — this suite empties the board it runs against}"
 
-case "$B" in
-  *seats.lol*)
+# SQL goes through Supabase's management API rather than psql — the database
+# password lives in a scratch file that gets cleared, the CLI token does not.
+export SB_TOKEN="${SB_TOKEN:?set SB_TOKEN to a Supabase management token}"
+export SB_REF="${SB_REF:?set SB_REF to the Supabase project to empty}"
+
+# The truncation follows SB_REF, not BASE. Pointing BASE at localhost while
+# SB_REF still names production wipes the live board from a run that looks
+# entirely local, so both are checked.
+PROD_REF=yeiqjqsgxnjfkxmncdxa
+case "$B:$SB_REF" in
+  *seats.lol*|*:"$PROD_REF")
     if [ "${I_KNOW_THIS_EMPTIES_THE_BOARD:-}" != "1" ]; then
-      echo "Refusing to run against $B: this truncates every listing." >&2
-      echo "If that is really what you want:" >&2
-      echo "  I_KNOW_THIS_EMPTIES_THE_BOARD=1 BASE=$B sh scripts/e2e.sh" >&2
+      echo "Refusing to run: this truncates every listing in $SB_REF (BASE=$B)." >&2
+      echo "That project is production. If you really mean it:" >&2
+      echo "  I_KNOW_THIS_EMPTIES_THE_BOARD=1 BASE=$B SB_REF=$SB_REF sh scripts/e2e.sh" >&2
       exit 2
     fi
     ;;
 esac
-# SQL goes through Supabase's management API rather than psql — the database
-# password lives in a scratch file that gets cleared, the CLI token does not.
-export SB_TOKEN="${SB_TOKEN:?set SB_TOKEN to a Supabase management token}"
-export SB_REF="${SB_REF:-yeiqjqsgxnjfkxmncdxa}"
 sql() { python3 "$(dirname "$0")/sql.py" "$1"; }
 # Optional: pin the domain to an IP when local DNS is stale.
 R="${RESOLVE:-}"
