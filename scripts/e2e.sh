@@ -31,7 +31,8 @@ is "GET /manage/bogus (404)" "$(code "$B/manage/bogus")" 404
 is "GET /api/icon" "$(code "$B/api/icon?domain=linear.app")" 200
 
 echo "── 2. security"
-is "webhook, bad signature" "$(code -X POST "$B/api/webhooks/polar" -H 'content-type: application/json' -H 'webhook-id: x' -H 'webhook-timestamp: 1' -H 'webhook-signature: v1,bogus' -d '{}')" 403
+# Payments were removed, so there is no webhook endpoint to protect.
+is "snapshot cron, no token" "$(code "$B/api/cron/snapshot")" 401
 is "cron, no token" "$(code "$B/api/cron/grace")" 401
 is "cron, wrong token" "$(code "$B/api/cron/grace" -H 'authorization: Bearer wrong')" 401
 is "icon, injection rejected" "$(_curl -s -m 20 "$B/api/icon?domain=javascript:alert(1)" -o /dev/null -w '%{content_type}')" "image/svg+xml"
@@ -59,7 +60,7 @@ is "more clicks ranks first" "$(psql "$DB" -tAc "select name from board order by
 
 echo "── 5. features"
 has "badge shows rank" "$(body "$B/api/badge/$SA")" "#1 in"
-is  "growth gets UTM"  "$(_curl -s -o /dev/null -m 20 -w '%{redirect_url}' "$B/r/$SB" | grep -c utm_source)" 1
+is  "UTM tagging"  "$(_curl -s -o /dev/null -m 20 -w '%{redirect_url}' "$B/r/$SB" | grep -c utm_source)" 1
 
 echo "── 6. dedupe"
 has "same domain refused" "$(post '{"name":"Dup","url":"https://alpha-e2e.com","tagline":"x","email":"a@b.com"}')" "already on the board"
@@ -71,7 +72,7 @@ has "board shows category"  "$(body "$B/")" "Developer Tools"
 has "stats shows trending"  "$(body "$B/stats")" "Alpha"
 TOK=$(psql "$DB" -tAc "select manage_token from listings where domain='$SA' or domain='alpha-e2e.com' limit 1")
 has "manage shows seat"     "$(body "$B/manage/$TOK")" "Seat"
-has "manage shows cpc"      "$(body "$B/manage/$TOK")" "Cost per click"
+has "manage shows clicks"   "$(body "$B/manage/$TOK")" "Clicks"
 
 echo "── 8. cleanup"
 psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1

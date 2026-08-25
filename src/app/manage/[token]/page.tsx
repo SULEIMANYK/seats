@@ -227,7 +227,7 @@ export default async function ManagePage({
       </section>
 
       <section className="relative z-10 mb-8 rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
-        <p className="text-[11px] text-gold">Cost per click · 30d</p>
+        <p className="text-[11px] text-gold">Clicks · today</p>
         {costPerClick ? (
           <>
             <p className="tnum mt-1 text-4xl leading-none font-semibold text-gold">
@@ -250,7 +250,7 @@ export default async function ManagePage({
           </>
         ) : (
           <p className="mt-2 text-sm text-fg/70">
-            No clicks yet in the last 30 days — check back once traffic comes in.
+            Clicks in the last 24 hours are what decide your seat.
           </p>
         )}
       </section>

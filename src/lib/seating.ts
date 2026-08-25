@@ -32,16 +32,11 @@ export type Row = {
 export const ROWS: Row[] = [
   { label: "Royal box", seats: 1, heightPx: 0, curvePx: 0, widthCss: "" },
   { label: "Front row", seats: 2, heightPx: 0, curvePx: 0, widthCss: "" },
-  { label: "A", seats: 12, heightPx: 62, curvePx: 5, widthCss: "calc(6.5vw - 10.0px)" },
-  { label: "B", seats: 14, heightPx: 59, curvePx: 6, widthCss: "calc(5.857vw - 9.14px)" },
-  { label: "C", seats: 16, heightPx: 56, curvePx: 7, widthCss: "calc(5.375vw - 8.5px)" },
-  { label: "D", seats: 18, heightPx: 53, curvePx: 8, widthCss: "calc(4.944vw - 8.0px)" },
-  { label: "E", seats: 20, heightPx: 50, curvePx: 9, widthCss: "calc(4.6vw - 7.6px)" },
-  { label: "F", seats: 22, heightPx: 47, curvePx: 10, widthCss: "calc(4.318vw - 7.27px)" },
-  { label: "G", seats: 23, heightPx: 45, curvePx: 11, widthCss: "calc(4.217vw - 7.13px)" },
-  { label: "H", seats: 24, heightPx: 43, curvePx: 12, widthCss: "calc(4.083vw - 7.0px)" },
-  { label: "J", seats: 24, heightPx: 41, curvePx: 13, widthCss: "calc(4.083vw - 7.0px)" },
-  { label: "K", seats: 24, heightPx: 39, curvePx: 14, widthCss: "calc(4.083vw - 7.0px)" },
+  { label: "A", seats: 6, heightPx: 125, curvePx: 6, widthCss: "calc(10.667vw - 16.0px)" },
+  { label: "B", seats: 8, heightPx: 116, curvePx: 8, widthCss: "calc(9.75vw - 13.0px)" },
+  { label: "C", seats: 10, heightPx: 108, curvePx: 10, widthCss: "calc(9.0vw - 11.2px)" },
+  { label: "D", seats: 11, heightPx: 102, curvePx: 12, widthCss: "calc(8.545vw - 10.55px)" },
+  { label: "E", seats: 12, heightPx: 98, curvePx: 14, widthCss: "calc(8.167vw - 10.0px)" },
 ];
 
 export const BOARD_SIZE = ROWS.reduce((n, r) => n + r.seats, 0);
