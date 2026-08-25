@@ -41,6 +41,55 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 }
 
+
+/* ---------------------------------------------------------------------------
+   Dark: the same room after the house lights drop. Warm throughout — a cold
+   grey dark mode next to a cream light mode reads as two different products.
+
+   Declared three ways on purpose. The bare :root above is light. A visitor
+   who has chosen nothing follows their system. A visitor who has chosen
+   overrides it either way, which the media query alone cannot do.
+   --------------------------------------------------------------------------- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17110d;
+    --bg-lift: #1f1712;
+    --panel: #211811;
+    --panel-hover: #291e16;
+    --border: #3a2a1e;
+    --border-strong: #513a29;
+    --fg: #f5e9dc;
+    --muted: #a89684;
+    --faint: #2a1e16;
+    --gold: #e6b25f;
+    --gold-soft: #33240f;
+    --gold-line: #6b4c1f;
+    --accent: #e8794f;
+    --stage: #4a1a1c;
+    --stage-deep: #2e0f12;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg: #17110d;
+  --bg-lift: #1f1712;
+  --panel: #211811;
+  --panel-hover: #291e16;
+  --border: #3a2a1e;
+  --border-strong: #513a29;
+  --fg: #f5e9dc;
+  --muted: #a89684;
+  --faint: #2a1e16;
+  --gold: #e6b25f;
+  --gold-soft: #33240f;
+  --gold-line: #6b4c1f;
+  --accent: #e8794f;
+  --stage: #4a1a1c;
+  --stage-deep: #2e0f12;
+  color-scheme: dark;
+}
+
 html {
   background: var(--bg);
   color-scheme: light;
@@ -92,8 +141,8 @@ body {
   background:
     radial-gradient(
       120% 78% at 50% -6%,
-      rgba(255, 253, 250, 0.9) 0%,
-      rgba(255, 250, 242, 0.5) 42%,
+      color-mix(in srgb, var(--bg-lift) 90%, transparent) 0%,
+      color-mix(in srgb, var(--bg-lift) 50%, transparent) 42%,
       transparent 74%
     ),
     linear-gradient(180deg, transparent 55%, rgba(124, 45, 45, 0.035) 100%);

@@ -33,12 +33,10 @@ export type BoardRow = {
   image_url: string | null;
   description: string | null;
   pricing_model: string | null;
-  price_cents: number;
   tier_since: string;
   status: "active" | "past_due";
   created_at: string;
   category: string | null;
-  tagline_b: string | null;
   extra_links: { label: string; url: string }[];
   rank: number;
   score: number;
@@ -61,13 +59,9 @@ export type Listing = {
   pricing_model: string | null;
   email: string;
   category: string | null;
-  tagline_b: string | null;
   extra_links: { label: string; url: string }[];
-  price_cents: number;
   tier_since: string;
   status: "pending" | "active" | "past_due" | "grace" | "canceled";
-  grace_until: string | null;
-  cancel_scheduled: boolean;
   manage_token: string;
   created_at: string;
 };

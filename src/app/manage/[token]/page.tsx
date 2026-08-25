@@ -14,14 +14,12 @@ type Supabase = ReturnType<typeof db>;
 
 // What a click actually costs elsewhere — the number a $0.14 click on
 // seats.lol should be measured against, not against zero.
-const GOOGLE_CPC_LOW = 3;
-const GOOGLE_CPC_HIGH = 8;
 
 /** Kept out of the component body so Date.now() isn't called during render. */
-async function loadStats(supabase: Supabase, listingId: string, graceUntil: string | null) {
+async function loadStats(supabase: Supabase, listingId: string) {
   const since = new Date(Date.now() - 30 * 864e5).toISOString();
 
-  const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }, { data: bench }, { data: abTest }] =
+  const [{ data: seated }, { count: clicks30d }, { count: clicksTotal }, { data: bench }] =
     await Promise.all([
       supabase.from("board").select("id, rank, name, clicks_7d").returns<(Placeable & { name: string; clicks_7d: number })[]>(),
       supabase
@@ -31,12 +29,7 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
         .gte("created_at", since),
       supabase.from("clicks").select("*", { count: "exact", head: true }).eq("listing_id", listingId),
       supabase.from("category_benchmark").select("*").eq("id", listingId).maybeSingle(),
-      supabase.from("tagline_test").select("*").eq("id", listingId).maybeSingle(),
     ]);
-
-  const graceDaysLeft = graceUntil
-    ? Math.max(0, Math.ceil((new Date(graceUntil).getTime() - Date.now()) / 864e5))
-    : null;
 
   return {
     // The seat the chart actually shows, not a price ordering — those two
@@ -44,10 +37,8 @@ async function loadStats(supabase: Supabase, listingId: string, graceUntil: stri
     seat: placeListings(seated ?? []).get(listingId),
     seated: seated ?? [],
     bench: bench as { category_rank: number; category_size: number; category_avg_clicks: number } | null,
-    abTest: abTest as { variant_a: string; variant_b: string; clicks_a: number; clicks_b: number } | null,
     clicks30d,
     clicksTotal,
-    graceDaysLeft,
   };
 }
 
@@ -59,38 +50,6 @@ function faviconFor(url: string) {
 }
 
 /** A tiny horizontal comparison bar for the cost-per-click hero. */
-function CpcBar({
-  label,
-  value,
-  max,
-  tone,
-}: {
-  label: string;
-  value: number;
-  max: number;
-  tone: "gold" | "muted";
-}) {
-  const pct = Math.max(4, Math.min(100, (value / max) * 100));
-  return (
-    <div className="flex items-center gap-2">
-      <span className={`w-[76px] shrink-0 text-[11px] ${tone === "gold" ? "text-gold" : "text-muted"}`}>
-        {label}
-      </span>
-      <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-faint">
-        <div
-          className={`h-full rounded-full ${tone === "gold" ? "bg-gold" : "bg-edge-strong"}`}
-          style={{ width: `${pct}%` }}
-        />
-      </div>
-      <span
-        className={`tnum w-14 shrink-0 text-right text-[11px] ${tone === "gold" ? "text-gold" : "text-muted"}`}
-      >
-        ${value.toFixed(2)}
-      </span>
-    </div>
-  );
-}
-
 const STATUS_LABEL: Record<Listing["status"], string> = {
   pending: "Pending",
   active: "Live",
@@ -119,15 +78,9 @@ export default async function ManagePage({
   if (!listing) notFound();
 
 
-  const { seat, clicks30d, clicksTotal, graceDaysLeft, bench, abTest } = await loadStats(
-    supabase,
-    listing.id,
-    listing.grace_until,
-  );
+  const { seat, clicks30d, clicksTotal, bench } = await loadStats(supabase, listing.id);
 
-  const costPerClick =
-    clicks30d && clicks30d > 0 ? listing.price_cents / 100 / clicks30d : null;
-  const cheaperBy = costPerClick && costPerClick > 0 ? GOOGLE_CPC_LOW / costPerClick : null;
+  // Seats are free, so there is no cost per click to report.
 
   // What each higher price would actually buy: ties break toward whoever
   // climbed first, so landing on a price now puts you behind everyone
@@ -155,6 +108,7 @@ export default async function ManagePage({
         <div className="flex min-w-0 items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
+            referrerPolicy="no-referrer"
             src={listing.logo_url ?? faviconFor(listing.url)}
             alt=""
             className="size-11 shrink-0 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge"
@@ -184,20 +138,6 @@ export default async function ManagePage({
         </span>
       </header>
 
-      {listing.status === "grace" && (
-        <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold-line bg-gold-soft p-4 card-shadow">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-gold-line px-2 py-0.5 text-[9px] leading-none font-semibold tracking-wide text-gold uppercase">
-            Grace period
-          </span>
-          <p className="mt-2.5 text-[13px] leading-relaxed text-fg/90">
-            The board filled up and someone outpaid you. Raise your price below to come back
-            {graceDaysLeft !== null
-              ? ` — ${graceDaysLeft <= 0 ? "today's the last day" : `${graceDaysLeft} day${graceDaysLeft === 1 ? "" : "s"} left`}`
-              : ""}
-            . You won&apos;t be charged again in the meantime.
-          </p>
-        </div>
-      )}
 
       {listing.status === "past_due" && (
         <div className="relative z-10 mb-6 overflow-hidden rounded-2xl border border-gold-line bg-gold-soft p-4 card-shadow">
@@ -226,32 +166,14 @@ export default async function ManagePage({
       </section>
 
       <section className="relative z-10 mb-8 rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
-        <p className="text-[11px] text-gold">Clicks · today</p>
-        {costPerClick ? (
-          <>
-            <p className="tnum mt-1 text-4xl leading-none font-semibold text-gold">
-              ${costPerClick.toFixed(2)}
-            </p>
-            <p className="mt-3 text-[13px] leading-relaxed text-fg/80">
-              Google Ads runs ${GOOGLE_CPC_LOW}–${GOOGLE_CPC_HIGH} a click for comparable SaaS
-              keywords
-              {cheaperBy && cheaperBy >= 1.5 ? ` — you're paying ${Math.round(cheaperBy)}× less.` : "."}
-            </p>
-            <div className="mt-4 space-y-2">
-              <CpcBar label="seats.lol" value={costPerClick} max={GOOGLE_CPC_HIGH} tone="gold" />
-              <CpcBar
-                label="Google Ads"
-                value={(GOOGLE_CPC_LOW + GOOGLE_CPC_HIGH) / 2}
-                max={GOOGLE_CPC_HIGH}
-                tone="muted"
-              />
-            </div>
-          </>
-        ) : (
-          <p className="mt-2 text-sm text-fg/70">
-            Clicks in the last 24 hours are what decide your seat.
-          </p>
-        )}
+        <p className="text-[11px] tracking-wide text-gold uppercase">Clicks today</p>
+        <p className="tnum mt-1 text-4xl leading-none font-semibold text-gold">
+          {clicks30d ?? 0}
+        </p>
+        <p className="mt-3 text-[13px] leading-relaxed text-fg/80">
+          Every click your seat sent onward, counted and shown in public. The seat costs
+          nothing, so this is the whole return.
+        </p>
       </section>
 
       <section className="relative z-10 mb-8">
@@ -294,6 +216,7 @@ export default async function ManagePage({
             <div className="mt-3 min-w-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
+                referrerPolicy="no-referrer"
                 src={listing.logo_url ?? faviconFor(listing.url)}
                 alt=""
                 className={`mb-2.5 rounded-xl bg-bg object-contain p-1 ring-1 ring-edge ${
@@ -333,36 +256,7 @@ export default async function ManagePage({
                   </section>
       )}
 
-      {abTest && (
-        <section className="relative z-10 mb-8 rounded-2xl border border-edge bg-panel p-5 card-shadow">
-          <h2 className="text-[13px] font-semibold">Tagline test</h2>
-          <div className="mt-3 space-y-2">
-            {[
-              { label: "A", text: abTest.variant_a, clicks: abTest.clicks_a },
-              { label: "B", text: abTest.variant_b, clicks: abTest.clicks_b },
-            ].map((v) => {
-              const winning =
-                v.clicks > 0 && v.clicks >= Math.max(abTest.clicks_a, abTest.clicks_b);
-              return (
-                <div
-                  key={v.label}
-                  className={`flex items-start gap-3 rounded-xl border p-3 ${
-                    winning ? "border-gold-line bg-gold-soft" : "border-edge"
-                  }`}
-                >
-                  <span className="tnum text-[11px] font-semibold text-muted">{v.label}</span>
-                  <span className="flex-1 text-[13px]">{v.text}</span>
-                  <span className="tnum text-[13px] font-semibold">{v.clicks}</span>
-                </div>
-              );
-            })}
-          </div>
-          <p className="mt-3 text-[12px] text-muted/80">
-            Both are shown at random. Whichever earns more clicks is the one to keep.
-          </p>
-        </section>
-      )}
-
+      
       <EditListing
         token={listing.manage_token}
         listing={{

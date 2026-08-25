@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { BoardRow } from "@/lib/db";
 import { displayDomain } from "@/lib/slug";
 import { Favicon } from "./Favicon";
+import { Screenshot } from "./Screenshot";
 import { BOARD_SIZE, ROWS, placeListings, rowOffset } from "@/lib/seating";
 
 /**
@@ -67,12 +68,12 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       rel="noopener"
       className={`group relative flex flex-col overflow-hidden rounded-2xl border bg-panel p-2.5 transition-all duration-200 hover:-translate-y-1 hover:card-shadow-lift ${
         apex
-          ? "w-[clamp(13rem,30vw,24rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(230,192,136,0.6),0_18px_44px_-18px_rgba(168,105,10,0.4)]"
-          : "w-[clamp(10rem,24vw,19rem)] border-gold-line card-shadow"
+          ? "w-[clamp(15rem,34vw,28rem)] border-gold bg-gold-soft shadow-[0_0_0_1px_rgba(230,192,136,0.6),0_18px_44px_-18px_rgba(168,105,10,0.4)]"
+          : "w-[clamp(12rem,27vw,22rem)] border-gold-line card-shadow"
       } ${dimmed ? "opacity-20 grayscale" : ""}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className={`tnum leading-none font-semibold text-gold ${apex ? "text-3xl" : "text-2xl"}`}>
+        <span className={`tnum leading-none font-semibold text-gold ${apex ? "text-4xl" : "text-3xl"}`}>
           {row.rank}
         </span>
         <span className="tnum rounded-full bg-gold-soft px-1.5 py-0.5 text-[10px] leading-none text-gold">
@@ -82,14 +83,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
 
       {row.image_url && (
         <div className="mt-2 min-h-0 flex-1 overflow-hidden rounded-xl ring-1 ring-edge">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={row.image_url}
-            alt=""
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            className="size-full object-cover"
-          />
+          <Screenshot src={row.image_url} className="size-full object-cover" />
         </div>
       )}
 
@@ -99,8 +93,8 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
           domain={displayDomain(row.url)}
           className="mb-1.5 size-8 rounded-lg bg-bg object-contain p-0.5 ring-1 ring-edge"
         />
-        <p className="truncate text-[15px] font-semibold tracking-tight">{row.name}</p>
-        <p className="mt-0.5 line-clamp-1 text-xs text-muted">{row.tagline}</p>
+        <p className="truncate text-[17px] font-semibold tracking-tight">{row.name}</p>
+        <p className="mt-1 line-clamp-2 text-[13px] leading-snug text-muted">{row.tagline}</p>
         {row.pricing_model && (
           <span className="mt-1 inline-block rounded-full bg-faint px-2 py-0.5 text-[10px] text-muted">
             {row.pricing_model}
@@ -121,14 +115,14 @@ function EmptyBox({ seat, apex = false }: { seat: number; apex?: boolean }) {
     <Link
       href="/submit"
       className={`group flex flex-col items-center justify-center rounded-2xl border border-dashed bg-bg-lift/50 p-3 transition-all duration-200 hover:-translate-y-1 hover:border-accent hover:bg-panel hover:card-shadow ${
-        apex ? "w-[clamp(13rem,30vw,24rem)] border-gold/60" : "w-[clamp(10rem,24vw,19rem)] border-gold-line/70"
+        apex ? "w-[clamp(15rem,34vw,28rem)] border-gold/60" : "w-[clamp(12rem,27vw,22rem)] border-gold-line/70"
       }`}
     >
       <span className="tnum text-2xl leading-none font-semibold text-muted/30 transition-colors group-hover:text-accent">
         {seat}
       </span>
       <span className="mt-1.5 text-[11px] text-muted/60 transition-colors group-hover:text-accent">
-{apex ? "the royal box" : "front row"} · earn it
+{apex ? "the royal box" : "front row"} · claim it
       </span>
     </Link>
   );

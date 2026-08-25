@@ -3,6 +3,7 @@ import { Auditorium } from "@/components/Auditorium";
 import { BoardList } from "@/components/BoardList";
 import { ResetTimer } from "@/components/ResetTimer";
 import { Logo } from "@/components/Logo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
@@ -84,6 +85,8 @@ export default async function Home() {
             <ResetTimer />
           </span>
 
+          <ThemeToggle />
+
           <Link
             href="/dashboard"
             className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
@@ -96,6 +99,13 @@ export default async function Home() {
             className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
           >
             archive
+          </Link>
+
+          <Link
+            href="/browse"
+            className="hidden text-[12px] text-[#fdf0d8]/55 transition hover:text-[#fdf0d8] sm:block"
+          >
+            browse
           </Link>
 
           <Link

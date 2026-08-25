@@ -2,7 +2,7 @@
 #
 # End-to-end suite. Exercises the live site and the database behind it.
 #
-#   BASE=https://seats.lol DB_URL=postgres://... sh scripts/e2e.sh
+#   BASE=https://seats.lol SB_TOKEN=sbp_... sh scripts/e2e.sh
 #
 # It truncates listings, clicks, rank_events and visits, so point it at a
 # board you are willing to empty — never at one with paying customers on it.
@@ -10,7 +10,11 @@
 # Not covered: completing a real payment, and the subscription.active webhook
 # that follows one. Both need Polar to have enabled checkout_payments.
 B="${BASE:-https://seats.lol}"
-DB="${DB_URL:?set DB_URL to the Postgres connection string}"
+# SQL goes through Supabase's management API rather than psql — the database
+# password lives in a scratch file that gets cleared, the CLI token does not.
+export SB_TOKEN="${SB_TOKEN:?set SB_TOKEN to a Supabase management token}"
+export SB_REF="${SB_REF:-yeiqjqsgxnjfkxmncdxa}"
+sql() { python3 "$(dirname "$0")/sql.py" "$1"; }
 # Optional: pin the domain to an IP when local DNS is stale.
 R="${RESOLVE:-}"
 PASS=0; FAIL=0
@@ -44,22 +48,22 @@ is  "/dashboard redirects"     "$(code "$B/dashboard")" 307
 is  "/signin loads"            "$(code "$B/signin")" 200
 
 echo "── 5. lifecycle: seed → click → seat holds"
-psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1
+sql "truncate listings, clicks, rank_events, visits cascade;" >/dev/null
 # Submission is behind sign-in, so the fixtures go in directly.
-psql "$DB" -q -c "insert into listings (slug,name,url,domain,tagline,email,owner_email,category,seat,seat_day,status,price_cents)
+sql "insert into listings (slug,name,url,domain,tagline,email,owner_email,category,seat,seat_day,status,price_cents)
   values ('alpha-e2e','Alpha','https://alpha-e2e.com','alpha-e2e.com','first','a@b.com','a@b.com','Developer Tools',1,current_date,'active',0),
-         ('beta-e2e','Beta','https://beta-e2e.com','beta-e2e.com','second','b@b.com','b@b.com','Productivity',2,current_date,'active',0);" >/dev/null 2>&1
-is "2 live listings" "$(psql "$DB" -tAc "select count(*) from listings where status='active'")" 2
-is "2 on board" "$(psql "$DB" -tAc "select count(*) from board")" 2
+         ('beta-e2e','Beta','https://beta-e2e.com','beta-e2e.com','second','b@b.com','b@b.com','Productivity',2,current_date,'active',0);" >/dev/null
+is "2 live listings" "$(sql "select count(*) from listings where status='active'")" 2
+is "2 on board" "$(sql "select count(*) from board")" 2
 
 SA=alpha-e2e
 SB=beta-e2e
 is "click redirects" "$(code "$B/r/$SA")" 302
 for i in 1 2 3 4 5; do _curl -s -o /dev/null -m 15 -H "x-forwarded-for: 203.0.113.$i" "$B/r/$SA" >/dev/null; done
 sleep 3
-is "clicks recorded" "$(psql "$DB" -tAc "select clicks_24h from board where slug='$SA'")" 6
+is "clicks recorded" "$(sql "select clicks_24h from board where slug='$SA'")" 6
 # Seats are owned: arrival order decides, and clicks must not move anyone.
-is "seat 1 holds despite clicks" "$(psql "$DB" -tAc "select name from board order by rank limit 1")" "Alpha"
+is "seat 1 holds despite clicks" "$(sql "select name from board order by rank limit 1")" "Alpha"
 
 echo "── 6. features"
 has "badge shows rank" "$(body "$B/api/badge/$SA")" "#1 in"
@@ -69,20 +73,20 @@ echo "── 7. surfaces show data"
 has "board shows clicks"    "$(body "$B/")" "clicks"
 has "board shows category"  "$(body "$B/")" "Developer Tools"
 has "stats shows trending"  "$(body "$B/stats")" "Alpha"
-TOK=$(psql "$DB" -tAc "select manage_token from listings where domain='$SA' or domain='alpha-e2e.com' limit 1")
+TOK=$(sql "select manage_token from listings where domain='$SA' or domain='alpha-e2e.com' limit 1")
 has "manage shows seat"     "$(body "$B/manage/$TOK")" "Seat"
 has "manage shows clicks"   "$(body "$B/manage/$TOK")" "Clicks"
 
 echo "── 8. edit and delete"
-TOKA=$(psql "$DB" -tAc "select manage_token from listings where slug='alpha-e2e'")
+TOKA=$(sql "select manage_token from listings where slug='alpha-e2e'")
 is "edit with token"        "$(code -X PATCH "$B/api/listing" -H 'content-type: application/json' -d "{\"token\":\"$TOKA\",\"name\":\"Alpha2\",\"tagline\":\"edited\"}")" 200
 is "edit with wrong token"  "$(code -X PATCH "$B/api/listing" -H 'content-type: application/json' -d '{"token":"00000000-0000-0000-0000-000000000000","name":"X","tagline":"y"}')" 404
 is "delete frees the seat"  "$(code -X DELETE "$B/api/listing" -H 'content-type: application/json' -d "{\"token\":\"$TOKA\"}")" 200
-is "seat released"          "$(psql "$DB" -tAc "select count(*) from board")" 1
+is "seat released"          "$(sql "select count(*) from board")" 1
 
 echo "── 9. cleanup"
-psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1
-is "board empty" "$(psql "$DB" -tAc "select count(*) from board")" 0
+sql "truncate listings, clicks, rank_events, visits cascade;" >/dev/null
+is "board empty" "$(sql "select count(*) from board")" 0
 
 echo
 echo "════ $PASS passed, $FAIL failed"

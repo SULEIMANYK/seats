@@ -6,6 +6,7 @@ import type { BoardRow } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
 import { displayDomain } from "@/lib/slug";
 import { Favicon } from "./Favicon";
+import { ReportButton } from "./ReportButton";
 
 /**
  * The board for narrow screens.
@@ -79,12 +80,12 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
         {shown.map((row) => {
           const featured = row.rank <= 3;
           return (
-            <li key={row.id}>
+            <li key={row.id} className="flex items-center gap-1">
               <a
                 href={`/r/${row.slug}`}
                 target="_blank"
                 rel="noopener"
-                className={`flex items-center gap-3 rounded-2xl border p-3 transition-colors ${
+                className={`flex flex-1 items-center gap-3 rounded-2xl border p-3 transition-colors ${
                   featured
                     ? "border-gold-line bg-gold-soft card-shadow"
                     : "border-edge bg-panel card-shadow"
@@ -116,6 +117,8 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
                   <span className="block text-[10px] text-muted">clicks</span>
                 </span>
               </a>
+
+              <ReportButton listingId={row.id} />
             </li>
           );
         })}

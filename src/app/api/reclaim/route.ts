@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { BOARD_SIZE, SEATS_PER_ACCOUNT } from "@/lib/seating";
+import { hashIp, tooManyRecently } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -26,6 +27,13 @@ export async function POST(request: Request) {
 
   const supabase = db();
   const today = new Date().toISOString().slice(0, 10);
+
+  if (await tooManyRecently(supabase, "listings", "submit_ip_hash", hashIp(request), 6, 3_600_000)) {
+    return NextResponse.json(
+      { error: "That's a lot of claims in a short time. Try again later." },
+      { status: 429 },
+    );
+  }
 
   // Must be the caller's own listing — the id alone is not authorisation.
   const { data: prev } = await supabase
@@ -97,8 +105,8 @@ export async function POST(request: Request) {
       owner_email: owner,
       seat,
       seat_day: today,
+      submit_ip_hash: hashIp(request),
       status: "active",
-      price_cents: 0,
       tier_since: new Date().toISOString(),
     })
     .select("manage_token")

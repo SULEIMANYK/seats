@@ -222,7 +222,6 @@ export async function POST(request: Request) {
       seat,
       seat_day: today,
       submit_ip_hash: ipHash,
-      price_cents: 0,
       // Nothing to wait for, so the listing goes up immediately.
       status: "active",
       tier_since: new Date().toISOString(),

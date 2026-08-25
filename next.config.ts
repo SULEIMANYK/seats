@@ -11,13 +11,30 @@ const nextConfig: NextConfig = {
   // rewrite shows up as the old theme. Only in dev; production filenames are
   // content-hashed and should stay cacheable.
   async headers() {
-    if (process.env.NODE_ENV !== "development") return [];
-    return [
-      {
+    const security = [
+      // A manage URL carries a secret token in its path. The modern browser
+      // default already withholds the path cross-origin, but stating it
+      // leaves nothing to a default that could change.
+      { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+      { key: "X-Content-Type-Options", value: "nosniff" },
+      // Nothing here should ever be framed — a framed manage page is a
+      // clickjacking route to someone else's listing.
+      { key: "X-Frame-Options", value: "DENY" },
+      { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+    ];
+
+    const rules = [{ source: "/:path*", headers: security }];
+
+    if (process.env.NODE_ENV === "development") {
+      // Turbopack reuses chunk filenames across rebuilds, so a cached asset
+      // can outlive its contents. Only a problem while iterating.
+      rules.push({
         source: "/:path*",
         headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
-      },
-    ];
+      });
+    }
+
+    return rules;
   },
 };
 
