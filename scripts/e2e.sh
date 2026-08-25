@@ -46,9 +46,9 @@ is  "/signin loads"            "$(code "$B/signin")" 200
 echo "── 5. lifecycle: seed → click → seat holds"
 psql "$DB" -q -c "truncate listings, clicks, rank_events, visits cascade;" >/dev/null 2>&1
 # Submission is behind sign-in, so the fixtures go in directly.
-psql "$DB" -q -c "insert into listings (slug,name,url,domain,tagline,email,owner_email,category,seat,status,price_cents)
-  values ('alpha-e2e','Alpha','https://alpha-e2e.com','alpha-e2e.com','first','a@b.com','a@b.com','Developer Tools',1,'active',0),
-         ('beta-e2e','Beta','https://beta-e2e.com','beta-e2e.com','second','b@b.com','b@b.com','Productivity',2,'active',0);" >/dev/null 2>&1
+psql "$DB" -q -c "insert into listings (slug,name,url,domain,tagline,email,owner_email,category,seat,seat_day,status,price_cents)
+  values ('alpha-e2e','Alpha','https://alpha-e2e.com','alpha-e2e.com','first','a@b.com','a@b.com','Developer Tools',1,current_date,'active',0),
+         ('beta-e2e','Beta','https://beta-e2e.com','beta-e2e.com','second','b@b.com','b@b.com','Productivity',2,current_date,'active',0);" >/dev/null 2>&1
 is "2 live listings" "$(psql "$DB" -tAc "select count(*) from listings where status='active'")" 2
 is "2 on board" "$(psql "$DB" -tAc "select count(*) from board")" 2
 

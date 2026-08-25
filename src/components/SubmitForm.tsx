@@ -89,14 +89,14 @@ export function SubmitForm({
           <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
           {seat === null ? (
             <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-              You take the next free seat and it stays yours. No bidding, no ranking, nobody
-              climbing past you.
+              You take the next free seat, and it is yours until midnight UTC. No bidding and
+              no ranking — just be early.
             </p>
           ) : (
             <>
               <p className="tnum mt-1.5 text-3xl font-semibold tracking-tight">Seat {seat}</p>
               <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-                Yours once you claim it, and it stays yours.{" "}
+                Yours until midnight UTC, when every seat frees up again.{" "}
                 <a href="/submit" className="text-accent hover:underline">
                   Any free seat instead
                 </a>
@@ -259,7 +259,7 @@ export function SubmitForm({
               {email}
             </p>
             <p className="text-[11px] text-muted/70">
-              Signed in. One seat per account, so nobody lists the same product twice.
+              Signed in. One seat per account per day, so nobody can take several.
             </p>
           </div>
         </div>

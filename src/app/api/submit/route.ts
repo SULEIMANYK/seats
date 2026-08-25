@@ -104,17 +104,20 @@ export async function POST(request: Request) {
     .digest("hex")
     .slice(0, 32);
 
-  // One listing per account. The domain check below stops the same site
-  // appearing twice; this stops one person filling the house.
-  const { count: mine } = await supabase
-    .from("listings")
-    .select("*", { count: "exact", head: true })
-    .eq("owner_email", owner)
-    .in("status", ["active", "past_due"]);
+  const today = new Date().toISOString().slice(0, 10);
 
-  if ((mine ?? 0) >= 1) {
+  // One seat per account per day. Yesterday's claim does not count.
+  const { data: mine } = await supabase
+    .from("listings")
+    .select("id, seat")
+    .eq("owner_email", owner)
+    .eq("seat_day", today)
+    .in("status", ["active", "past_due"])
+    .maybeSingle();
+
+  if (mine) {
     return NextResponse.json(
-      { error: "You already have a seat. One per account." },
+      { error: `You already hold seat ${mine.seat} today. Seats reset at midnight UTC.` },
       { status: 409 },
     );
   }
@@ -130,14 +133,15 @@ export async function POST(request: Request) {
   // cannot quietly hold two.
   const { data: existing } = await supabase
     .from("listings")
-    .select("id")
+    .select("id, owner_email")
     .eq("domain", domain)
-    .in("status", ["active", "past_due", "grace"])
+    .eq("seat_day", today)
+    .in("status", ["active", "past_due"])
     .maybeSingle();
 
   if (existing) {
     return NextResponse.json(
-      { error: "That domain is already on the board." },
+      { error: "That domain already has a seat today." },
       { status: 409 },
     );
   }
@@ -153,6 +157,7 @@ export async function POST(request: Request) {
       .from("listings")
       .select("id")
       .eq("seat", picked)
+      .eq("seat_day", today)
       .in("status", ["active", "past_due"])
       .maybeSingle();
 
@@ -167,6 +172,7 @@ export async function POST(request: Request) {
   const { count } = await supabase
     .from("listings")
     .select("*", { count: "exact", head: true })
+    .eq("seat_day", today)
     .in("status", ["active", "past_due"]);
 
   if ((count ?? 0) >= BOARD_SIZE) {
@@ -182,6 +188,7 @@ export async function POST(request: Request) {
     const { data: taken } = await supabase
       .from("listings")
       .select("seat")
+      .eq("seat_day", today)
       .in("status", ["active", "past_due"])
       .not("seat", "is", null)
       .returns<{ seat: number }[]>();
@@ -212,6 +219,7 @@ export async function POST(request: Request) {
       pricing_model: pricingModel,
       extra_links: extraLinks,
       seat,
+      seat_day: today,
       submit_ip_hash: ipHash,
       price_cents: 0,
       // Nothing to wait for, so the listing goes up immediately.

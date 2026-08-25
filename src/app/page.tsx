@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Auditorium } from "@/components/Auditorium";
 import { BoardList } from "@/components/BoardList";
+import { ResetTimer } from "@/components/ResetTimer";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
@@ -77,6 +78,8 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             {rows.length === 0 && !stats?.visitors_24h && (
               <span className="text-[#f7f7f5]/45">· be the first</span>
             )}
+            <span className="text-[#f7f7f5]/25">·</span>
+            <ResetTimer />
           </span>
 
           <Link
@@ -144,8 +147,8 @@ seats<span className="text-[#f7f7f5]/40">.lol</span>
             <div>
               <h3 className="mb-1.5 font-semibold text-fg">Only {BOARD_SIZE} seats</h3>
               <p>
-                When the last one goes, the house is full and stays full. A seat only comes
-                free if its owner gives it up.
+                Fifty a day. When they are gone they are gone until tomorrow, and yesterday
+                is kept in the archive.
               </p>
             </div>
           </div>
