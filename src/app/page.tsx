@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Auditorium } from "@/components/Auditorium";
 import { BoardList } from "@/components/BoardList";
 import { ResetTimer } from "@/components/ResetTimer";
+import { Logo } from "@/components/Logo";
 import { SITE } from "@/lib/config";
 import { db, type BoardRow as Row } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
@@ -48,8 +49,9 @@ export default async function Home() {
       {/* The header is the stage. Everything else is the audience looking at it. */}
       <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-6 gap-y-3 rounded-b-[2rem] px-6 py-4 text-[#f7f7f5] sm:px-10">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-2xl font-semibold tracking-[-0.045em]">
-seats<span className="text-[#f7f7f5]/40">.lol</span>
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
+            <Logo className="size-7 text-[#f7f7f5]" />
+            seats<span className="text-[#f7f7f5]/40">.lol</span>
           </h1>
           <p className="hidden text-[13px] text-[#f7f7f5]/55 sm:block">{SITE.tagline}</p>
         </div>
