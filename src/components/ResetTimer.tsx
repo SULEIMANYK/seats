@@ -64,7 +64,7 @@ export function ResetTimer() {
   // Reserve the space so the header does not jump when the clock appears.
   if (!left) {
     return (
-      <span className="tnum block h-[34px] text-center text-[26px] leading-[34px]" aria-hidden>
+      <span className="tnum block h-[30px] text-center text-[24px] leading-[30px]" aria-hidden>
         &nbsp;
       </span>
     );
@@ -76,7 +76,7 @@ export function ResetTimer() {
 
   return (
     <span
-      className="flex min-w-0 items-center justify-center gap-2.5 sm:gap-3.5"
+      className="order-last flex w-full min-w-0 items-center justify-center gap-2.5 sm:order-none sm:w-auto sm:flex-1"
       title="Every seat is cleared at midnight UTC"
     >
       <span className="hidden text-[10px] tracking-[0.18em] text-fg/40 uppercase sm:inline">
@@ -88,7 +88,7 @@ export function ResetTimer() {
           segments are separate so the colons do not jitter as digits change
           width -- tabular-nums fixes the digits, not the punctuation. */}
       <span
-        className={`tnum font-display inline-flex items-baseline gap-0.5 text-[26px] leading-none tracking-tight tabular-nums sm:text-[30px] ${
+        className={`tnum font-display inline-flex items-baseline gap-0.5 text-[24px] leading-none tracking-tight tabular-nums sm:text-[27px] ${
           soon ? "text-gold" : "text-fg"
         }`}
       >

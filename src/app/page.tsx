@@ -48,62 +48,23 @@ export default async function Home() {
     // unreadable.
     <main className="stage relative flex w-full flex-col">
       {/* The header is the stage. Everything else is the audience looking at it. */}
-      <header className="boards relative z-20 rounded-b-[2rem] px-6 pt-3.5 pb-3 text-fg sm:px-10">
-        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-          <div className="flex items-baseline gap-3">
-            <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
-              <Logo className="text-[20px]" />
-              seats
-            </h1>
-            <p className="hidden text-[13px] text-fg/55 sm:block">{SITE.tagline}</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-
-            <Link
-              href="/dashboard"
-              className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
-            >
-              your seat
-            </Link>
-
-            <Link
-              href="/archive"
-              className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
-            >
-              archive
-            </Link>
-
-            <Link
-              href="/browse"
-              className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
-            >
-              browse
-            </Link>
-
-            <Link
-              href="/stats"
-              className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
-            >
-              stats &rarr;
-            </Link>
-
-            <Link
-              href="/submit"
-              className="pill bg-gold px-5 py-2 text-[13px] font-semibold text-[#141413]"
-            >
-              {open > 0 ? "Take a seat \u2014 free" : "House full"}
-            </Link>
-          </div>
+      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 rounded-b-[2rem] px-6 py-3 text-fg sm:px-10">
+        <div className="flex shrink-0 items-baseline gap-3">
+          <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
+            <Logo className="text-[20px]" />
+            seats
+          </h1>
+          <p className="hidden text-[13px] text-fg/55 lg:block">{SITE.tagline}</p>
         </div>
 
-        {/* The countdown is the whole mechanic -- every seat here is gone at
-            midnight -- so it gets the width of the page and a size you can
-            read across a room, rather than 11px inside a pill with four other
-            numbers. The stats sit either side of it as supporting figures. */}
-        <div className="mt-2.5 grid grid-cols-[1fr_auto_1fr] items-center gap-4 border-t border-fg/10 pt-2">
-          <span className="tnum hidden items-baseline gap-1.5 justify-self-start text-[12px] text-fg/55 sm:flex">
+        {/* The countdown sits in the middle of the bar and is the biggest
+            thing in it -- every seat here is gone at midnight, which is the
+            one fact the page exists to communicate. It was 11px inside a pill
+            with four other numbers. */}
+        <ResetTimer />
+
+        <div className="flex shrink-0 items-center gap-3">
+          <span className="tnum hidden items-baseline gap-1.5 text-[12px] text-fg/55 lg:flex">
             <span className="relative flex size-1.5 self-center">
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold opacity-70" />
               <span className="relative inline-flex size-1.5 rounded-full bg-gold" />
@@ -112,34 +73,48 @@ export default async function Home() {
               {rows.length}/{BOARD_SIZE}
             </span>
             <span>taken</span>
-            {open > 0 && <span className="text-fg/40">&middot; {open} free</span>}
           </span>
 
-          <ResetTimer />
+          <ThemeToggle />
 
-          <span className="tnum hidden items-baseline gap-3 justify-self-end text-[12px] text-fg/55 sm:flex">
-            {stats && stats.visitors_24h > 0 && (
-              <span>
-                <span className="font-semibold text-fg">
-                  {stats.visitors_24h.toLocaleString()}
-                </span>{" "}
-                visitors today
-              </span>
-            )}
-            {stats && stats.clicks_24h > 0 && (
-              <span>
-                <span className="font-semibold text-fg">
-                  {stats.clicks_24h.toLocaleString()}
-                </span>{" "}
-                clicks
-              </span>
-            )}
-            {rows.length === 0 && !stats?.visitors_24h && <span>be the first</span>}
-          </span>
+          <Link
+            href="/dashboard"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
+          >
+            your seat
+          </Link>
+
+          <Link
+            href="/archive"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
+          >
+            archive
+          </Link>
+
+          <Link
+            href="/browse"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
+          >
+            browse
+          </Link>
+
+          <Link
+            href="/stats"
+            className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block"
+          >
+            stats &rarr;
+          </Link>
+
+          <Link
+            href="/submit"
+            className="pill bg-gold px-5 py-2 text-[13px] font-semibold text-[#141413]"
+          >
+            {open > 0 ? "Take a seat \u2014 free" : "House full"}
+          </Link>
         </div>
       </header>
 
-      <div className="mx-auto flex w-full max-w-[1500px] min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 xl:h-[calc(100dvh-8.25rem)]">
+      <div className="mx-auto flex w-full max-w-[1500px] min-h-0 flex-col px-3 pt-3 pb-4 sm:px-6 xl:h-[calc(100dvh-5rem)]">
         {/* The chart needs about 1200px before its widest row fits; below
             that the same board is a ranked list. */}
         <div className="hidden xl:flex xl:min-h-0 xl:flex-1 xl:flex-col">
