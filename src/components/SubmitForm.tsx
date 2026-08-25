@@ -5,15 +5,12 @@ import { useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
 import { PRICING_MODELS } from "@/lib/pricing";
-import { ImageUpload } from "./ImageUpload";
 
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
 export function SubmitForm({ full }: { full: boolean }) {
   const router = useRouter();
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
 
@@ -42,8 +39,8 @@ export function SubmitForm({ full }: { full: boolean }) {
         tagline: form.get("tagline"),
         email: form.get("email"),
         category: form.get("category") || null,
-        logoUrl,
-        imageUrl,
+        logoUrl: form.get("logoUrl") || null,
+        imageUrl: form.get("imageUrl") || null,
         description: form.get("description") || null,
         pricingModel: form.get("pricingModel") || null,
         docsUrl: form.get("docsUrl") || null,
@@ -199,21 +196,35 @@ export function SubmitForm({ full }: { full: boolean }) {
             </p>
           </div>
 
-          <ImageUpload
-            kind="logo"
-            label="Logo"
-            hint="PNG, JPEG, WebP or GIF · up to 2 MB · square works best"
-            aspect="size-10"
-            onUploaded={setLogoUrl}
-          />
+          <div className="space-y-1.5">
+            <label htmlFor="logoUrl" className={labelCls}>
+              Logo URL
+            </label>
+            <input
+              id="logoUrl"
+              name="logoUrl"
+              className={inputCls}
+              placeholder="https://acme.com/logo.png"
+            />
+            <p className="text-[11px] text-muted/70">
+              Optional. Without one we use your site&apos;s favicon.
+            </p>
+          </div>
 
-          <ImageUpload
-            kind="screenshot"
-            label="Screenshot"
-            hint="Shown if you land in the front row · up to 2 MB"
-            aspect="h-10 w-16"
-            onUploaded={setImageUrl}
-          />
+          <div className="space-y-1.5">
+            <label htmlFor="imageUrl" className={labelCls}>
+              Screenshot URL
+            </label>
+            <input
+              id="imageUrl"
+              name="imageUrl"
+              className={inputCls}
+              placeholder="https://acme.com/screenshot.png"
+            />
+            <p className="text-[11px] text-muted/70">
+              Optional. Shown if you land in the front row, where there&apos;s room for it.
+            </p>
+          </div>
 
           <div className="space-y-1.5">
             <label htmlFor="email" className={labelCls}>
@@ -221,7 +232,7 @@ export function SubmitForm({ full }: { full: boolean }) {
             </label>
             <input id="email" name="email" type="email" required className={inputCls} placeholder="you@acme.com" />
             <p className="text-[11px] text-muted/70">
-              Used for your receipt and to reach you about your listing. Never shown publicly.
+              Required. This is how you will sign in to manage your listing. Never shown publicly.
             </p>
           </div>
         </div>
