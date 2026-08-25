@@ -81,7 +81,7 @@ export default async function ArchivePage() {
                       </span>
                     </>
                   ) : (
-                    <span className="text-[13px] text-muted">Nobody on the board</span>
+                    <span className="text-[13px] text-muted">The royal box sat empty</span>
                   )}
                 </span>
 
@@ -93,7 +93,7 @@ export default async function ArchivePage() {
                 </span>
 
                 <span className="tnum hidden w-20 shrink-0 text-right text-[11px] text-muted sm:block">
-                  {d.listings} seats
+                  {d.listings} {d.listings === 1 ? "seat" : "seats"}
                 </span>
               </Link>
             </li>
