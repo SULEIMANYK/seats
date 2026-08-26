@@ -12,17 +12,28 @@ export function StatsBar({
   visitors,
   hoursSinceLaunch,
   revenueCents,
+  topCents,
   listings,
 }: {
   visitors: number;
   hoursSinceLaunch: number;
   revenueCents: number;
+  topCents: number;
   listings: number;
 }) {
+  // Until money has actually changed hands, "bid so far" reads as $0 next to
+  // a board showing prices, which looks broken rather than honest. Show what
+  // the top rank costs instead -- true, useful, and impossible to misread as
+  // revenue. Once there is revenue, it takes the slot.
+  const money: [string, string] =
+    revenueCents > 0
+      ? [formatMoney(revenueCents), "bid so far"]
+      : [formatMoney(topCents), "to take #1"];
+
   const items: [string, string][] = [
     [visitors.toLocaleString(), "visitors"],
     [hoursSinceLaunch.toLocaleString(), hoursSinceLaunch === 1 ? "hour live" : "hours live"],
-    [formatMoney(revenueCents), "bid so far"],
+    money,
     [listings.toLocaleString(), listings === 1 ? "listing" : "listings"],
   ];
 

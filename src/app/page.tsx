@@ -8,7 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Leaderboard, type Row } from "@/components/Leaderboard";
 import { ActivityFeed, type Activity } from "@/components/ActivityFeed";
 import { StatsBar } from "@/components/StatsBar";
-import { formatMoney } from "@/lib/bidding";
+import { formatMoney, priceToBeat } from "@/lib/bidding";
 
 export const dynamic = "force-dynamic";
 
@@ -121,6 +121,7 @@ export default async function Home() {
             visitors={stats?.visits_total ?? 0}
             hoursSinceLaunch={Math.max(1, Math.floor((now - LAUNCH) / 3_600_000))}
             revenueCents={revenue}
+            topCents={priceToBeat(topPrice)}
             listings={allTime.length}
           />
         </section>
