@@ -94,7 +94,7 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
       {/* Logo beside the name, not above it. Stacked, an occupied royal box
           measured 196px against ~90px empty, and three occupied top seats
           pushed the whole house past the viewport it promises to fit in. */}
-      <div className="mt-1.5 flex min-h-0 min-w-0 items-start gap-2 overflow-hidden">
+      <div className="mt-1.5 flex min-h-0 min-w-0 items-center gap-2 overflow-hidden">
         <Favicon
           logoUrl={row.logo_url}
           domain={displayDomain(row.url)}
@@ -102,9 +102,6 @@ function Box({ row, apex = false, dimmed = false }: { row: BoardRow; apex?: bool
         />
         <div className="min-w-0 flex-1">
           <p className="truncate text-[16px] font-semibold tracking-tight">{row.name}</p>
-          <p className={`seat-tagline mt-0.5 text-[12px] leading-snug text-muted ${apex ? "line-clamp-2" : "line-clamp-1"}`}>
-            {row.tagline}
-          </p>
         </div>
         {row.pricing_model && (
           <span className="shrink-0 rounded-full bg-faint px-2 py-0.5 text-[10px] whitespace-nowrap text-muted">

@@ -229,17 +229,10 @@ body {
   .house { --seat-scale: 0.56; }
 }
 
-/* On a short viewport the top three cards have to give something up. Better
-   to drop the least important line outright than to shrink every line until
-   the card is a rank number over a sliver of a logo. */
+/* On a short viewport the top three cards still drop their footer line
+   rather than shrinking everything until nothing is legible. The tagline
+   rule that used to sit here went with the tagline itself. */
 @media (max-height: 800px) {
   .seat-sub { display: none; }
 }
 
-@media (max-height: 700px) {
-  .seat-tagline { -webkit-line-clamp: 1; }
-}
-
-@media (max-height: 620px) {
-  .seat-tagline { display: none; }
-}
