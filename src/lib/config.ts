@@ -5,7 +5,7 @@ export const SITE = {
   /** What the board lists. Appears throughout the copy. */
   noun: "product",
   nounPlural: "products",
-  tagline: "50 seats, free, cleared every night.",
+  tagline: "Just outbid your competition to get to the top.",
   description:
-    "A house of 50 free seats that empties every midnight. Claim one for the day, and tomorrow everyone starts level again — no seat is anyone's for good.",
+    "A leaderboard you climb with money. Every rank has a price — bid higher than the listing above you and you take its place. No algorithm, just the money, in public.",
 } as const;

@@ -47,6 +47,9 @@ export type BoardRow = {
 };
 
 export type Listing = {
+  /** What this listing has paid. Rank is derived from it. */
+  bid_cents: number;
+  bid_at: string | null;
   id: string;
   slug: string;
   name: string;

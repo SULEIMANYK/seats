@@ -5,7 +5,7 @@ import { placeListings, type Placeable } from "@/lib/seating";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { EditListing } from "@/components/EditListing";
 import { MoveSeat } from "@/components/MoveSeat";
-import { FeatureListing } from "@/components/FeatureListing";
+import { BidBox } from "@/components/BidBox";
 import { displayDomain } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
@@ -65,9 +65,9 @@ export default async function ManagePage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ new?: string; featured?: string }>;
+  searchParams: Promise<{ new?: string; bid?: string }>;
 }) {
-  const { new: isNew, featured: featuredParam } = await searchParams;
+  const { new: isNew, bid: bidParam } = await searchParams;
   const { token } = await params;
   const supabase = db();
 
@@ -82,11 +82,20 @@ export default async function ManagePage({
 
   const { seat, seated, clicks30d, clicksTotal, bench } = await loadStats(supabase, listing.id);
 
-  const { data: featuredRow } = await supabase
-    .from("featured")
-    .select("domain")
-    .eq("domain", listing.domain)
-    .maybeSingle();
+  // Where this listing stands, and what the top costs, both read from the
+  // same view the public board uses so the two can never disagree.
+  const { data: mine } = await supabase
+    .from("leaderboard")
+    .select("rank, bid_cents")
+    .eq("id", listing.id)
+    .maybeSingle<{ rank: number; bid_cents: number }>();
+
+  const { data: top } = await supabase
+    .from("leaderboard")
+    .select("bid_cents")
+    .order("rank")
+    .limit(1)
+    .maybeSingle<{ bid_cents: number }>();
 
   // Every seat the chart currently shows as occupied. The picker greys these
   // out; the API refuses them again on submit, because this list is a render
@@ -274,10 +283,13 @@ export default async function ManagePage({
         <MoveSeat token={listing.manage_token} current={seat ?? null} taken={takenSeats} />
       )}
 
-      <FeatureListing
+      <BidBox
         token={listing.manage_token}
-        isFeatured={!!featuredRow}
-        pending={featuredParam === "pending"}
+        name={listing.name}
+        currentCents={mine?.bid_cents ?? listing.bid_cents ?? 0}
+        rank={mine?.rank ?? null}
+        topCents={top?.bid_cents ?? 0}
+        pending={bidParam === "pending"}
       />
 
       <EditListing

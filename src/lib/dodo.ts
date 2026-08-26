@@ -83,3 +83,99 @@ export async function createFeaturedCheckout(opts: {
 
   return { ok: true, url, sessionId };
 }
+
+/**
+ * Open a checkout for one bid.
+ *
+ * A product is created per bid, priced at exactly the amount. Dodo can take a
+ * pay-what-you-want price instead, but that lets the buyer choose the number
+ * at the checkout page -- and the whole mechanic here is that the number has
+ * to beat the rank above. A fixed-price product makes the amount the buyer
+ * sees the amount they agreed to.
+ */
+export async function createBidCheckout(opts: {
+  listingId: string;
+  domain: string;
+  amountCents: number;
+  returnUrl: string;
+}): Promise<CheckoutResult> {
+  const key = process.env.DODO_API_KEY;
+  if (!key) return { ok: false, error: "Payments are not configured.", status: 503 };
+
+  const auth = { authorization: `Bearer ${key}`, "content-type": "application/json" };
+
+  let productId: string;
+  try {
+    const res = await fetch(`${BASE}/products`, {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({
+        name: `Bid on ${opts.domain}`.slice(0, 100),
+        description: `A bid of ${(opts.amountCents / 100).toFixed(2)} USD for rank on seats.lol.`,
+        tax_category: "saas",
+        price: {
+          type: "one_time_price",
+          price: opts.amountCents,
+          currency: "USD",
+          discount: 0,
+          purchasing_power_parity: false,
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+    const data = (await res.json().catch(() => ({}))) as Record<string, unknown>;
+    if (!res.ok || typeof data.product_id !== "string") {
+      const message = typeof data.message === "string" ? data.message : "Could not price the bid";
+      console.error("dodo bid product failed", res.status, message);
+      return { ok: false, error: message, status: 502 };
+    }
+    productId = data.product_id;
+  } catch {
+    return { ok: false, error: "Could not reach the payment provider.", status: 502 };
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(`${BASE}/checkouts`, {
+      method: "POST",
+      headers: auth,
+      body: JSON.stringify({
+        product_cart: [{ product_id: productId, quantity: 1 }],
+        return_url: opts.returnUrl,
+        // Everything the webhook needs to settle the bid, since the webhook
+        // is the only thing that moves a rank.
+        metadata: {
+          kind: "bid",
+          listing_id: opts.listingId,
+          domain: opts.domain,
+          amount_cents: String(opts.amountCents),
+        },
+      }),
+      signal: AbortSignal.timeout(15000),
+    });
+  } catch {
+    return { ok: false, error: "Could not reach the payment provider.", status: 502 };
+  }
+
+  const data = ((await res.json().catch(() => ({}))) ?? {}) as Record<string, unknown>;
+  if (!res.ok) {
+    const message = typeof data.message === "string" ? data.message : "Checkout failed";
+    console.error("dodo bid checkout failed", res.status, message);
+    return { ok: false, error: message, status: 502 };
+  }
+
+  const url =
+    (typeof data.checkout_url === "string" && data.checkout_url) ||
+    (typeof data.payment_link === "string" && data.payment_link) ||
+    (typeof data.url === "string" && data.url) ||
+    null;
+
+  if (!url) return { ok: false, error: "Payment provider returned no checkout link.", status: 502 };
+
+  const sessionId =
+    (typeof data.session_id === "string" && data.session_id) ||
+    (typeof data.payment_id === "string" && data.payment_id) ||
+    null;
+
+  return { ok: true, url, sessionId };
+}

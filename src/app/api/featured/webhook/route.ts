@@ -61,7 +61,7 @@ export async function POST(request: Request) {
 
   let event: {
     type?: string;
-    data?: { metadata?: Record<string, string>; payment_id?: string; total_amount?: number; currency?: string; customer?: { email?: string } };
+    data?: { metadata?: Record<string, string | undefined>; payment_id?: string; total_amount?: number; currency?: string; customer?: { email?: string } };
   };
   try {
     event = JSON.parse(raw);
@@ -74,10 +74,62 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true, ignored: event.type ?? "unknown" });
   }
 
-  const domain = event.data?.metadata?.domain;
+  const meta = event.data?.metadata ?? {};
+  const domain = meta.domain;
   if (!domain) {
     console.error("payment.succeeded with no domain in metadata", event.data?.payment_id);
     return NextResponse.json({ ok: true, ignored: "no domain" });
+  }
+
+  // A bid. This is the only thing that moves a rank -- the amount comes from
+  // the metadata that was signed into the checkout, not from anything the
+  // buyer could edit on the way back.
+  if (meta.kind === "bid") {
+    const listingId = meta.listing_id;
+    const amount = Number(meta.amount_cents);
+    if (!listingId || !Number.isInteger(amount) || amount <= 0) {
+      console.error("bid payment with unusable metadata", event.data?.payment_id, meta);
+      return NextResponse.json({ ok: true, ignored: "bad bid metadata" });
+    }
+
+    const supabase = db();
+
+    // payment_id is unique on bids, so a redelivered webhook collides here
+    // rather than charging the board twice for one payment.
+    const { error: bidErr } = await supabase.from("bids").insert({
+      listing_id: listingId,
+      amount_cents: amount,
+      payment_id: event.data?.payment_id ?? null,
+    });
+
+    if (bidErr) {
+      if (bidErr.code === "23505") {
+        return NextResponse.json({ ok: true, duplicate: true });
+      }
+      console.error("bid insert failed", bidErr);
+      return NextResponse.json({ error: "Could not record the bid" }, { status: 500 });
+    }
+
+    // Only ever raises. A late-delivered webhook for a smaller earlier bid
+    // must not drag a listing back down the board.
+    const { data: current } = await supabase
+      .from("listings")
+      .select("bid_cents")
+      .eq("id", listingId)
+      .maybeSingle();
+
+    if ((current?.bid_cents ?? 0) < amount) {
+      const { error: upErr } = await supabase
+        .from("listings")
+        .update({ bid_cents: amount, bid_at: new Date().toISOString() })
+        .eq("id", listingId);
+      if (upErr) {
+        console.error("bid raise failed", upErr);
+        return NextResponse.json({ error: "Could not apply the bid" }, { status: 500 });
+      }
+    }
+
+    return NextResponse.json({ ok: true, bid: amount, listingId });
   }
 
   // Upsert on domain: a webhook can be delivered more than once, and paying
