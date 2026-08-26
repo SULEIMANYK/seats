@@ -18,6 +18,11 @@ async function getBoard(): Promise<Row[]> {
     const { data, error } = await db()
       .from("board")
       .select("*")
+      // Seat order. The chart places each listing by its own seat number so
+      // it never depended on this, but the phone list renders the array as it
+      // arrives -- and without an ORDER BY Postgres returns rows in whatever
+      // order suits it, so seat 7 was showing above seat 1.
+      .order("rank", { ascending: true })
       .limit(BOARD_SIZE)
       .returns<Row[]>();
 
