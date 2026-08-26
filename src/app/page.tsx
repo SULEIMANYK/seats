@@ -48,7 +48,7 @@ export default async function Home() {
     // unreadable.
     <main className="stage relative flex w-full flex-col">
       {/* The header is the stage. Everything else is the audience looking at it. */}
-      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 rounded-b-[2rem] px-6 py-3 text-fg sm:px-10">
+      <header className="boards relative z-20 flex flex-wrap items-center justify-between gap-x-5 gap-y-2 rounded-b-[2rem] px-4 py-3 text-fg sm:px-10">
         <div className="flex shrink-0 items-baseline gap-3">
           <h1 className="flex items-center gap-2 text-2xl font-semibold tracking-[-0.045em]">
             <Logo className="text-[20px]" />
@@ -133,7 +133,13 @@ export default async function Home() {
             href="/submit"
             className="pill bg-gold px-5 py-2 text-[13px] font-semibold text-[#141413]"
           >
-            {open > 0 ? "Take a seat \u2014 free" : "House full"}
+            {open > 0 ? (
+              <>
+                Take a seat<span className="hidden sm:inline"> &mdash; free</span>
+              </>
+            ) : (
+              "House full"
+            )}
           </Link>
         </div>
       </header>

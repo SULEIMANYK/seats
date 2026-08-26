@@ -54,10 +54,10 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
   return (
     <div>
       {categories.length > 1 && (
-        <div className="mb-3 flex flex-wrap gap-1.5">
+        <div className="mb-3 flex flex-wrap gap-2">
           <button
             onClick={() => setActive(null)}
-            className={`rounded-full border px-2.5 py-1 text-[11px] transition ${
+            className={`min-h-9 rounded-full border px-3.5 py-2 text-[12px] transition ${
               active === null
                 ? "border-fg bg-fg text-bg-lift"
                 : "border-edge bg-panel text-muted"
@@ -69,7 +69,7 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
             <button
               key={name}
               onClick={() => setActive(active === name ? null : name)}
-              className={`tnum rounded-full border px-2.5 py-1 text-[11px] transition ${
+              className={`tnum min-h-9 rounded-full border px-3.5 py-2 text-[12px] transition ${
                 active === name
                   ? "border-fg bg-fg text-bg-lift"
                   : "border-edge bg-panel text-muted"
