@@ -54,7 +54,7 @@ export default async function Home() {
             <Logo className="text-[20px]" />
             seats
           </h1>
-          <p className="hidden text-[13px] text-fg/55 lg:block">{SITE.tagline}</p>
+          <p className="hidden text-[13px] text-fg/55 2xl:block">{SITE.tagline}</p>
         </div>
 
         {/* The countdown sits in the middle of the bar and is the biggest
@@ -64,15 +64,39 @@ export default async function Home() {
         <ResetTimer />
 
         <div className="flex shrink-0 items-center gap-3">
-          <span className="tnum hidden items-baseline gap-1.5 text-[12px] text-fg/55 lg:flex">
-            <span className="relative flex size-1.5 self-center">
-              <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold opacity-70" />
-              <span className="relative inline-flex size-1.5 rounded-full bg-gold" />
+          {/* Seats, visits and clicks, all-time. Three plain figures rather
+              than a sentence: they are scanned, not read, and tabular-nums
+              keeps them from shuffling as the numbers grow. */}
+          <span className="tnum hidden items-center gap-3.5 text-[12px] text-fg/55 xl:flex">
+            <span className="flex items-baseline gap-1.5">
+              <span className="relative flex size-1.5 self-center">
+                <span className="absolute inline-flex size-full animate-ping rounded-full bg-gold opacity-70" />
+                <span className="relative inline-flex size-1.5 rounded-full bg-gold" />
+              </span>
+              <span className="font-semibold text-fg">
+                {rows.length}/{BOARD_SIZE}
+              </span>
+              <span>taken</span>
             </span>
-            <span className="font-semibold text-fg">
-              {rows.length}/{BOARD_SIZE}
-            </span>
-            <span>taken</span>
+
+            {stats && (
+              <>
+                <span aria-hidden className="text-fg/20">&middot;</span>
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-semibold text-fg">
+                    {stats.visits_total.toLocaleString()}
+                  </span>
+                  <span>{stats.visits_total === 1 ? "visit" : "visits"}</span>
+                </span>
+                <span aria-hidden className="text-fg/20">&middot;</span>
+                <span className="flex items-baseline gap-1.5">
+                  <span className="font-semibold text-fg">
+                    {stats.clicks_total.toLocaleString()}
+                  </span>
+                  <span>{stats.clicks_total === 1 ? "click" : "clicks"}</span>
+                </span>
+              </>
+            )}
           </span>
 
           <ThemeToggle />
