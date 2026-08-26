@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import type { BoardRow } from "@/lib/db";
-import { BOARD_SIZE } from "@/lib/seating";
+import { BOARD_SIZE, placeListings } from "@/lib/seating";
 import { displayDomain } from "@/lib/slug";
 import { Favicon } from "./Favicon";
 import { ReportButton } from "./ReportButton";
@@ -28,6 +28,11 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
   }, [rows]);
 
   const shown = active === null ? rows : rows.filter((r) => r.category === active);
+
+  // Seats nobody holds today. placeListings is the same mapping the chart
+  // uses, so the two surfaces can never disagree about who sits where.
+  const taken = new Set(placeListings(rows).values());
+  const free = Array.from({ length: BOARD_SIZE }, (_, i) => i + 1).filter((n) => !taken.has(n));
 
   if (rows.length === 0) {
     return (
@@ -124,8 +129,44 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
         })}
       </ol>
 
-      <p className="tnum mt-4 text-center text-[11px] text-muted/60">
-        {rows.length} of {BOARD_SIZE} seats taken
+      {/* The free seats. Without these a phone showed only the handful of
+          listings that exist and nothing else -- no sense that this is a
+          fifty-seat house, and no way to pick a seat, which is the one thing
+          the product actually does. The chart carries that on desktop; on a
+          phone it has to be a grid. */}
+      {free.length > 0 && (
+        <section className="mt-6">
+          <h2 className="mb-2 flex items-baseline justify-between text-[11px] tracking-wide text-muted uppercase">
+            <span>Free seats</span>
+            <span className="tnum normal-case">
+              {free.length} of {BOARD_SIZE} open
+            </span>
+          </h2>
+
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1.5">
+            {free.map((seat) => (
+              <Link
+                key={seat}
+                href={`/submit?seat=${seat}`}
+                aria-label={`Claim seat ${seat}`}
+                className="tnum font-display flex h-11 items-center justify-center rounded-xl bg-faint text-[13px] text-muted ring-1 ring-edge transition active:bg-gold active:text-[#141413]"
+              >
+                {seat}
+              </Link>
+            ))}
+          </div>
+
+          <Link
+            href="/submit"
+            className="pill mt-4 block bg-gold py-3 text-center text-[14px] font-semibold text-[#141413]"
+          >
+            Take a seat &mdash; free
+          </Link>
+        </section>
+      )}
+
+      <p className="tnum mt-5 text-center text-[11px] text-muted/60">
+        {rows.length} of {BOARD_SIZE} seats taken &middot; cleared at midnight UTC
       </p>
     </div>
   );

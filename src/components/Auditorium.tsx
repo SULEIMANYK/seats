@@ -249,7 +249,15 @@ export function Auditorium({ rows }: { rows: BoardRow[] }) {
   const [, , ...houseRows] = ROWS;
 
   return (
-    <div className="house relative z-10 flex min-h-0 flex-1 flex-col items-center justify-center gap-1 rounded-[2.5rem] pt-2">
+    <div
+      /* `safe center` rather than plain `center`. A centred flex container
+         splits any overflow evenly above and below, so once the chart is a
+         few pixels taller than its box the top row rises *under* the fixed
+         header and the royal box is clipped by it. `safe` falls back to
+         start-alignment the moment content overflows, which keeps the
+         overflow going downward where it can at least be seen. */
+      className="house relative z-10 flex min-h-0 flex-1 flex-col items-center gap-1 rounded-[2.5rem] pt-2 [justify-content:safe_center]"
+    >
       {/* The royal box: one seat, alone, centred and lifted above the rest. */}
       <div
         className="flex w-full min-h-0 flex-[1.1] items-stretch justify-center"
