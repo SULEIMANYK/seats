@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { MIN_INCREMENT_CENTS, formatMoney, priceToBeat } from "@/lib/bidding";
 
 /**
@@ -29,8 +30,12 @@ export function BidModal({
   const floor = priceToBeat(currentCents);
   const [dollars, setDollars] = useState(() => String(Math.ceil(floor / 100)));
   const [busy, setBusy] = useState(false);
+  // The portal target only exists in the browser.
+  const [mounted, setMounted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (open) {
@@ -47,7 +52,7 @@ export function BidModal({
     return () => window.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
   const cents = Math.round(Number(dollars) * 100);
   const valid = Number.isFinite(cents) && cents >= floor;
@@ -75,7 +80,13 @@ export function BidModal({
     }
   }
 
-  return (
+  // Rendered into <body>. Inside the page tree this overlay sat within a
+  // section carrying `relative z-10`, which is its own stacking context --
+  // so z-50 only ranked it against that section's own children, and the
+  // next sibling section (also z-10, later in the DOM) painted straight
+  // over the modal. A portal is the fix: nothing can out-stack it from a
+  // context it no longer belongs to.
+  return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-end justify-center bg-[#141413]/60 p-4 sm:items-center"
       onClick={onClose}
@@ -153,6 +164,7 @@ export function BidModal({
           returned &mdash; that is what makes holding one worth something.
         </p>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
