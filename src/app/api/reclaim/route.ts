@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { BOARD_SIZE, SEATS_PER_ACCOUNT } from "@/lib/seating";
+import { BOARD_SIZE } from "@/lib/seating";
 import { hashIp, tooManyRecently } from "@/lib/ratelimit";
 
 export const runtime = "nodejs";
@@ -11,14 +10,13 @@ export const runtime = "nodejs";
  *
  * A nightly clear is only survivable if returning is one click. Retyping the
  * form every morning is what would actually kill the board, not the reset.
+ *
+ * Authorised by the previous listing's manage token, which is the only
+ * credential this site issues. Holding it is proof you created that listing,
+ * which is exactly the claim being made here.
  */
 export async function POST(request: Request) {
-  const owner = await currentEmail();
-  if (!owner) {
-    return NextResponse.json({ error: "Sign in first.", needsAuth: true }, { status: 401 });
-  }
-
-  let body: { listingId?: string; seat?: number };
+  let body: { token?: string; seat?: number };
   try {
     body = await request.json();
   } catch {
@@ -35,49 +33,30 @@ export async function POST(request: Request) {
     );
   }
 
-  // Must be the caller's own listing — the id alone is not authorisation.
+  // The manage token is the authorisation. An id on its own is not.
   const { data: prev } = await supabase
     .from("listings")
     .select("*")
-    .eq("id", body.listingId ?? "")
-    .eq("owner_email", owner)
+    .eq("manage_token", body.token ?? "")
     .maybeSingle();
 
   if (!prev) {
     return NextResponse.json({ error: "That listing isn't yours." }, { status: 404 });
   }
 
-  const { count: held } = await supabase
-    .from("listings")
-    .select("*", { count: "exact", head: true })
-    .eq("owner_email", owner)
-    .eq("seat_day", today)
-    .in("status", ["active", "past_due"]);
-
-  if ((held ?? 0) >= SEATS_PER_ACCOUNT) {
-    return NextResponse.json(
-      { error: `You already hold ${SEATS_PER_ACCOUNT} seats today.` },
-      { status: 409 },
-    );
-  }
-
-  // One seat per domain per day, the same rule /api/submit enforces. Without
-  // it the insert still failed — there is a unique index — but as a 23505,
-  // which was reported as "the seat went". Retrying could never work, and
-  // the message pointed at the wrong thing entirely.
+  // Already back on today's board -- hand back the row that is already there
+  // rather than refusing, since the button that calls this is idempotent from
+  // the visitor's point of view.
   const { data: already } = await supabase
     .from("listings")
-    .select("id")
+    .select("manage_token, seat")
     .eq("domain", prev.domain)
     .eq("seat_day", today)
     .in("status", ["active", "past_due"])
     .maybeSingle();
 
   if (already) {
-    return NextResponse.json(
-      { error: "That product already has a seat today." },
-      { status: 409 },
-    );
+    return NextResponse.json({ manageToken: already.manage_token, seat: already.seat });
   }
 
   const wanted = Number(body.seat);
@@ -121,7 +100,6 @@ export async function POST(request: Request) {
       category: prev.category,
       extra_links: prev.extra_links,
       email: prev.email,
-      owner_email: owner,
       seat,
       seat_day: today,
       submit_ip_hash: hashIp(request),

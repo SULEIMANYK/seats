@@ -22,7 +22,6 @@ export function ClaimAgain({ listingId, name }: { listingId: string; name: strin
 
     if (!res.ok) {
       setBusy(false);
-      if (data.needsAuth) return router.push("/signin?next=%2Fdashboard");
       setError(data.error ?? "Could not claim a seat");
       return;
     }

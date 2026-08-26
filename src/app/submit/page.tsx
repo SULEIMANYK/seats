@@ -1,8 +1,6 @@
 import Link from "next/link";
 import { SubmitForm } from "@/components/SubmitForm";
 import { SITE } from "@/lib/config";
-import { redirect } from "next/navigation";
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { BOARD_SIZE } from "@/lib/seating";
 
@@ -13,12 +11,7 @@ export default async function SubmitPage({
 }: {
   searchParams: Promise<{ seat?: string }>;
 }) {
-  const email = await currentEmail();
   const { seat: seatParam } = await searchParams;
-  if (!email) {
-    const back = seatParam ? `/submit?seat=${encodeURIComponent(seatParam)}` : "/submit";
-    redirect(`/signin?next=${encodeURIComponent(back)}`);
-  }
   const wanted = Number(seatParam);
   const seat = Number.isInteger(wanted) && wanted >= 1 && wanted <= BOARD_SIZE ? wanted : null;
 
@@ -57,7 +50,7 @@ export default async function SubmitPage({
         </p>
       </header>
 
-      <SubmitForm full={full} seat={seat} email={email!} taken={taken} />
+      <SubmitForm full={full} seat={seat} taken={taken} />
     </main>
   );
 }

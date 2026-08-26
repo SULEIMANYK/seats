@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 export const runtime = "nodejs";
@@ -18,10 +17,15 @@ export const runtime = "nodejs";
  * name and url at snapshot time, so history is unaffected.
  */
 export async function POST(request: Request) {
-  const email = await currentEmail();
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+  // A shared secret rather than an account, because there are no accounts.
+  // Unset means the route does not work at all -- an admin surface that opens
+  // itself when a variable is missing is worse than one that is unreachable.
+  const key = process.env.ADMIN_KEY;
+  const given =
+    new URL(request.url).searchParams.get("key") ??
+    request.headers.get("x-admin-key");
 
-  if (!adminEmail || email !== adminEmail) {
+  if (!key || given !== key) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

@@ -1,30 +1,21 @@
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 
 /**
  * Resolve a listing the caller is allowed to act on.
  *
- * Authorised two ways, because both are legitimate: a signed-in owner, or
- * the manage token. The token predates sign-in and people saved those links,
- * so dropping it would lock them out of listings they own.
- *
- * Shared by every route that mutates a listing, so the rule is written once.
+ * The manage token is the only credential this site issues. There are no
+ * accounts, so holding the token is the whole claim: it is handed out once,
+ * at the moment the listing is created, and never shown anywhere else.
  */
-export async function authoriseListing(
-  token: string | undefined,
-  listingId: string | undefined,
-) {
+export async function authoriseListing(token: string | undefined) {
   const supabase = db();
-  const owner = await currentEmail();
+  if (!token) return { listing: null, supabase };
 
-  const query = supabase.from("listings").select("*");
-  const { data } = token
-    ? await query.eq("manage_token", token).maybeSingle()
-    : await query.eq("id", listingId ?? "").maybeSingle();
+  const { data } = await supabase
+    .from("listings")
+    .select("*")
+    .eq("manage_token", token)
+    .maybeSingle();
 
-  if (!data) return { listing: null, supabase };
-  if (token) return { listing: data, supabase };
-  // Without a token, the caller must be signed in as the owner.
-  if (owner && data.owner_email === owner) return { listing: data, supabase };
-  return { listing: null, supabase };
+  return { listing: data ?? null, supabase };
 }

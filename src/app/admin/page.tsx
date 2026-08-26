@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { SITE } from "@/lib/config";
 
@@ -30,7 +29,7 @@ type ListingSummary = {
   domain: string;
   status: string;
   seat: number | null;
-  owner_email: string;
+  email: string | null;
 };
 
 type Group = { listing: ListingSummary; reports: ReportRow[] };
@@ -41,7 +40,7 @@ async function loadReportedListings(): Promise<Group[]> {
   const { data, error } = await supabase
     .from("reports")
     .select(
-      "id, reason, note, created_at, listing:listings(id, slug, name, url, domain, status, seat, owner_email)",
+      "id, reason, note, created_at, listing:listings(id, slug, name, url, domain, status, seat, email)",
     )
     .order("created_at", { ascending: false })
     .returns<(ReportRow & { listing: ListingSummary | null })[]>();
@@ -67,19 +66,23 @@ async function loadReportedListings(): Promise<Group[]> {
 }
 
 /**
- * The only view of abuse reports. Gated by comparing the signed-in email to
- * ADMIN_EMAIL — an unset var or a mismatch renders as a plain 404, the same
- * as this route not existing, rather than a 403 that would confirm it does.
+ * The only view of abuse reports. Gated by a secret in the URL: a wrong or
+ * missing key renders a plain 404, the same as this route not existing,
+ * rather than a 403 that would confirm it does.
  *
  * The takedown button below posts to /api/admin, which re-checks this same
  * gate on its own: this page being locked down is not what makes the action
  * safe, the API route is.
  */
-export default async function AdminPage() {
-  const email = await currentEmail();
-  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase();
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ key?: string }>;
+}) {
+  const { key } = await searchParams;
+  const adminKey = process.env.ADMIN_KEY;
 
-  if (!adminEmail || email !== adminEmail) notFound();
+  if (!adminKey || key !== adminKey) notFound();
 
   const groups = await loadReportedListings();
 
@@ -113,7 +116,7 @@ export default async function AdminPage() {
                       {listing.domain} · {listing.url}
                     </p>
                     <p className="mt-0.5 truncate text-[11px] text-muted/70">
-                      owner: {listing.owner_email} · status: {listing.status}
+                      contact: {listing.email ?? "none given"} · status: {listing.status}
                       {listing.seat ? ` · seat #${listing.seat}` : ""}
                     </p>
                   </div>
@@ -127,7 +130,7 @@ export default async function AdminPage() {
                         Removed
                       </span>
                     ) : (
-                      <form action="/api/admin" method="POST">
+                      <form action={`/api/admin?key=${encodeURIComponent(adminKey)}`} method="POST">
                         <input type="hidden" name="listingId" value={listing.id} />
                         <button
                           type="submit"

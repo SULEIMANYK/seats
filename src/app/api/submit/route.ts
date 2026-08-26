@@ -2,20 +2,22 @@ import { NextResponse } from "next/server";
 import { createHash } from "node:crypto";
 import { isValidCategory } from "@/lib/categories";
 import { isValidPricingModel } from "@/lib/pricing";
-import { currentEmail } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { BOARD_SIZE, SEATS_PER_ACCOUNT } from "@/lib/seating";
+import { BOARD_SIZE } from "@/lib/seating";
 import { canonicalDomain, makeSlug, normalizeImageUrl, normalizeUrl } from "@/lib/slug";
 
 export const runtime = "nodejs";
 
 /**
- * Claim a seat. Free — there is no payment step.
+ * Claim a seat. Free, and no account.
  *
- * Because nothing is charged, the usual filter against junk is gone, so the
- * checks that remain do more work: one listing per domain, a real http(s)
- * URL, and a per-IP rate limit. None of that stops a determined spammer, so
- * a listing can be pulled with its manage token and the board is capped.
+ * Nothing is charged and nobody signs in, so the checks that remain do all
+ * the work: one listing per domain per day, a real http(s) URL, and a per-IP
+ * rate limit. The domain rule is the load-bearing one -- taking N seats means
+ * owning N domains, and domains cost money in a way email addresses do not.
+ *
+ * The manage token returned here is the only credential. It is what edits,
+ * moves and removes the listing, and what claims a seat again tomorrow.
  */
 
 type Body = {
@@ -54,20 +56,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  // Signed in or nothing. A verified address is what stops one person
-  // listing the same product under several names.
-  const owner = await currentEmail();
-  if (!owner) {
-    return NextResponse.json(
-      { error: "Sign in first — we email you a link, no password.", needsAuth: true },
-      { status: 401 },
-    );
-  }
-
   const name = body.name?.trim();
   const tagline = body.tagline?.trim();
-  // The signed-in address is the identity; the form no longer supplies one.
-  const email = owner;
+  // Optional, and only so a lost manage link can be sent again. Nothing is
+  // gated on it and it is never required.
+  const email = body.email?.trim().slice(0, 200) || null;
   const url = body.url ? normalizeUrl(body.url) : null;
   const category = isValidCategory(body.category) ? body.category : null;
   // Both optional. A bad value is dropped rather than refused — a broken
@@ -106,23 +99,6 @@ export async function POST(request: Request) {
 
   const today = new Date().toISOString().slice(0, 10);
 
-  // Up to two seats per account per day. Yesterday's claims do not count.
-  const { count: mine } = await supabase
-    .from("listings")
-    .select("*", { count: "exact", head: true })
-    .eq("owner_email", owner)
-    .eq("seat_day", today)
-    .in("status", ["active", "past_due"]);
-
-  if ((mine ?? 0) >= SEATS_PER_ACCOUNT) {
-    return NextResponse.json(
-      {
-        error: `You already hold ${SEATS_PER_ACCOUNT} seats today. Seats reset at midnight UTC.`,
-      },
-      { status: 409 },
-    );
-  }
-
   if (await overRateLimit(supabase, ipHash)) {
     return NextResponse.json(
       { error: "That's a few listings in a short time. Try again later." },
@@ -134,7 +110,7 @@ export async function POST(request: Request) {
   // cannot quietly hold two.
   const { data: existing } = await supabase
     .from("listings")
-    .select("id, owner_email")
+    .select("id")
     .eq("domain", domain)
     .eq("seat_day", today)
     .in("status", ["active", "past_due"])
@@ -212,7 +188,6 @@ export async function POST(request: Request) {
       domain,
       tagline,
       email,
-      owner_email: owner,
       category,
       logo_url: logoUrl,
       image_url: imageUrl,

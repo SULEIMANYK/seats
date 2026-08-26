@@ -23,7 +23,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { listing, supabase } = await authoriseListing(body.token, body.listingId);
+  const { listing, supabase } = await authoriseListing(body.token);
   if (!listing) {
     return NextResponse.json({ error: "Not yours, or no longer there." }, { status: 404 });
   }
@@ -71,7 +71,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const { listing, supabase } = await authoriseListing(body.token, body.listingId);
+  const { listing, supabase } = await authoriseListing(body.token);
   if (!listing) {
     return NextResponse.json({ error: "Not yours, or no longer there." }, { status: 404 });
   }

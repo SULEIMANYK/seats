@@ -48,8 +48,6 @@ export const BOARD_SIZE = ROWS.reduce((n, r) => n + r.seats, 0);
  * hard cap, so nobody quietly fills the house. Duplicates are prevented
  * separately, by the one-listing-per-domain rule, which means the two seats
  * must be two different products.
- */
-export const SEATS_PER_ACCOUNT = 2;
 
 /** Seat number of the first seat in a row (1-based). */
 export function rowOffset(index: number): number {

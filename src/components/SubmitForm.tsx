@@ -6,6 +6,7 @@ import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
 import { PRICING_MODELS } from "@/lib/pricing";
 import { BOARD_SIZE } from "@/lib/seating";
+import { rememberMine } from "@/lib/mine";
 
 /** Just enough of a board row to compute where a price would land. */
 
@@ -13,12 +14,10 @@ import { BOARD_SIZE } from "@/lib/seating";
 export function SubmitForm({
   full,
   seat,
-  email,
   taken: initialTaken,
 }: {
   full: boolean;
   seat: number | null;
-  email: string;
   taken: number[];
 }) {
   const router = useRouter();
@@ -95,16 +94,13 @@ export function SubmitForm({
         description: form.get("description") || null,
         pricingModel: form.get("pricingModel") || null,
         docsUrl: form.get("docsUrl") || null,
+        email: form.get("email") || null,
         seat: chosen,
       }),
     });
 
     const data = await res.json();
     if (!res.ok) {
-      if (data.needsAuth) {
-        router.push(`/signin?next=${encodeURIComponent(window.location.pathname + window.location.search)}`);
-        return;
-      }
       // The seat went in the moment between rendering and submitting.
       // Say which one, take it off the list, and drop back to "next free".
       if (data.seatTaken) {
@@ -120,8 +116,14 @@ export function SubmitForm({
       return;
     }
 
-    // Straight to the manage page: it is the only place the manage token is
-    // ever shown, and it doubles as confirmation that the listing is up.
+    // Remembered here so "your seats" can offer a one-click claim tomorrow.
+    // The manage page is still the only place the token is shown in full.
+    rememberMine({
+      token: data.manageToken,
+      name: form.get("name") as string,
+      day: new Date().toISOString().slice(0, 10),
+    });
+
     router.push(`/manage/${data.manageToken}?new=1`);
   }
 
@@ -330,15 +332,24 @@ export function SubmitForm({
             </p>
           </div>
 
+          {/* Optional, and genuinely optional: nothing is gated on it. It
+              exists only so a lost manage link can be sent again, which is
+              the one thing that is unrecoverable without an account. */}
           <div className="space-y-1.5">
-            <span className="block text-[11px] font-semibold tracking-wide text-muted uppercase">
-              Account
-            </span>
-            <p className="rounded-xl border border-edge bg-bg px-3.5 py-3 text-[15px] text-muted">
-              {email}
-            </p>
+            <label htmlFor="email" className={labelCls}>
+              Email <span className="normal-case opacity-60">&mdash; optional</span>
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
+              placeholder="you@acme.com"
+              className={inputCls}
+            />
             <p className="text-[11px] text-muted/70">
-              Signed in. Up to two seats a day per account, and one seat per product — so nobody lists the same thing twice.
+              Only so we can send your manage link again if you lose it. No account, no
+              password, nothing to confirm.
             </p>
           </div>
         </div>
