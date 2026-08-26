@@ -23,9 +23,10 @@ async function firstPage() {
     const { data, error, count } = await db()
       .from("browse_products")
       .select(
-        "id, slug, name, url, domain, tagline, logo_url, image_url, category, pricing_model, seat_day, created_at, days_on_board, clicks_total",
+        "id, slug, name, url, domain, tagline, logo_url, image_url, category, pricing_model, seat_day, created_at, days_on_board, clicks_total, is_featured",
         { count: "exact" },
       )
+      .order("is_featured", { ascending: false })
       .order("seat_day", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .range(0, PAGE_SIZE - 1)

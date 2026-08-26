@@ -5,6 +5,7 @@ import { placeListings, type Placeable } from "@/lib/seating";
 import { BadgeEmbed } from "@/components/BadgeEmbed";
 import { EditListing } from "@/components/EditListing";
 import { MoveSeat } from "@/components/MoveSeat";
+import { FeatureListing } from "@/components/FeatureListing";
 import { displayDomain } from "@/lib/slug";
 
 export const dynamic = "force-dynamic";
@@ -64,9 +65,9 @@ export default async function ManagePage({
   searchParams,
 }: {
   params: Promise<{ token: string }>;
-  searchParams: Promise<{ new?: string }>;
+  searchParams: Promise<{ new?: string; featured?: string }>;
 }) {
-  const { new: isNew } = await searchParams;
+  const { new: isNew, featured: featuredParam } = await searchParams;
   const { token } = await params;
   const supabase = db();
 
@@ -80,6 +81,12 @@ export default async function ManagePage({
 
 
   const { seat, seated, clicks30d, clicksTotal, bench } = await loadStats(supabase, listing.id);
+
+  const { data: featuredRow } = await supabase
+    .from("featured")
+    .select("domain")
+    .eq("domain", listing.domain)
+    .maybeSingle();
 
   // Every seat the chart currently shows as occupied. The picker greys these
   // out; the API refuses them again on submit, because this list is a render
@@ -266,6 +273,12 @@ export default async function ManagePage({
       {listing.status === "active" && (
         <MoveSeat token={listing.manage_token} current={seat ?? null} taken={takenSeats} />
       )}
+
+      <FeatureListing
+        token={listing.manage_token}
+        isFeatured={!!featuredRow}
+        pending={featuredParam === "pending"}
+      />
 
       <EditListing
         token={listing.manage_token}

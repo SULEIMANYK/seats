@@ -21,6 +21,7 @@ export type BrowseRow = {
   created_at: string;
   days_on_board: number;
   clicks_total: number;
+  is_featured: boolean;
 };
 
 type Payload = { rows: BrowseRow[]; total: number; hasMore: boolean };
@@ -144,7 +145,9 @@ export function BrowseList({ initial }: { initial: Payload }) {
                 href={`/r/${r.slug}`}
                 target="_blank"
                 rel="noopener"
-                className="flex items-center gap-3 rounded-2xl border border-edge bg-panel p-4 card-shadow transition-all duration-150 hover:-translate-y-0.5"
+                className={`flex items-center gap-3 rounded-2xl border p-4 card-shadow transition-all duration-150 hover:-translate-y-0.5 ${
+                  r.is_featured ? "border-gold-line bg-gold-soft" : "border-edge bg-panel"
+                }`}
               >
                 <Favicon
                   logoUrl={r.logo_url}
@@ -154,6 +157,11 @@ export function BrowseList({ initial }: { initial: Payload }) {
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-baseline gap-x-2">
                     <span className="truncate text-[14px] font-semibold">{r.name}</span>
+                    {r.is_featured && (
+                      <span className="rounded-full border border-gold-line px-2 py-0.5 text-[10px] font-semibold tracking-wide text-gold uppercase">
+                        Featured
+                      </span>
+                    )}
                     {r.category && (
                       <span className="text-[11px] text-muted">{r.category}</span>
                     )}

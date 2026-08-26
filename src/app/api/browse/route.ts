@@ -31,9 +31,11 @@ export async function GET(request: Request) {
   let query = db()
     .from("browse_products")
     .select(
-      "id, slug, name, url, domain, tagline, logo_url, image_url, category, pricing_model, seat_day, created_at, days_on_board, clicks_total",
+      "id, slug, name, url, domain, tagline, logo_url, image_url, category, pricing_model, seat_day, created_at, days_on_board, clicks_total, is_featured",
       { count: "exact" },
     )
+    // Paid placement sorts first, then the usual most-recent-first.
+    .order("is_featured", { ascending: false })
     .order("seat_day", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
     .range(from, to);
