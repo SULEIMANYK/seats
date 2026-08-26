@@ -112,8 +112,8 @@ export function BoardList({ rows }: { rows: BoardRow[] }) {
 
                 <span className="min-w-0 flex-1">
                   <span className="block truncate text-[14px] font-semibold">{row.name}</span>
-                  <span className="mt-0.5 block truncate text-[12px] text-muted">
-                    {row.tagline}
+                  <span className="mt-0.5 block truncate text-[11px] text-muted">
+                    {displayDomain(row.url)}
                   </span>
                 </span>
 
