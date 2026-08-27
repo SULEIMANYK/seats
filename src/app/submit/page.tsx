@@ -9,9 +9,9 @@ export const dynamic = "force-dynamic";
 export default async function SubmitPage({
   searchParams,
 }: {
-  searchParams: Promise<{ seat?: string }>;
+  searchParams: Promise<{ seat?: string; url?: string }>;
 }) {
-  const { seat: seatParam } = await searchParams;
+  const { seat: seatParam, url: urlParam } = await searchParams;
   const wanted = Number(seatParam);
   const seat = Number.isInteger(wanted) && wanted >= 1 && wanted <= BOARD_SIZE ? wanted : null;
 
@@ -50,7 +50,7 @@ export default async function SubmitPage({
         </p>
       </header>
 
-      <SubmitForm full={full} seat={seat} taken={taken} />
+      <SubmitForm full={full} seat={seat} taken={taken} initialUrl={urlParam ?? ""} />
     </main>
   );
 }

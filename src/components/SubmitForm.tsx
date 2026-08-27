@@ -15,17 +15,20 @@ export function SubmitForm({
   full,
   seat,
   taken: initialTaken,
+  initialUrl = "",
 }: {
   full: boolean;
   seat: number | null;
   taken: number[];
+  /** Carried over from the one-field form on the front page. */
+  initialUrl?: string;
 }) {
   const router = useRouter();
   // Rows, not raw tiers. A price between two row prices buys nothing extra —
   // $15 landed in the same row as $12, which reads as the form being broken.
 
   const [name, setName] = useState("");
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState(initialUrl);
   const [tagline, setTagline] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);

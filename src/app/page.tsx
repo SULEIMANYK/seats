@@ -8,6 +8,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { Leaderboard, type Row } from "@/components/Leaderboard";
 import { ActivityFeed, type Activity } from "@/components/ActivityFeed";
 import { StatsBar } from "@/components/StatsBar";
+import { QuickAdd } from "@/components/QuickAdd";
 import { formatMoney, priceToBeat } from "@/lib/bidding";
 
 export const dynamic = "force-dynamic";
@@ -108,12 +109,12 @@ export default async function Home() {
             A leaderboard you climb with money. Bid higher than the listing above you and you take
             its rank &mdash; {topPrice > 0 ? <>#1 currently stands at <span className="font-semibold text-fg">{formatMoney(topPrice)}</span>.</> : <>nobody holds #1 yet.</>}
           </p>
-          <Link
-            href="/submit"
-            className="pill mt-7 inline-block bg-gold px-7 py-3.5 text-[15px] font-semibold text-[#141413]"
-          >
-            Shut up and take my money
-          </Link>
+          <div className="mt-7">
+            <QuickAdd />
+            <p className="mt-2.5 text-[12px] text-muted/70">
+              Free to list. Bidding is what moves you up.
+            </p>
+          </div>
         </section>
 
         <section className="relative z-10 mb-10">
