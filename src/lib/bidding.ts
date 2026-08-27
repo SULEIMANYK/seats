@@ -1,8 +1,15 @@
 /** Bids are whole dollars in the UI, cents everywhere else. */
 export const MIN_INCREMENT_CENTS = 100;
 
-/** The floor for a listing with no bid yet. */
-export const OPENING_BID_CENTS = 500;
+/**
+ * The floor for a listing nobody has bid on.
+ *
+ * Set to the increment itself, so the only rule anywhere is "more than the
+ * one you are passing". A separate, higher floor meant a listing holding a
+ * rank at $1 could not be taken for $2 -- the board showed one number and
+ * the bid box demanded another.
+ */
+export const OPENING_BID_CENTS = MIN_INCREMENT_CENTS;
 
 export function formatMoney(cents: number): string {
   const dollars = cents / 100;

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SITE } from "@/lib/config";
-import { formatMoney, OPENING_BID_CENTS } from "@/lib/bidding";
+import { formatMoney, MIN_INCREMENT_CENTS } from "@/lib/bidding";
 
 export const metadata = { title: `About — ${SITE.domain}` };
 
@@ -24,8 +24,9 @@ export default function AboutPage() {
           the only ranking rule that cannot be argued with.
         </p>
         <p>
-          Bids start at {formatMoney(OPENING_BID_CENTS)}. Ties go to whoever bid first, so being
-          early is worth something when two people arrive at the same number.
+          A bid only has to beat the one above it &mdash; {formatMoney(MIN_INCREMENT_CENTS)} more is
+          enough. Ties go to whoever bid first, so being early is worth something when two
+          people arrive at the same number.
         </p>
         <p>
           Every click your listing sends onward is counted and shown next to it, so the thing you

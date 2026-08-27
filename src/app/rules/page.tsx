@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { SITE } from "@/lib/config";
-import { formatMoney, MIN_INCREMENT_CENTS, OPENING_BID_CENTS } from "@/lib/bidding";
+import { formatMoney, MIN_INCREMENT_CENTS } from "@/lib/bidding";
 
 export const metadata = { title: `Rules — ${SITE.domain}` };
 
 const RULES: [string, string][] = [
   ["Rank is the money", "Listings are ordered by what they have paid, highest first. Nothing else moves you up."],
-  ["Outbidding takes the rank", `You need at least ${formatMoney(MIN_INCREMENT_CENTS)} more than the listing you are passing. Equal is not enough — ties go to whoever bid first, and that is always the incumbent.`],
+  ["Outbidding takes the rank", `One dollar more than the listing you are passing is enough — there is no other threshold. Equal does not count: ties go to whoever bid first, and that is always the incumbent.`],
   ["Bids are final", "If someone outbids you, you lose the rank and the bid is not returned. That is what makes holding one worth anything. Know this before you bid."],
   ["One listing per domain", "A product cannot hold two ranks, and a domain cannot be listed twice."],
   ["Your manage link is your account", "There is nothing to sign in to. The link you get when you list is what edits, removes, and bids for your listing. Keep it."],
@@ -22,8 +22,8 @@ export default function RulesPage() {
 
       <h1 className="relative z-10 mt-6 text-2xl sm:text-3xl">Rules</h1>
       <p className="relative z-10 mt-3 text-[15px] leading-relaxed text-muted">
-        Short, because there are only a few and they all matter. Bids start at{" "}
-        {formatMoney(OPENING_BID_CENTS)}.
+        Short, because there are only a few and they all matter. The smallest bid that wins
+        anything is {formatMoney(MIN_INCREMENT_CENTS)} more than whatever it is passing.
       </p>
 
       <ol className="relative z-10 mt-8 space-y-3">
