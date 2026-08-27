@@ -9,7 +9,7 @@ import { PAGE_SIZE } from "@/app/api/browse/route";
 export const dynamic = "force-dynamic";
 export const metadata = {
   title: `Browse — ${SITE.domain}`,
-  description: "Every product that has ever held a seat, not just today's board.",
+  description: "Every product that has ever been listed, whether or not it holds a rank today.",
 };
 
 /**
@@ -57,8 +57,8 @@ export default async function BrowsePage() {
       <header className="relative z-10 mt-6 mb-8">
         <h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Browse</h1>
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
-          Every {SITE.noun} that has ever held a seat, not just today&apos;s board — most
-          recently seen first.
+          Every {SITE.noun} that has ever been listed, whether or not it holds a rank today
+          — most recently seen first.
         </p>
       </header>
 

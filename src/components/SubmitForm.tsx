@@ -5,21 +5,14 @@ import { useCallback, useEffect, useState } from "react";
 import { SITE } from "@/lib/config";
 import { CATEGORIES } from "@/lib/categories";
 import { PRICING_MODELS } from "@/lib/pricing";
-import { BOARD_SIZE } from "@/lib/seating";
 import { rememberMine } from "@/lib/mine";
 
 /** Just enough of a board row to compute where a price would land. */
 
 /** Best-effort domain for the favicon + preview while the URL is still being typed. */
 export function SubmitForm({
-  full,
-  seat,
-  taken: initialTaken,
   initialUrl = "",
 }: {
-  full: boolean;
-  seat: number | null;
-  taken: number[];
   /** Carried over from the one-field form on the front page. */
   initialUrl?: string;
 }) {
@@ -32,51 +25,6 @@ export function SubmitForm({
   const [tagline, setTagline] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // The seat being claimed. Null means "whichever is free when I submit",
-  // which is still the default — picking one is an option, not a chore.
-  const [chosen, setChosen] = useState<number | null>(seat);
-  const [taken, setTaken] = useState<number[]>(initialTaken);
-  // Set when the seat in the dropdown gets claimed by somebody else while
-  // this form is open. Filling in a listing takes a minute, and finding out
-  // at the last click that the seat went is the worst moment to find out.
-  const [lost, setLost] = useState<number | null>(null);
-
-  const takenSet = new Set(taken);
-
-  const refreshSeats = useCallback(async () => {
-    try {
-      const res = await fetch("/api/seats", { cache: "no-store" });
-      if (!res.ok) return;
-      const data: { taken?: number[] } = await res.json();
-      if (!Array.isArray(data.taken)) return;
-      setTaken(data.taken);
-      setChosen((current) => {
-        if (current !== null && data.taken!.includes(current)) {
-          setLost(current);
-          return null;
-        }
-        return current;
-      });
-    } catch {
-      // A failed poll is not worth surfacing: the submit itself still
-      // refuses a taken seat, so this is an early warning, not the guard.
-    }
-  }, []);
-
-  useEffect(() => {
-    const id = setInterval(refreshSeats, 15000);
-    const onFocus = () => refreshSeats();
-    window.addEventListener("focus", onFocus);
-    return () => {
-      clearInterval(id);
-      window.removeEventListener("focus", onFocus);
-    };
-  }, [refreshSeats]);
-
-  // What seat each price actually buys, computed the same way the chart
-  // places listings — quoting anything else makes the two disagree.
-
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -98,22 +46,11 @@ export function SubmitForm({
         pricingModel: form.get("pricingModel") || null,
         docsUrl: form.get("docsUrl") || null,
         email: form.get("email") || null,
-        seat: chosen,
       }),
     });
 
     const data = await res.json();
     if (!res.ok) {
-      // The seat went in the moment between rendering and submitting.
-      // Say which one, take it off the list, and drop back to "next free".
-      if (data.seatTaken) {
-        setTaken((t) => (t.includes(data.seatTaken) ? t : [...t, data.seatTaken]));
-        setLost(data.seatTaken);
-        setChosen(null);
-        setError(null);
-        setBusy(false);
-        return;
-      }
       setError(data.error ?? "Something went wrong");
       setBusy(false);
       return;
@@ -331,10 +268,10 @@ export function SubmitForm({
 
         <button
           type="submit"
-          disabled={busy || full}
+          disabled={busy}
           className="w-full rounded-xl bg-fg py-3 text-sm font-semibold text-bg-lift card-shadow transition hover:-translate-y-0.5 hover:card-shadow-lift disabled:pointer-events-none disabled:opacity-50"
         >
-          {full ? "House full" : busy ? "Adding…" : chosen === null ? "Add my listing" : `Claim seat ${chosen}`}
+          {busy ? "Adding…" : "Add my listing"}
         </button>
 
         <p className="text-center text-[11px] text-muted">

@@ -89,7 +89,7 @@ export function EditListing({ token, listing }: { token: string; listing: Listin
       {!open ? (
         <p className="mt-1.5 text-[13px] text-muted">
           Change the name, tagline, images or category. The website address can&apos;t be
-          changed — claim a new seat for a different product.
+          changed — list a different product separately.
         </p>
       ) : (
         <>

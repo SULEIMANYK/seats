@@ -4,7 +4,7 @@ import { SITE } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 export const metadata = {
-  title: `Your seats — ${SITE.domain}`,
+  title: `Your listings — ${SITE.domain}`,
   robots: { index: false, follow: false },
 };
 
@@ -16,7 +16,7 @@ export default function DashboardPage() {
       </Link>
 
       <header className="relative z-10 mt-6 mb-8">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em]">Your seats</h1>
+        <h1 className="text-2xl sm:text-3xl">Your listings</h1>
         <p className="mt-3 text-[15px] leading-relaxed text-muted">
           Kept in this browser, not in an account &mdash; there is nothing to sign in to.
           Your manage link is what actually controls a listing, so keep it.

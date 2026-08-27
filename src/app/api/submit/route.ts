@@ -12,8 +12,8 @@ export const runtime = "nodejs";
  * Claim a seat. Free, and no account.
  *
  * Nothing is charged and nobody signs in, so the checks that remain do all
- * the work: one listing per domain per day, a real http(s) URL, and a per-IP
- * rate limit. The domain rule is the load-bearing one -- taking N seats means
+ * the work: one listing per domain, a real http(s) URL, and a per-IP
+ * rate limit. The domain rule is the load-bearing one -- taking N ranks means
  * owning N domains, and domains cost money in a way email addresses do not.
  *
  * The manage token returned here is the only credential. It is what edits,
@@ -106,19 +106,19 @@ export async function POST(request: Request) {
     );
   }
 
-  // One seat per company, matched on domain so acme.com/a and acme.com/b
-  // cannot quietly hold two.
+  // One listing per company, matched on domain so acme.com/a and acme.com/b
+  // cannot quietly hold two ranks. Not scoped to a day any more -- the board
+  // no longer empties, so "already listed" means listed, full stop.
   const { data: existing } = await supabase
     .from("listings")
     .select("id")
     .eq("domain", domain)
-    .eq("seat_day", today)
     .in("status", ["active", "past_due"])
     .maybeSingle();
 
   if (existing) {
     return NextResponse.json(
-      { error: "That domain already has a seat today." },
+      { error: "That domain is already listed." },
       { status: 409 },
     );
   }
