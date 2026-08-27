@@ -142,48 +142,15 @@ export function SubmitForm({
         </div>
 
         <div className="rounded-2xl border border-edge bg-panel p-5 card-shadow">
-          <p className="text-[11px] tracking-wide text-muted uppercase">Where you sit</p>
-
-          <p className="tnum mt-1.5 text-3xl font-semibold tracking-tight">
-            {chosen === null ? "Next free seat" : `Seat ${chosen}`}
+          <p className="text-[11px] tracking-wide text-muted uppercase">Where you land</p>
+          <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
+            Unranked, until you bid. Adding the listing costs nothing; the board is ordered by
+            what each listing has paid, and you place your first bid from your own page straight
+            after this.
           </p>
-
-          <label htmlFor="seatPick" className="sr-only">
-            Choose a seat
-          </label>
-          <select
-            id="seatPick"
-            value={chosen ?? ""}
-            onChange={(e) => {
-              setChosen(e.target.value ? Number(e.target.value) : null);
-              setLost(null);
-            }}
-            className="mt-2.5 w-full rounded-xl border border-edge bg-bg-lift px-3 py-2.5 text-[13px] text-fg outline-none transition-colors focus:border-accent"
-          >
-            <option value="">Next free seat</option>
-            {Array.from({ length: BOARD_SIZE }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n} disabled={takenSet.has(n)}>
-                Seat {n}
-                {takenSet.has(n) ? " — taken" : ""}
-              </option>
-            ))}
-          </select>
-
-          {lost !== null ? (
-            <p className="mt-2 rounded-xl border border-gold-line bg-gold-soft px-3 py-2 text-[12px] leading-relaxed text-gold">
-              Seat {lost} was claimed while you were filling this in. You are set to the next
-              free seat — pick a different one above if you would rather choose.
-            </p>
-          ) : (
-            <p className="mt-2 text-[13px] leading-relaxed text-muted">
-              {chosen === null
-                ? "You take the next free seat, and it is yours until midnight UTC. No bidding and no ranking — just be early."
-                : "Yours until midnight UTC, when every seat frees up again."}
-            </p>
-          )}
-
-          <p className="tnum mt-2 text-[11px] text-muted/70">
-            {BOARD_SIZE - taken.length} of {BOARD_SIZE} free right now
+          <p className="mt-2 text-[12px] leading-relaxed text-muted/80">
+            Bids are final. If someone outbids you later you lose the position and the bid is not
+            returned &mdash; which is what makes holding one worth anything.
           </p>
         </div>
 

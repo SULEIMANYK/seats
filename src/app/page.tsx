@@ -84,7 +84,7 @@ export default async function Home() {
 
         <div className="flex shrink-0 items-center gap-3">
           <ThemeToggle />
-          <Link href="/browse" className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block">
+          <Link href="/categories" className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block">
             categories
           </Link>
           <Link href="/about" className="hidden text-[12px] text-fg/55 transition hover:text-fg sm:block">
@@ -137,7 +137,9 @@ export default async function Home() {
 
         <footer className="relative z-10 flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-edge pt-6 text-[12px] text-muted">
           <Link href="/rules" className="hover:text-fg">Rules</Link>
-          <Link href="/about" className="hover:text-fg">About</Link>
+          <Link href="/terms" className="hover:text-fg">Terms</Link>
+          <Link href="/privacy" className="hover:text-fg">Privacy</Link>
+          <Link href="/categories" className="hover:text-fg">Categories</Link>
           <Link href="/browse" className="hover:text-fg">Browse</Link>
           <Link href="/stats" className="hover:text-fg">Live stats</Link>
           <span className="ml-auto text-muted/60">{SITE.domain}</span>
