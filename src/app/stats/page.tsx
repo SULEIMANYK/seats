@@ -26,24 +26,17 @@ type Trending = {
   change_pct: number | null;
 };
 
-type CategoryStat = {
-  category: string;
-  seats: number;
-  mrr_cents: number;
-  clicks_30d: number;
-};
 
 async function getPageData() {
   try {
     const supabase = db();
-    const [{ data: trending }, { data: categories }] = await Promise.all([
+    const [{ data: trending }] = await Promise.all([
       supabase.from("trending").select("*").limit(10).returns<Trending[]>(),
-      supabase.from("category_stats").select("*").returns<CategoryStat[]>(),
     ]);
-    return { trending: trending ?? [], categories: categories ?? [] };
+    return { trending: trending ?? [] };
   } catch (err) {
     console.error("stats page data unavailable", err);
-    return { trending: [], categories: [] };
+    return { trending: [] };
   }
 }
 
@@ -59,7 +52,19 @@ function Stat({ label, value, sub }: { label: string; value: string; sub?: strin
 
 export default async function StatsPage() {
   recordVisit("/stats", await headers());
-  const [stats, { trending, categories }] = await Promise.all([getStats(), getPageData()]);
+  const [stats, { trending }] = await Promise.all([getStats(), getPageData()]);
+
+  // Counted from the board itself rather than the retired seats stat, which
+  // reads zero now and made the page claim nothing was listed.
+  let listings = 0;
+  try {
+    const { count } = await db()
+      .from("leaderboard")
+      .select("*", { count: "exact", head: true });
+    listings = count ?? 0;
+  } catch {
+    // Leave it at zero; the rest of the page is still worth rendering.
+  }
 
 
   return (
@@ -71,7 +76,7 @@ export default async function StatsPage() {
       <header className="relative z-10 mt-6 mb-10">
         <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Stats</h1>
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
-          Everything the board knows about itself, in public. If a seat
+          Everything the board knows about itself, in public. If a rank
           isn&apos;t worth what it costs, these numbers will say so.
         </p>
       </header>
@@ -87,10 +92,7 @@ export default async function StatsPage() {
           value={(stats?.clicks_24h ?? 0).toLocaleString()}
           sub={`${(stats?.clicks_total ?? 0).toLocaleString()} all time`}
         />
-        <Stat
-          label="Seats taken"
-          value={(stats?.seats_taken ?? 0).toLocaleString()}
-        />
+        <Stat label="Listings" value={listings.toLocaleString()} />
       </section>
 
       <section className="relative z-10 mt-12">
@@ -103,7 +105,7 @@ export default async function StatsPage() {
           <p className="mt-5 rounded-2xl border border-dashed border-edge-strong/60 p-8 text-center text-[13px] text-muted">
             Nothing on the board yet.{" "}
             <Link href="/submit" className="text-accent hover:underline">
-              Take the first seat →
+              Get listed →
             </Link>
           </p>
         ) : (
@@ -155,25 +157,16 @@ export default async function StatsPage() {
         )}
       </section>
 
-      {categories.length > 0 && (
-        <section className="relative z-10 mt-12">
-          <h2 className="text-xl font-semibold tracking-tight">Categories</h2>
-          <div className="mt-5 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((c) => (
-              <div
-                key={c.category}
-                className="flex items-center justify-between rounded-xl border border-edge bg-panel px-4 py-3 card-shadow"
-              >
-                <span className="truncate text-[13px] font-medium">{c.category}</span>
-                <span className="tnum shrink-0 text-[11px] text-muted">
-                  {c.seats} {c.seats === 1 ? "seat" : "seats"} ·{" "}
-                  {c.clicks_30d.toLocaleString()} clicks
-                </span>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      <section className="relative z-10 mt-12">
+        <h2 className="text-xl font-semibold tracking-tight">Categories</h2>
+        <p className="mt-1.5 text-[13px] text-muted">
+          Who holds each one, and what it costs to take it, live on{" "}
+          <Link href="/categories" className="text-accent hover:underline">
+            the categories page
+          </Link>
+          .
+        </p>
+      </section>
 
       <p className="relative z-10 mt-14 text-[11px] text-muted/60">{SITE.domain}</p>
     </main>
