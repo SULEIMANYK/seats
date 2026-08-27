@@ -13,8 +13,12 @@ export const runtime = "nodejs";
  */
 
 function esc(s: string): string {
-  return s.replace(/[<>&"']/g, (c) =>
-    ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[c]!,
+  return s.replace(
+    /[<>&"']/g,
+    (c) =>
+      ({ "<": "&lt;", ">": "&gt;", "&": "&amp;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ]!,
   );
 }
 
@@ -41,7 +45,8 @@ function svg(body: string, maxAge: number) {
   return new NextResponse(body, {
     headers: {
       "content-type": "image/svg+xml",
-      // Short cache: rank changes daily, and a stale badge is a wrong claim.
+      // Short cache: rank changes whenever somebody bids, and a stale badge is a
+      // wrong claim on someone else's site.
       "cache-control": `public, max-age=${maxAge}, s-maxage=${maxAge}`,
     },
   });
@@ -55,22 +60,32 @@ export async function GET(
 
   try {
     const supabase = db();
+    // Reads the leaderboard, not the retired seats view. That view filtered
+    // on seat_day = today, so once the board became an auction the badge
+    // returned "not listed" for every listing on it -- including whoever
+    // happened to be at #1.
     const { data: row } = await supabase
-      .from("board")
-      .select("id, rank, category, clicks_7d")
+      .from("leaderboard")
+      .select("id, rank, category")
       .eq("slug", slug)
       .maybeSingle<{ id: string; rank: number; category: string | null }>();
 
-    if (!row) return svg(badge("seats.lol", "not listed", "rgba(20,20,19,0.10)"), 300);
+    if (!row)
+      return svg(badge("seats.lol", "not listed", "rgba(20,20,19,0.10)"), 300);
 
     let label = `#${row.rank}`;
     if (row.category) {
-      const { data: bench } = await supabase
-        .from("category_benchmark")
-        .select("category_rank")
-        .eq("id", row.id)
-        .maybeSingle<{ category_rank: number }>();
-      if (bench) label = `#${bench.category_rank} in ${row.category}`;
+      // Place within the category, derived from the same ordering the board
+      // uses rather than a separate view that could disagree with it.
+      const { data: peers } = await supabase
+        .from("leaderboard")
+        .select("id")
+        .eq("category", row.category)
+        .order("rank")
+        .returns<{ id: string }[]>();
+
+      const place = (peers ?? []).findIndex((x) => x.id === row.id);
+      if (place >= 0) label = `#${place + 1} in ${row.category}`;
     }
 
     return svg(badge("seats.lol", label, "#fc7428"), 900);

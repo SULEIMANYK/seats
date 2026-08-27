@@ -138,9 +138,10 @@ export function SubmitForm({
     <div className="relative z-10 grid gap-8 lg:grid-cols-[360px_minmax(0,1fr)] lg:items-start">
       <aside className="space-y-2.5 lg:order-2 lg:sticky lg:top-6 lg:self-start">
         <div className="rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
-          <p className="text-[11px] tracking-wide text-gold uppercase">Free</p>
+          <p className="text-[11px] tracking-wide text-gold uppercase">Free to list</p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-muted">
-            No fee, no card, no plan. Add your listing and it goes up straight away.
+            No fee and no card to get on the board. What costs money is the position &mdash;
+            listings are ordered by what each has paid, and you bid after this.
           </p>
         </div>
 
