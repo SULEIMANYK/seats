@@ -41,12 +41,11 @@ export default async function SubmitPage({
         ← back to the board
       </Link>
 
-      <header className="relative z-10 mt-6 mb-10">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Take a seat</h1>
-        <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
-          {full
-            ? "Every seat is taken right now. Seats free up when listings go quiet — check back."
-            : `Free. Add your ${SITE.noun} and the next seat is yours — nobody can take it from you.`}
+      <header className="relative z-10 mt-6 mb-8">
+        <h1 className="text-2xl sm:text-3xl">Get listed</h1>
+        <p className="mt-2.5 max-w-lg text-[14px] leading-relaxed text-muted">
+          Adding your listing is free. Where it sits is not &mdash; the board is ordered by what
+          each listing has paid, so you place a bid once you are on it.
         </p>
       </header>
 

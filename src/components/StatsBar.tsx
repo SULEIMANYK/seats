@@ -42,7 +42,7 @@ export function StatsBar({
       {items.map(([value, label]) => (
         <div key={label} className="rounded-2xl border border-edge bg-panel px-4 py-3">
           <dt className="text-[11px] tracking-wide text-muted uppercase">{label}</dt>
-          <dd className="tnum font-display mt-1 text-[22px] leading-none">{value}</dd>
+          <dd className="tnum font-display mt-1 text-[18px] leading-none">{value}</dd>
         </div>
       ))}
     </dl>

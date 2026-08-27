@@ -55,7 +55,7 @@ export default async function BrowsePage() {
       </Link>
 
       <header className="relative z-10 mt-6 mb-8">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] sm:text-4xl">Browse</h1>
+        <h1 className="text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">Browse</h1>
         <p className="mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
           Every {SITE.noun} that has ever held a seat, not just today&apos;s board — most
           recently seen first.

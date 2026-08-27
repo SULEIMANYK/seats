@@ -11,7 +11,7 @@ export default function AboutPage() {
         ← back to the board
       </Link>
 
-      <h1 className="relative z-10 mt-6 text-4xl">About</h1>
+      <h1 className="relative z-10 mt-6 text-2xl sm:text-3xl">About</h1>
 
       <div className="relative z-10 mt-6 space-y-4 text-[15px] leading-relaxed text-muted">
         <p>

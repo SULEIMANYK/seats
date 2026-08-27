@@ -100,12 +100,12 @@ export default async function Home() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-3xl px-5 pt-10 pb-20 sm:px-8">
-        <section className="relative z-10 mb-10">
-          <h1 className="text-[clamp(48px,8vw,96px)] leading-[0.9]">
+      <div className="mx-auto w-full max-w-3xl px-5 pt-7 pb-16 sm:px-8">
+        <section className="relative z-10 mb-7">
+          <h1 className="text-[clamp(26px,4vw,40px)] leading-[1.05]">
             Just <span className="text-gold">outbid</span> your competition
           </h1>
-          <p className="mt-5 max-w-xl text-[17px] leading-relaxed text-muted">
+          <p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">
             A leaderboard you climb with money. Bid higher than the listing above you and you take
             its rank &mdash; {topPrice > 0 ? <>#1 currently stands at <span className="font-semibold text-fg">{formatMoney(topPrice)}</span>.</> : <>nobody holds #1 yet.</>}
           </p>

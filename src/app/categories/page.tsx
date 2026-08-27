@@ -62,7 +62,7 @@ export default async function CategoriesPage() {
         ← back to the board
       </Link>
 
-      <h1 className="relative z-10 mt-6 text-4xl sm:text-5xl">Categories</h1>
+      <h1 className="relative z-10 mt-6 text-2xl sm:text-3xl">Categories</h1>
       <p className="relative z-10 mt-3 max-w-lg text-[15px] leading-relaxed text-muted">
         Who tops each one, and what it costs to take it off them.
       </p>

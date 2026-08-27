@@ -9,7 +9,7 @@ export default function PrivacyPage() {
       <Link href="/" className="relative z-10 text-sm text-muted hover:text-fg">
         ← back to the board
       </Link>
-      <h1 className="relative z-10 mt-6 text-4xl">Privacy</h1>
+      <h1 className="relative z-10 mt-6 text-2xl sm:text-3xl">Privacy</h1>
 
       <div className="relative z-10 mt-6 space-y-5 text-[15px] leading-relaxed text-muted">
         <p>

@@ -29,7 +29,7 @@ export function BidBox({
   return (
     <section className="relative z-10 mb-8 rounded-2xl border border-gold-line bg-gold-soft p-5 card-shadow">
       <p className="text-[11px] tracking-wide text-gold uppercase">Your rank</p>
-      <p className="tnum font-display mt-1 text-4xl leading-none text-gold">
+      <p className="tnum font-display mt-1 text-2xl leading-none text-gold">
         {rank ? `#${rank}` : "unranked"}
       </p>
       <p className="mt-2 text-[13px] leading-relaxed text-fg/80">

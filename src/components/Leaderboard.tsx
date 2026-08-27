@@ -119,7 +119,7 @@ export function Leaderboard({
               >
                 <span
                   className={`tnum font-display w-10 shrink-0 text-center leading-none ${
-                    top3 ? "text-[26px] text-gold" : "text-[18px] text-muted"
+                    top3 ? "text-[20px] text-gold" : "text-[15px] text-muted"
                   }`}
                 >
                   {r.rank}

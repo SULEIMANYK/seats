@@ -20,7 +20,7 @@ export default function RulesPage() {
         ← back to the board
       </Link>
 
-      <h1 className="relative z-10 mt-6 text-4xl">Rules</h1>
+      <h1 className="relative z-10 mt-6 text-2xl sm:text-3xl">Rules</h1>
       <p className="relative z-10 mt-3 text-[15px] leading-relaxed text-muted">
         Short, because there are only a few and they all matter. Bids start at{" "}
         {formatMoney(OPENING_BID_CENTS)}.
